@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customers – Pharmacist Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="pharmacist-shared.css"/>
+  <style>
+    .customer-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;}
+    .av-blue{background:var(--primary);}
+    .av-green{background:var(--green);}
+    .av-amber{background:var(--amber);}
+    .av-purple{background:var(--purple);}
+    .av-red{background:var(--red);}
+    .av-teal{background:#0d9488;}
+
+    /* PROFILE MODAL */
+    .profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+    .profile-big-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;color:#fff;}
+    .profile-name{font-size:1rem;font-weight:700;margin-bottom:3px;}
+    .profile-id{font-size:0.72rem;color:var(--muted);}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+    .info-cell .label{font-size:0.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+    .info-cell .val{font-size:0.82rem;font-weight:500;}
+    .tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:0.7rem;font-weight:600;margin:2px;}
+    .tag-red{background:var(--red-light);color:var(--red);}
+    .tag-blue{background:var(--primary-light);color:var(--primary);}
+    .rx-mini-list{display:flex;flex-direction:column;gap:0;}
+    .rx-mini-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.8rem;}
+    .rx-mini-item:last-child{border-bottom:none;}
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="phSidebar"></aside>
+<div class="main">
+  <header class="topbar" id="phTopbar"></header>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title"><i class="fa-solid fa-users" style="color:var(--primary);margin-right:8px;"></i>Customers</div>
+        <div class="page-sub">View patient profiles, prescription history, and health records.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="showToast('Exporting customer list…')"><i class="fa-solid fa-download"></i> Export</button>
+        <button class="btn btn-primary" onclick="openModal('addCustomerModal')"><i class="fa-solid fa-user-plus"></i> Add Patient</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-grid cols-4">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-blue"><i class="fa-solid fa-users"></i></div><span class="stat-badge sb-blue">Total</span></div>
+        <div class="stat-label">Total Patients</div>
+        <div class="stat-value">1,248</div>
+        <div class="stat-sub">Registered with pharmacy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-green"><i class="fa-solid fa-user-check"></i></div><span class="stat-badge sb-green">+4%</span></div>
+        <div class="stat-label">New This Month</div>
+        <div class="stat-value" style="color:var(--green);">312</div>
+        <div class="stat-sub">New registrations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-amber"><i class="fa-solid fa-rotate"></i></div><span class="stat-badge sb-amber">Active</span></div>
+        <div class="stat-label">Repeat Patients</div>
+        <div class="stat-value" style="color:var(--amber);">864</div>
+        <div class="stat-sub">2+ orders placed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-purple"><i class="fa-solid fa-heart-pulse"></i></div><span class="stat-badge" style="background:var(--purple-light);color:var(--purple);">Chronic</span></div>
+        <div class="stat-label">Chronic Care Patients</div>
+        <div class="stat-value" style="color:var(--purple);">420</div>
+        <div class="stat-sub">Long-term scripts</div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-list" style="color:var(--primary);margin-right:6px;"></i>Patient Directory</span>
+        <div class="filter-row">
+          <select id="filterCondition" onchange="filterCustomers()">
+            <option value="">All Conditions</option>
+            <option>Hypertension</option>
+            <option>Diabetes</option>
+            <option>Asthma</option>
+            <option>General</option>
+          </select>
+          <select id="filterStatus" onchange="filterCustomers()">
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          <input type="text" id="searchCustomer" placeholder="Search name or ID…" oninput="filterCustomers()"/>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Patient ID</th>
+            <th>Condition</th>
+            <th>Active Scripts</th>
+            <th>Last Visit</th>
+            <th>Total Orders</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customerBody"></tbody>
+      </table>
+
+      <div class="pagination">
+        <span id="pageInfo">—</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer>
+    <div><span style="font-size:0.82rem;font-weight:700;">MedTrust Systems</span><br/><span style="font-size:0.7rem;color:var(--muted);">© 2026 MedTrust Systems</span></div>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Drug Safety</a><a href="#">Support</a></div>
+  </footer>
+</div>
+
+<!-- PATIENT PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="width:560px;">
+    <div class="modal-header">
+      <h3>Patient Profile</h3>
+      <button class="modal-close" onclick="closeModal('profileModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-header">
+        <div class="profile-big-avatar" id="profileAvatar">K</div>
+        <div>
+          <div class="profile-name" id="profileName">—</div>
+          <div class="profile-id" id="profileId">—</div>
+        </div>
+      </div>
+
+      <div class="info-grid" id="profileGrid"></div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Allergies</div>
+        <div id="allergyTags"></div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Conditions</div>
+        <div id="conditionTags"></div>
+      </div>
+
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Active Prescriptions</div>
+        <div class="rx-mini-list" id="rxMiniList"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('profileModal')">Close</button>
+      <button class="btn btn-outline" onclick="showToast('Opening prescription history…')"><i class="fa-solid fa-clock-rotate-left"></i> Full History</button>
+      <button class="btn btn-primary" onclick="showToast('New prescription created');closeModal('profileModal')"><i class="fa-solid fa-plus"></i> New Prescription</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PATIENT MODAL -->
+<div class="modal-overlay" id="addCustomerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Register New Patient</h3>
+      <button class="modal-close" onclick="closeModal('addCustomerModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="cFirstName" placeholder="Kofi"/></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="cLastName" placeholder="Mensah"/></div>
+        <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-control" type="date" id="cDOB"/></div>
+        <div class="form-group"><label class="form-label">Gender</label>
+          <select class="form-control" id="cGender"><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="cPhone" placeholder="+233 …"/></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="cEmail" type="email" placeholder="patient@email.com"/></div>
+        <div class="form-group"><label class="form-label">Primary Condition</label>
+          <select class="form-control" id="cCondition">
+            <option>General</option><option>Hypertension</option><option>Diabetes</option><option>Asthma</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Insurance</label>
+          <select class="form-control" id="cInsurance"><option>None</option><option>NHIS</option><option>Private</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Known Allergies</label>
+        <input class="form-control" id="cAllergies" placeholder="e.g. Penicillin, Sulfa (comma-separated)"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addCustomerModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomer()"><i class="fa-solid fa-user-plus"></i> Register Patient</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<script src="pharmacist-layout.js"></script>
+<script>
+renderPharmacistLayout({ activePage:'customers', pageTitle:'Customer Management' });
+
+/* ── MOCK DATA — replace with fetch('api/pharmacist/customers.php') ── */
+const CUSTOMERS = [
+  { id:'PAT-001', fn:'Robert',  ln:'Wilson',    color:'av-blue',   condition:'Hypertension', scripts:3, lastVisit:'Oct 24, 2024', orders:18, status:'Active',   allergies:['Penicillin'],            conditions:['Hypertension','High Cholesterol'], dob:'1965-04-12', phone:'+1 555 0110', email:'rwilson@email.com', insurance:'NHIS',    rxList:['Atorvastatin 20mg','Lisinopril 10mg','Aspirin 81mg'] },
+  { id:'PAT-002', fn:'Elena',   ln:'Rodriguez', color:'av-green',  condition:'Asthma',       scripts:1, lastVisit:'Oct 25, 2024', orders:6,  status:'Active',   allergies:['Sulfa Drugs'],           conditions:['Asthma'],                         dob:'1988-09-30', phone:'+1 555 0116', email:'elena@email.com',   insurance:'Private', rxList:['Ventolin HFA Inhaler'] },
+  { id:'PAT-003', fn:'Marcus',  ln:'Thorne',    color:'av-amber',  condition:'Diabetes',     scripts:2, lastVisit:'Oct 25, 2024', orders:22, status:'Active',   allergies:['NSAIDs'],                conditions:['Type 2 Diabetes'],                dob:'1972-01-15', phone:'+1 555 0115', email:'mthorne@email.com', insurance:'Private', rxList:['Gabapentin 300mg','Metformin 500mg'] },
+  { id:'PAT-004', fn:'Sarah',   ln:'Jenkins',   color:'av-purple', condition:'General',      scripts:1, lastVisit:'Oct 26, 2024', orders:4,  status:'Active',   allergies:[],                        conditions:['Hypothyroidism'],                 dob:'1990-07-22', phone:'+1 555 0112', email:'sjenkins@email.com',insurance:'None',    rxList:['Levothyroxine 50mcg'] },
+  { id:'PAT-005', fn:'James',   ln:'Owusu',     color:'av-teal',   condition:'Diabetes',     scripts:2, lastVisit:'Oct 22, 2024', orders:31, status:'Active',   allergies:['Latex','Penicillin'],    conditions:['Type 2 Diabetes','Hypertension'], dob:'1958-11-03', phone:'+233 24 001', email:'jowusu@email.com',   insurance:'NHIS',    rxList:['Metformin 500mg','Lisinopril 10mg'] },
+  { id:'PAT-006', fn:'Abena',   ln:'Frimpong',  color:'av-red',    condition:'Hypertension', scripts:1, lastVisit:'Oct 20, 2024', orders:9,  status:'Active',   allergies:['Codeine'],               conditions:['Hypertension'],                   dob:'1980-03-18', phone:'+233 24 002', email:'abena@email.com',    insurance:'NHIS',    rxList:['Lisinopril 10mg'] },
+  { id:'PAT-007', fn:'Kwame',   ln:'Asante',    color:'av-blue',   condition:'General',      scripts:0, lastVisit:'Sep 10, 2024', orders:2,  status:'Inactive', allergies:[],                        conditions:['General'],                        dob:'1995-06-25', phone:'+233 24 003', email:'kwame@email.com',    insurance:'None',    rxList:[] },
+  { id:'PAT-008', fn:'Akosua',  ln:'Mensah',    color:'av-green',  condition:'Asthma',       scripts:1, lastVisit:'Oct 18, 2024', orders:7,  status:'Active',   allergies:['Aspirin'],               conditions:['Asthma','Allergic Rhinitis'],      dob:'1992-12-10', phone:'+233 24 004', email:'akosua@email.com',   insurance:'Private', rxList:['Cetirizine 10mg'] },
+];
+
+const avColors = { 'av-blue':var_primary(), 'av-green':'#16a34a', 'av-amber':'#d97706', 'av-purple':'#7c3aed', 'av-red':'#dc2626', 'av-teal':'#0d9488' };
+function var_primary(){ return '#1a6fc4'; }
+
+let filtered = [...CUSTOMERS], page = 1;
+const PER = 6;
+
+function renderCustomers() {
+  const start = (page-1)*PER;
+  const slice = filtered.slice(start, start+PER);
+  document.getElementById('customerBody').innerHTML = slice.map(c => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="customer-avatar ${c.color}">${c.fn[0]}${c.ln[0]}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.83rem;">${c.fn} ${c.ln}</div>
+            <div style="font-size:0.7rem;color:var(--muted);">${c.email}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-family:monospace;font-size:0.78rem;color:var(--primary);font-weight:600;">${c.id}</td>
+      <td><span class="badge badge-blue" style="font-size:0.65rem;">${c.condition}</span></td>
+      <td style="text-align:center;">
+        <span style="font-weight:700;font-size:0.85rem;color:${c.scripts>0?'var(--primary)':'var(--muted)'};">${c.scripts}</span>
+      </td>
+      <td style="font-size:0.78rem;color:var(--muted);">${c.lastVisit}</td>
+      <td style="font-weight:600;text-align:center;">${c.orders}</td>
+      <td>
+        <span class="badge ${c.status==='Active'?'badge-green':'badge-gray'}">${c.status}</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-outline btn-sm" onclick="openProfile('${c.id}')"><i class="fa-solid fa-eye"></i> View</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('New Rx for ${c.fn} ${c.ln}')"><i class="fa-solid fa-plus"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('pageInfo').textContent = `Showing ${Math.min(start+PER,filtered.length)} of ${filtered.length} patients`;
+}
+
+function filterCustomers() {
+  const cond   = document.getElementById('filterCondition').value;
+  const status = document.getElementById('filterStatus').value;
+  const q      = document.getElementById('searchCustomer').value.toLowerCase();
+  filtered = CUSTOMERS.filter(c =>
+    (!cond   || c.condition === cond) &&
+    (!status || c.status === status) &&
+    (!q      || `${c.fn} ${c.ln} ${c.id} ${c.email}`.toLowerCase().includes(q))
+  );
+  page = 1; renderCustomers();
+}
+
+function changePage(d) { page = Math.max(1, page+d); renderCustomers(); }
+
+function openProfile(id) {
+  const c = CUSTOMERS.find(x => x.id === id); if (!c) return;
+
+  // color map
+  const colorMap = { 'av-blue':'#1a6fc4','av-green':'#16a34a','av-amber':'#d97706','av-purple':'#7c3aed','av-red':'#dc2626','av-teal':'#0d9488' };
+  const avatarEl = document.getElementById('profileAvatar');
+  avatarEl.textContent = c.fn[0]+c.ln[0];
+  avatarEl.style.background = colorMap[c.color] || '#1a6fc4';
+
+  document.getElementById('profileName').textContent = `${c.fn} ${c.ln}`;
+  document.getElementById('profileId').textContent   = `${c.id} · DOB: ${c.dob}`;
+
+  document.getElementById('profileGrid').innerHTML = `
+    <div class="info-cell"><div class="label">Phone</div><div class="val">${c.phone}</div></div>
+    <div class="info-cell"><div class="label">Email</div><div class="val">${c.email}</div></div>
+    <div class="info-cell"><div class="label">Insurance</div><div class="val">${c.insurance}</div></div>
+    <div class="info-cell"><div class="label">Total Orders</div><div class="val">${c.orders}</div></div>
+    <div class="info-cell"><div class="label">Status</div><div class="val"><span class="badge ${c.status==='Active'?'badge-green':'badge-gray'}">${c.status}</span></div></div>
+    <div class="info-cell"><div class="label">Last Visit</div><div class="val">${c.lastVisit}</div></div>
+  `;
+
+  document.getElementById('allergyTags').innerHTML = c.allergies.length
+    ? c.allergies.map(a=>`<span class="tag tag-red">${a}</span>`).join('')
+    : '<span style="font-size:0.78rem;color:var(--muted);">No known allergies</span>';
+
+  document.getElementById('conditionTags').innerHTML = c.conditions
+    .map(d=>`<span class="tag tag-blue">${d}</span>`).join('');
+
+  document.getElementById('rxMiniList').innerHTML = c.rxList.length
+    ? c.rxList.map(r=>`
+        <div class="rx-mini-item">
+          <span><i class="fa-solid fa-pills" style="color:var(--primary);margin-right:6px;"></i>${r}</span>
+          <span class="badge badge-green" style="font-size:0.62rem;">Active</span>
+        </div>`).join('')
+    : '<div style="font-size:0.78rem;color:var(--muted);padding:8px 0;">No active prescriptions</div>';
+
+  openModal('profileModal');
+}
+
+function saveCustomer() {
+  const fn = document.getElementById('cFirstName').value.trim();
+  const ln = document.getElementById('cLastName').value.trim();
+  if (!fn || !ln) { showToast('Please fill required fields','warn'); return; }
+  /* TODO: fetch('api/pharmacist/add-customer.php',{method:'POST',body:JSON.stringify({...})}) */
+  const newId = `PAT-${String(CUSTOMERS.length+1).padStart(3,'0')}`;
+  CUSTOMERS.push({ id:newId, fn, ln, color:'av-blue', condition:document.getElementById('cCondition').value, scripts:0, lastVisit:'Today', orders:0, status:'Active',
+    allergies: document.getElementById('cAllergies').value.split(',').map(s=>s.trim()).filter(Boolean),
+    conditions:[document.getElementById('cCondition').value], dob:document.getElementById('cDOB').value,
+    phone:document.getElementById('cPhone').value, email:document.getElementById('cEmail').value,
+    insurance:document.getElementById('cInsurance').value, rxList:[] });
+  closeModal('addCustomerModal');
+  filtered = [...CUSTOMERS]; renderCustomers();
+  showToast(`${fn} ${ln} registered successfully`);
+}
+
+function handleGlobalSearch(q) {
+  document.getElementById('searchCustomer').value = q;
+  filterCustomers();
+}
+
+renderCustomers();
+</script>
+</body>
+</html>

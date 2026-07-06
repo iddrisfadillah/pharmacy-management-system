@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports – Pharmacist Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="pharmacist-shared.css"/>
+  <style>
+    .chart-wrap{padding:16px 20px 8px;}
+    .chart-bars{display:flex;align-items:flex-end;gap:8px;height:140px;}
+    .c-bar{flex:1;border-radius:4px 4px 0 0;background:var(--primary);opacity:.75;cursor:pointer;position:relative;min-width:14px;transition:opacity .2s;}
+    .c-bar:hover{opacity:1;}
+    .c-bar .tip{display:none;position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:#111;color:#fff;font-size:0.65rem;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:10;}
+    .c-bar:hover .tip{display:block;}
+    .chart-labels{display:flex;gap:8px;padding:6px 20px 14px;}
+    .c-label{flex:1;text-align:center;font-size:0.65rem;color:var(--muted);min-width:14px;}
+
+    .donut-wrap{display:flex;align-items:center;gap:24px;padding:20px;}
+    .legend{display:flex;flex-direction:column;gap:10px;flex:1;}
+    .legend-item{display:flex;align-items:center;gap:8px;font-size:0.8rem;}
+    .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+    .legend-label{flex:1;}
+    .legend-value{font-weight:700;}
+
+    .top-med-row{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-bottom:1px solid var(--border);}
+    .top-med-row:last-child{border-bottom:none;}
+    .tm-rank{width:22px;text-align:center;font-size:0.78rem;font-weight:700;color:var(--muted);}
+    .tm-info{flex:1;margin-left:8px;}
+    .tm-name{font-size:0.82rem;font-weight:600;}
+    .tm-sub{font-size:0.7rem;color:var(--muted);}
+    .tm-bar-wrap{width:100px;height:5px;background:var(--border);border-radius:3px;margin-top:4px;}
+    .tm-bar{height:100%;border-radius:3px;background:var(--primary);}
+    .tm-value{font-weight:700;font-size:0.82rem;color:var(--green);}
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="phSidebar"></aside>
+<div class="main">
+  <header class="topbar" id="phTopbar"></header>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title"><i class="fa-solid fa-chart-line" style="color:var(--primary);margin-right:8px;"></i>Reports &amp; Analytics</div>
+        <div class="page-sub">Revenue, dispensing trends, and pharmacy performance insights.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <select class="form-control" style="width:160px;" id="reportRange" onchange="loadAll()">
+          <option value="7">Last 7 Days</option>
+          <option value="30" selected>Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+          <option value="365">This Year</option>
+        </select>
+        <button class="btn btn-primary" onclick="showToast('Generating PDF report…')"><i class="fa-solid fa-file-pdf"></i> Export Report</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-grid cols-4">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-blue"><i class="fa-solid fa-sack-dollar"></i></div><span class="stat-badge sb-green">+12.4%</span></div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" id="rRevenue">—</div>
+        <div class="stat-sub">vs previous period</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-green"><i class="fa-solid fa-file-prescription"></i></div><span class="stat-badge sb-green">+6.1%</span></div>
+        <div class="stat-label">Orders Fulfilled</div>
+        <div class="stat-value" id="rOrders">—</div>
+        <div class="stat-sub">vs previous period</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-purple"><i class="fa-solid fa-coins"></i></div><span class="stat-badge sb-blue">Avg.</span></div>
+        <div class="stat-label">Avg. Order Value</div>
+        <div class="stat-value" id="rAOV">—</div>
+        <div class="stat-sub">Per prescription</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-amber"><i class="fa-solid fa-rotate"></i></div><span class="stat-badge sb-amber">Returning</span></div>
+        <div class="stat-label">Repeat Patients</div>
+        <div class="stat-value" id="rRepeat">—</div>
+        <div class="stat-sub">of total patients</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:20px;">
+      <!-- REVENUE CHART -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Revenue Trend</span>
+          <span style="font-size:0.72rem;color:var(--muted);" id="chartRangeLabel">Last 30 Days</span>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-bars" id="chartBars"></div>
+          <div class="chart-labels" id="chartLabels"></div>
+        </div>
+      </div>
+
+      <!-- CATEGORY BREAKDOWN -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Sales by Category</span></div>
+        <div class="donut-wrap">
+          <svg width="130" height="130" viewBox="0 0 36 36" id="donutChart" style="flex-shrink:0;">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E5E7EB" stroke-width="3.5"></circle>
+          </svg>
+          <div class="legend" id="legendList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP MEDICATIONS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-trophy" style="color:var(--amber);margin-right:6px;"></i>Top Selling Medications</span>
+        <span style="font-size:0.72rem;color:var(--muted);">By units dispensed</span>
+      </div>
+      <div id="topMedsList"></div>
+    </div>
+
+    <!-- PATIENT DEMOGRAPHICS -->
+    <div class="stat-grid cols-3">
+      <div class="stat-card">
+        <div class="stat-label">Insurance Mix (NHIS)</div>
+        <div class="stat-value" style="color:var(--green);">62%</div>
+        <div class="stat-sub">of all orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. Fulfillment Time</div>
+        <div class="stat-value" style="color:var(--primary);">3.2 hrs</div>
+        <div class="stat-sub">From order to ready</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Stock-Out Incidents</div>
+        <div class="stat-value" style="color:var(--red);">4</div>
+        <div class="stat-sub">This period</div>
+      </div>
+    </div>
+
+  </div>
+  <footer>
+    <div><span style="font-size:0.82rem;font-weight:700;">MedTrust Systems</span><br/><span style="font-size:0.7rem;color:var(--muted);">© 2026 MedTrust Systems</span></div>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Drug Safety</a><a href="#">Support</a></div>
+  </footer>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<script src="pharmacist-layout.js"></script>
+<script>
+renderPharmacistLayout({ activePage:'reports', pageTitle:'Reports & Analytics' });
+
+/* ── MOCK DATA — replace with fetch('api/pharmacist/reports.php?range='+days) ── */
+const REPORT_DATA = {
+  7:   { revenue:'GH₵ 18,420',  orders:142,  aov:'GH₵ 129.70', repeat:'58%', chart:[2100,2800,1900,3200,2600,3800,2020], labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] },
+  30:  { revenue:'GH₵ 78,650',  orders:612,  aov:'GH₵ 128.50', repeat:'64%', chart:[14000,16500,12800,19200,16150], labels:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5'] },
+  90:  { revenue:'GH₵ 224,300', orders:1840, aov:'GH₵ 121.90', repeat:'67%', chart:[68000,76500,79800], labels:['Month 1','Month 2','Month 3'] },
+  365: { revenue:'GH₵ 1,420,800',orders:9620, aov:'GH₵ 147.70',repeat:'71%', chart:[98000,102000,115000,108000,124000,131000,118000,135000,128000,142000,138000,150000], labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] },
+};
+
+const CATEGORIES = [
+  { label:'Cardiovascular', value:32, color:'#1a6fc4' },
+  { label:'Antibiotics',    value:24, color:'#16a34a' },
+  { label:'Diabetes',       value:18, color:'#d97706' },
+  { label:'Pain Relief',    value:14, color:'#7c3aed' },
+  { label:'Vitamins',       value:8,  color:'#0d9488' },
+  { label:'Other',          value:4,  color:'#9CA3AF' },
+];
+
+const TOP_MEDS = [
+  { name:'Atorvastatin 20mg',   units:842,  revenue:'GH₵ 15,156' },
+  { name:'Amoxicillin 500mg',   units:710,  revenue:'GH₵ 6,035'  },
+  { name:'Metformin 500mg',     units:655,  revenue:'GH₵ 3,930'  },
+  { name:'Lisinopril 10mg',     units:598,  revenue:'GH₵ 7,176'  },
+  { name:'Paracetamol 500mg',   units:520,  revenue:'GH₵ 1,560'  },
+];
+
+function loadStats() {
+  const range = document.getElementById('reportRange').value;
+  const d = REPORT_DATA[range];
+  document.getElementById('rRevenue').textContent = d.revenue;
+  document.getElementById('rOrders').textContent  = d.orders;
+  document.getElementById('rAOV').textContent      = d.aov;
+  document.getElementById('rRepeat').textContent   = d.repeat;
+}
+
+function renderChart() {
+  const range = document.getElementById('reportRange').value;
+  const d = REPORT_DATA[range];
+  const max = Math.max(...d.chart);
+  document.getElementById('chartBars').innerHTML = d.chart.map(v =>
+    `<div class="c-bar" style="height:${Math.round((v/max)*100)}%"><div class="tip">GH₵ ${v.toLocaleString()}</div></div>`
+  ).join('');
+  document.getElementById('chartLabels').innerHTML = d.labels.map(l => `<div class="c-label">${l}</div>`).join('');
+  const rangeLabels = { 7:'Last 7 Days', 30:'Last 30 Days', 90:'Last 90 Days', 365:'This Year' };
+  document.getElementById('chartRangeLabel').textContent = rangeLabels[range];
+}
+
+function renderDonut() {
+  const svg = document.getElementById('donutChart');
+  let offset = 0;
+  const circles = CATEGORIES.map(c => {
+    const dash = c.value;
+    const circle = `<circle cx="18" cy="18" r="15.9" fill="none" stroke="${c.color}" stroke-width="3.5" stroke-dasharray="${dash} ${100-dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 18 18)"></circle>`;
+    offset += dash;
+    return circle;
+  }).join('');
+  svg.innerHTML = `<circle cx="18" cy="18" r="15.9" fill="none" stroke="#E5E7EB" stroke-width="3.5"></circle>` + circles;
+
+  document.getElementById('legendList').innerHTML = CATEGORIES.map(c => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${c.color};"></div>
+      <span class="legend-label">${c.label}</span>
+      <span class="legend-value">${c.value}%</span>
+    </div>
+  `).join('');
+}
+
+function renderTopMeds() {
+  const max = Math.max(...TOP_MEDS.map(m => m.units));
+  document.getElementById('topMedsList').innerHTML = TOP_MEDS.map((m, i) => `
+    <div class="top-med-row">
+      <div class="tm-rank">#${i+1}</div>
+      <div class="tm-info">
+        <div class="tm-name">${m.name}</div>
+        <div class="tm-sub">${m.units} units dispensed</div>
+        <div class="tm-bar-wrap"><div class="tm-bar" style="width:${Math.round((m.units/max)*100)}%;"></div></div>
+      </div>
+      <div class="tm-value">${m.revenue}</div>
+    </div>
+  `).join('');
+}
+
+function loadAll() {
+  loadStats();
+  renderChart();
+}
+
+loadAll();
+renderDonut();
+renderTopMeds();
+</script>
+</body>
+</html>

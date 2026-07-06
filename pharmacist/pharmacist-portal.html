@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pharmacist Portal – Prescription Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#F0F4F8;--card:#fff;
+      --primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
+      --green:#16a34a;--green-light:#dcfce7;
+      --amber:#d97706;--amber-light:#fef9c3;
+      --red:#dc2626;--red-light:#fee2e2;
+      --purple:#7c3aed;--purple-light:#ede9fe;
+      --teal:#0d9488;--teal-light:#ccfbf1;
+      --text:#111827;--muted:#6B7280;--light:#9CA3AF;
+      --border:#E5E7EB;--radius:12px;
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;flex-shrink:0;}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border);}
+    .brand-icon{width:36px;height:36px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;flex-shrink:0;}
+    .brand-text .bn{font-size:0.88rem;font-weight:800;}
+    .brand-text .bs{font-size:0.65rem;color:var(--muted);}
+    .btn-new-rx{margin:12px 14px;background:var(--primary);color:#fff;border:none;border-radius:9px;padding:11px 14px;font-size:0.83rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;transition:background .2s;}
+    .btn-new-rx:hover{background:var(--primary-dark);}
+    .sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:0.83rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;border-left:3px solid transparent;}
+    .nav-item:hover{background:var(--primary-light);color:var(--primary);}
+    .nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:700;border-left-color:var(--primary);}
+    .nav-item i{width:18px;text-align:center;font-size:0.9rem;}
+    .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px;}
+
+    /* ── MAIN ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:54px;flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:12px;}
+    .topbar-title{font-size:1rem;font-weight:800;}
+    .pending-badge{background:var(--primary);color:#fff;font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:20px;}
+    .topbar-right{display:flex;align-items:center;gap:12px;}
+    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px;}
+    .notif-dot{width:7px;height:7px;background:var(--red);border-radius:50%;position:absolute;top:1px;right:1px;}
+    .user-chip{display:flex;align-items:center;gap:9px;}
+    .user-av{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;}
+    .uname{font-size:0.82rem;font-weight:700;text-align:right;}
+    .urole{font-size:0.68rem;color:var(--muted);text-align:right;}
+
+    /* ── THREE COLUMNS ── */
+    .columns{display:flex;flex:1;overflow:hidden;}
+
+    /* COL 1 — QUEUE */
+    .col-queue{width:240px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:#fff;flex-shrink:0;}
+    .col-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .col-title{font-size:0.82rem;font-weight:700;}
+    .queue-search{padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .qsw{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;}
+    .qsw input{border:none;background:transparent;font-size:0.78rem;font-family:inherit;color:var(--text);outline:none;width:100%;}
+    .qsw i{color:var(--light);font-size:0.78rem;}
+    .queue-list{flex:1;overflow-y:auto;}
+    .queue-item{padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+    .queue-item:hover{background:#f9fafb;}
+    .queue-item.active{background:var(--primary-light);border-left:3px solid var(--primary);}
+    .qi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;}
+    .qi-name{font-size:0.82rem;font-weight:700;}
+    .qi-time{font-size:0.65rem;color:var(--muted);}
+    .qi-med{font-size:0.75rem;color:var(--muted);margin-bottom:6px;}
+    .pbadge{display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:20px;}
+    .ph{background:var(--amber-light);color:var(--amber);}
+    .pr{background:var(--green-light);color:var(--green);}
+    .pref{background:var(--primary-light);color:var(--primary);}
+
+    /* COL 2 — DOCUMENT */
+    .col-doc{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg);overflow:hidden;}
+    .doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .doc-label{font-size:0.78rem;font-weight:700;color:var(--muted);}
+    .doc-tools{display:flex;gap:6px;}
+    .dtb{background:none;border:1px solid var(--border);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s;}
+    .dtb:hover{background:var(--primary-light);color:var(--primary);border-color:var(--primary);}
+    .doc-viewer{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+    .rx-doc{background:#fff;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.15);width:100%;max-width:380px;padding:32px 28px;position:relative;transition:transform .3s;}
+    .rx-dh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--text);}
+    .rx-clinic{font-size:0.9rem;font-weight:800;}
+    .rx-csub{font-size:0.65rem;color:var(--muted);margin-top:2px;}
+    .rx-sym{font-size:2.5rem;font-weight:800;line-height:1;}
+    .rx-field{margin-bottom:12px;}
+    .rfl{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+    .rfv{font-size:0.85rem;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:4px;}
+    .rx-sig-box{background:#f9fafb;border-radius:6px;padding:10px 12px;margin-top:16px;}
+    .rx-sig-l{font-size:0.62rem;color:var(--muted);margin-bottom:4px;}
+    .rx-sig-v{font-family:cursive;font-size:1.2rem;}
+    .rx-stamp{position:absolute;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;border:3px solid rgba(26,111,196,.4);display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);}
+    .rx-stamp-txt{font-size:0.5rem;font-weight:700;color:rgba(26,111,196,.6);text-align:center;line-height:1.3;}
+    .doc-actions{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--border);background:#fff;flex-shrink:0;}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:9px;font-size:0.83rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
+    .btn-approve{background:var(--primary);color:#fff;flex:1;justify-content:center;}.btn-approve:hover{background:var(--primary-dark);}
+    .btn-deny{background:#fff;color:var(--red);border:1.5px solid var(--red);flex:1;justify-content:center;}.btn-deny:hover{background:var(--red-light);}
+    .btn-clarify{background:#fff;color:var(--muted);border:1.5px solid var(--border);padding:10px 14px;}.btn-clarify:hover{background:var(--bg);}
+    .empty-doc{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--light);}
+    .empty-doc i{font-size:3rem;margin-bottom:12px;opacity:.4;}
+    .empty-doc p{font-size:0.82rem;}
+
+    /* COL 3 — PATIENT + TABS */
+    .col-patient{width:320px;background:#fff;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+    .patient-hdr{padding:16px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .pat-av-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+    .pat-av{width:44px;height:44px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--primary);flex-shrink:0;}
+    .pat-name{font-size:0.95rem;font-weight:800;margin-bottom:2px;}
+    .pat-meta{font-size:0.7rem;color:var(--muted);}
+
+    /* AUDIT TABS */
+    .audit-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:#fafafa;}
+    .audit-tab{flex:1;padding:9px 4px;border:none;background:transparent;font-size:0.68rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;transition:all .15s;text-align:center;line-height:1.3;}
+    .audit-tab:hover{color:var(--primary);}
+    .audit-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#fff;}
+
+    /* AUDIT PANEL */
+    .audit-panel{flex:1;overflow-y:auto;padding:14px 16px;}
+    .panel-section{display:none;}
+    .panel-section.active{display:block;}
+
+    /* SHARED AUDIT STYLES */
+    .sec-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--light);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+    .ai{border-radius:9px;padding:12px 14px;margin-bottom:10px;border:1px solid transparent;}
+    .ai-danger{background:#fff5f5;border-color:#fecaca;}
+    .ai-ok{background:#f0fdf4;border-color:#bbf7d0;}
+    .ai-info{background:var(--primary-light);border-color:#bfdbfe;}
+    .ai-warn{background:var(--amber-light);border-color:#fde68a;}
+    .ai-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px;}
+    .ai-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;}
+    .aii-r{background:var(--red-light);color:var(--red);}
+    .aii-g{background:var(--green-light);color:var(--green);}
+    .aii-b{background:var(--primary-light);color:var(--primary);}
+    .aii-a{background:var(--amber-light);color:var(--amber);}
+    .aii-p{background:var(--purple-light);color:var(--purple);}
+    .ai-title{font-size:0.8rem;font-weight:700;margin-bottom:2px;}
+    .ai-desc{font-size:0.73rem;color:var(--muted);line-height:1.55;}
+    .ai-acts{display:flex;gap:10px;margin-top:8px;}
+    .ai-act{font-size:0.7rem;font-weight:700;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;}
+    .acr{color:var(--red);} .acb{color:var(--primary);} .acg{color:var(--green);}
+    .prog-wrap{height:5px;background:var(--border);border-radius:3px;margin-top:8px;}
+    .prog-bar{height:100%;border-radius:3px;}
+    .prog-lbl{font-size:0.68rem;font-weight:700;margin-top:4px;}
+
+    /* ALLERGY BOX */
+    .allergy-box{background:var(--red-light);border-radius:8px;padding:10px 12px;margin-bottom:12px;}
+    .allergy-title{font-size:0.72rem;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+    .allergy-item{font-size:0.8rem;font-weight:600;color:var(--red);margin-bottom:2px;}
+
+    /* MED LIST */
+    .med-item{display:flex;align-items:center;gap:7px;font-size:0.78rem;margin-bottom:6px;padding:6px 10px;background:#f9fafb;border-radius:7px;}
+    .med-item::before{content:'•';color:var(--primary);font-weight:700;}
+
+    /* DOSAGE TABLE */
+    .dosage-table{width:100%;border-collapse:collapse;font-size:0.78rem;margin-bottom:12px;}
+    .dosage-table th{background:#f9fafb;padding:7px 10px;text-align:left;font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+    .dosage-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+    .dosage-table tr:last-child td{border-bottom:none;}
+
+    /* APPROVAL CHECKLIST */
+    .check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:9px;margin-bottom:8px;background:#f9fafb;border:1px solid var(--border);}
+    .check-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;flex-shrink:0;margin-top:1px;}
+    .ci-pass{background:var(--green-light);color:var(--green);}
+    .ci-fail{background:var(--red-light);color:var(--red);}
+    .ci-warn{background:var(--amber-light);color:var(--amber);}
+    .check-label{font-size:0.8rem;font-weight:600;margin-bottom:2px;}
+    .check-sub{font-size:0.72rem;color:var(--muted);}
+    .approval-footer{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+    .approval-score{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+    .score-val{font-size:1.4rem;font-weight:800;}
+    .score-lbl{font-size:0.72rem;color:var(--muted);}
+    .score-bar-wrap{height:8px;background:var(--border);border-radius:4px;margin-bottom:12px;}
+    .score-bar{height:100%;border-radius:4px;transition:width .5s;}
+
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:var(--radius);padding:28px;width:460px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .modal-header h3{font-size:1rem;font-weight:700;}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;}
+    .modal-body{margin-bottom:20px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+    .fg{margin-bottom:14px;}
+    .fl{display:block;font-size:0.78rem;font-weight:600;margin-bottom:6px;}
+    .fc{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s;}
+    .fc:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+    .mbtn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:0.83rem;font-weight:600;cursor:pointer;font-family:inherit;border:none;}
+    .mbtn-p{background:var(--primary);color:#fff;}.mbtn-g{background:transparent;color:var(--muted);border:1px solid var(--border);}.mbtn-d{background:var(--red);color:#fff;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
+    .toast.show{display:flex;animation:su .3s ease;}
+    @keyframes su{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+    @media(max-width:1100px){.col-patient{display:none;}}
+    @media(max-width:800px){.col-queue{display:none;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fa-solid fa-pills"></i></div>
+    <div class="brand-text"><div class="bn">Central Pharmacy</div><div class="bs">Verified Provider #8821</div></div>
+  </div>
+  <button class="btn-new-rx" onclick="openModal('newRxModal')"><i class="fa-solid fa-plus"></i> New Prescription</button>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="pharmacist-portal.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+    <a class="nav-item" href="ph-inventory.html"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+    <a class="nav-item" href="ph-orders.html"><i class="fa-solid fa-file-prescription"></i> Orders</a>
+    <a class="nav-item" href="ph-reports.html"><i class="fa-solid fa-chart-line"></i> Reports</a>
+    <a class="nav-item" href="ph-customers.html"><i class="fa-solid fa-users"></i> Customers</a>
+    <a class="nav-item" href="ph-settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a class="nav-item" href="#" style="padding:7px 4px;font-size:0.8rem;"><i class="fa-solid fa-circle-question"></i> Support</a>
+    <a class="nav-item" href="login.html" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-shield-halved"></i> Security Status</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Prescription Verification Queue</div>
+      <span class="pending-badge" id="pendingCount">4 Pending</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="showToast('3 new alerts')"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
+      <div class="user-chip">
+        <div style="text-align:right;"><div class="uname">Dr. Sarah Miller</div><div class="urole">Lead Pharmacist</div></div>
+        <div class="user-av">SM</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="columns">
+
+    <!-- COL 1: QUEUE -->
+    <div class="col-queue">
+      <div class="col-hdr">
+        <span class="col-title">Queue</span>
+        <button class="icon-btn" onclick="showToast('Filter options')"><i class="fa-solid fa-sliders"></i></button>
+      </div>
+      <div class="queue-search">
+        <div class="qsw">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search patient name…" oninput="filterQueue(this.value)"/>
+        </div>
+      </div>
+      <div class="queue-list" id="queueList"></div>
+    </div>
+
+    <!-- COL 2: DOCUMENT VIEWER -->
+    <div class="col-doc">
+      <div class="doc-toolbar">
+        <span class="doc-label" id="docLabel">Select a prescription</span>
+        <div class="doc-tools">
+          <button class="dtb" onclick="zoomIn()" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+          <button class="dtb" onclick="zoomOut()" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+          <button class="dtb" onclick="rotateDoc()" title="Rotate"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+      </div>
+      <div class="doc-viewer" id="docViewer">
+        <div class="empty-doc"><i class="fa-solid fa-file-prescription"></i><p>Select a prescription from the queue</p></div>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-approve" onclick="approveRx()"><i class="fa-solid fa-circle-check"></i> Approve RX</button>
+        <button class="btn btn-deny" onclick="openModal('denyModal')"><i class="fa-solid fa-circle-xmark"></i> Deny</button>
+        <button class="btn btn-clarify" onclick="openModal('clarifyModal')" title="Request Clarification"><i class="fa-solid fa-comment-dots"></i></button>
+      </div>
+    </div>
+
+    <!-- COL 3: PATIENT + 4 AUDIT TABS -->
+    <div class="col-patient">
+      <!-- Patient header -->
+      <div class="patient-hdr">
+        <div class="pat-av-row">
+          <div class="pat-av"><i class="fa-solid fa-user"></i></div>
+          <div>
+            <div class="pat-name" id="patName">Select a patient</div>
+            <div class="pat-meta" id="patMeta">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 TABS -->
+      <div class="audit-tabs">
+        <button class="audit-tab active" onclick="switchAuditTab(this,'verification')">
+          <i class="fa-solid fa-file-prescription"></i><br/>Verification
+        </button>
+        <button class="audit-tab" onclick="switchAuditTab(this,'interactions')">
+          <i class="fa-solid fa-flask-vial"></i><br/>Interactions
+        </button>
+        <button class="audit-tab" onclick="switchAuditTab(this,'allergies')">
+          <i class="fa-solid fa-triangle-exclamation"></i><br/>Allergies
+        </button>
+        <button class="audit-tab" onclick="switchAuditTab(this,'dosage')">
+          <i class="fa-solid fa-shield-halved"></i><br/>Dosage
+        </button>
+      </div>
+
+      <!-- TAB PANELS -->
+      <div class="audit-panel">
+
+        <!-- TAB 1: PRESCRIPTION VERIFICATION -->
+        <div class="panel-section active" id="tab-verification">
+          <div class="sec-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary);"></i> Prescription Verification</div>
+          <div id="verificationContent">
+            <div style="text-align:center;padding:32px 0;color:var(--light);font-size:0.82rem;">Select a prescription to verify</div>
+          </div>
+        </div>
+
+        <!-- TAB 2: DRUG INTERACTION CHECKING -->
+        <div class="panel-section" id="tab-interactions">
+          <div class="sec-title"><i class="fa-solid fa-flask-vial" style="color:var(--purple);"></i> Drug Interaction Checking</div>
+          <div id="interactionContent">
+            <div style="text-align:center;padding:32px 0;color:var(--light);font-size:0.82rem;">Select a prescription to check interactions</div>
+          </div>
+        </div>
+
+        <!-- TAB 3: ALLERGY CONFLICT VALIDATION -->
+        <div class="panel-section" id="tab-allergies">
+          <div class="sec-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);"></i> Allergy Conflict Validation</div>
+          <div id="allergyContent">
+            <div style="text-align:center;padding:32px 0;color:var(--light);font-size:0.82rem;">Select a prescription to validate allergies</div>
+          </div>
+        </div>
+
+        <!-- TAB 4: DOSAGE SAFETY APPROVAL -->
+        <div class="panel-section" id="tab-dosage">
+          <div class="sec-title"><i class="fa-solid fa-shield-halved" style="color:var(--teal);"></i> Dosage Safety Approval</div>
+          <div id="dosageContent">
+            <div style="text-align:center;padding:32px 0;color:var(--light);font-size:0.82rem;">Select a prescription to review dosage</div>
+          </div>
+        </div>
+
+      </div><!-- end audit-panel -->
+    </div><!-- end col-patient -->
+
+  </div><!-- end columns -->
+</div><!-- end main -->
+
+<!-- DENY MODAL -->
+<div class="modal-overlay" id="denyModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Deny Prescription</h3><button class="modal-close" onclick="closeModal('denyModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Reason for Denial</label>
+        <select class="fc" id="denyReason">
+          <option>Drug-Allergy Conflict</option><option>Invalid Prescription</option>
+          <option>Forged / Suspicious Document</option><option>Dosage Exceeds Safe Limit</option>
+          <option>Drug Interaction Risk</option><option>Prescription Expired</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Additional Notes</label><textarea class="fc" rows="3" placeholder="Add clinical notes for the record…"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-g" onclick="closeModal('denyModal')">Cancel</button>
+      <button class="mbtn mbtn-d" onclick="confirmDeny()"><i class="fa-solid fa-xmark"></i> Confirm Denial</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLARIFY MODAL -->
+<div class="modal-overlay" id="clarifyModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Request Clarification</h3><button class="modal-close" onclick="closeModal('clarifyModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Contact Method</label>
+        <select class="fc"><option>Call Prescribing Doctor</option><option>SMS Patient</option><option>Email Clinic</option></select>
+      </div>
+      <div class="fg"><label class="fl">Clarification Needed</label><textarea class="fc" rows="3" placeholder="Describe what needs clarification…"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-g" onclick="closeModal('clarifyModal')">Cancel</button>
+      <button class="mbtn mbtn-p" onclick="closeModal('clarifyModal');showToast('Clarification request sent')"><i class="fa-solid fa-paper-plane"></i> Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW RX MODAL -->
+<div class="modal-overlay" id="newRxModal">
+  <div class="modal">
+    <div class="modal-header"><h3>New Prescription Entry</h3><button class="modal-close" onclick="closeModal('newRxModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg"><label class="fl">Patient Name</label><input class="fc" id="nrxPatient" placeholder="Full name"/></div>
+        <div class="fg"><label class="fl">Medication</label><input class="fc" id="nrxMed" placeholder="e.g. Amoxicillin 500mg"/></div>
+        <div class="fg"><label class="fl">Dosage</label><input class="fc" placeholder="e.g. 500mg BID x 7 days"/></div>
+        <div class="fg"><label class="fl">Priority</label>
+          <select class="fc" id="nrxPriority"><option value="pr">Routine</option><option value="ph">High Priority</option><option value="pref">Refill</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-g" onclick="closeModal('newRxModal')">Cancel</button>
+      <button class="mbtn mbtn-p" onclick="submitNewRx()"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script>
+/* ═══════════════════════════════════════
+   MOCK DATA — replace with:
+   fetch('api/pharmacist/queue.php').then(r=>r.json())
+═══════════════════════════════════════ */
+const QUEUE = [
+  {
+    id:'RX-9921', patient:'James Sullivan', med:'Amoxicillin 500mg (Tabs)', priority:'ph', time:'2m ago',
+    dob:'05/12/1982', age:41, gender:'Male', doctor:'Dr. A. Boateng', clinic:'Northside General Clinic',
+    allergies:['Penicillin','Sulfa Drugs'],
+    activeMeds:['Atorvastatin 20mg','Lisinopril 5mg'],
+    prescribed:{ drug:'Amoxicillin 500mg', class:'Penicillin-type Antibiotic', form:'Tablet', route:'Oral', freq:'BID (Twice Daily)', duration:'7 Days', qty:14, refills:0 },
+    interactions:[
+      { severity:'moderate', drug1:'Amoxicillin', drug2:'Atorvastatin', effect:'May slightly increase Atorvastatin plasma levels.', recommendation:'Monitor for myopathy symptoms. No dose adjustment required.' },
+      { severity:'low',      drug1:'Amoxicillin', drug2:'Lisinopril',   effect:'No significant pharmacokinetic interaction expected.', recommendation:'No action required. Continue standard monitoring.' },
+    ],
+    dosage:{ prescribed:'500mg', frequency:'Twice Daily (BID)', duration:'7 Days', maxDaily:'1000mg', safeRange:'250mg–1000mg', indication:'Bacterial Infection', score:72, checks:[
+      { label:'Dose within safe range',       status:'pass', note:'500mg is within 250–1000mg range' },
+      { label:'Frequency appropriate',        status:'pass', note:'BID is standard for this indication' },
+      { label:'Duration appropriate',         status:'pass', note:'7 days is guideline-aligned' },
+      { label:'Renal function considered',    status:'warn', note:'Check renal function — reduce dose if CrCl < 30' },
+      { label:'No allergy-class conflict',    status:'fail', note:'Patient allergic to Penicillin class — CRITICAL' },
+    ]},
+  },
+  {
+    id:'RX-9920', patient:'Elena Rodriguez', med:'Lisinopril 10mg (Caps)', priority:'pr', time:'15m ago',
+    dob:'09/30/1988', age:35, gender:'Female', doctor:'Dr. K. Mensah', clinic:'East Ridge Medical Centre',
+    allergies:['Sulfa Drugs'],
+    activeMeds:['Metoprolol 25mg','Amlodipine 5mg'],
+    prescribed:{ drug:'Lisinopril 10mg', class:'ACE Inhibitor', form:'Capsule', route:'Oral', freq:'Once Daily (OD)', duration:'Ongoing', qty:30, refills:3 },
+    interactions:[
+      { severity:'low', drug1:'Lisinopril', drug2:'Metoprolol',  effect:'Additive blood pressure lowering. Beneficial in hypertension.', recommendation:'Monitor BP. Combination is commonly used and generally safe.' },
+      { severity:'low', drug1:'Lisinopril', drug2:'Amlodipine',  effect:'Complementary antihypertensive mechanisms.', recommendation:'Standard combination. No significant adverse interaction.' },
+    ],
+    dosage:{ prescribed:'10mg', frequency:'Once Daily (OD)', duration:'Ongoing', maxDaily:'40mg', safeRange:'5mg–40mg', indication:'Hypertension', score:98, checks:[
+      { label:'Dose within safe range',    status:'pass', note:'10mg is within 5–40mg range' },
+      { label:'Frequency appropriate',     status:'pass', note:'OD is standard for Lisinopril' },
+      { label:'Duration appropriate',      status:'pass', note:'Ongoing is appropriate for hypertension' },
+      { label:'Renal function considered', status:'pass', note:'No renal impairment noted in records' },
+      { label:'No allergy-class conflict', status:'pass', note:'Patient not allergic to ACE Inhibitors' },
+    ]},
+  },
+  {
+    id:'RX-9919', patient:'Michael Chang', med:'Metformin 850mg (Tabs)', priority:'pr', time:'24m ago',
+    dob:'03/14/1975', age:49, gender:'Male', doctor:'Dr. A. Frimpong', clinic:'Central Medical Clinic',
+    allergies:[],
+    activeMeds:['Glipizide 5mg','Atorvastatin 40mg'],
+    prescribed:{ drug:'Metformin 850mg', class:'Biguanide', form:'Tablet', route:'Oral', freq:'BID with meals', duration:'Ongoing', qty:60, refills:5 },
+    interactions:[
+      { severity:'moderate', drug1:'Metformin', drug2:'Glipizide', effect:'Additive hypoglycemic effect. Risk of hypoglycemia with combination.', recommendation:'Monitor blood glucose closely. Educate patient on hypoglycemia signs.' },
+    ],
+    dosage:{ prescribed:'850mg', frequency:'Twice Daily (BID) with meals', duration:'Ongoing', maxDaily:'2550mg', safeRange:'500mg–2550mg', indication:'Type 2 Diabetes', score:94, checks:[
+      { label:'Dose within safe range',    status:'pass', note:'850mg is within 500–2550mg range' },
+      { label:'Frequency appropriate',     status:'pass', note:'BID with meals reduces GI side effects' },
+      { label:'Duration appropriate',      status:'pass', note:'Ongoing appropriate for T2DM management' },
+      { label:'Renal function considered', status:'warn', note:'Contraindicated if eGFR < 30. Verify labs.' },
+      { label:'No allergy-class conflict', status:'pass', note:'No known allergies documented' },
+    ]},
+  },
+  {
+    id:'RX-9918', patient:"Sarah O'Connor", med:'Albuterol Inhaler (HFA)', priority:'pref', time:'1h ago',
+    dob:'07/22/1990', age:33, gender:'Female', doctor:'Dr. Y. Darko', clinic:'West Accra Respiratory Clinic',
+    allergies:['Aspirin'],
+    activeMeds:['Montelukast 10mg','Fluticasone Inhaler'],
+    prescribed:{ drug:'Albuterol HFA', class:'Short-Acting Beta Agonist (SABA)', form:'Inhaler', route:'Inhalation', freq:'PRN (as needed)', duration:'Ongoing', qty:1, refills:1 },
+    interactions:[
+      { severity:'low', drug1:'Albuterol', drug2:'Montelukast',       effect:'Complementary bronchodilator and anti-inflammatory effects.', recommendation:'Standard asthma combination. No adjustments needed.' },
+      { severity:'low', drug1:'Albuterol', drug2:'Fluticasone Inhaler',effect:'Commonly used together. Fluticasone reduces need for rescue inhaler.', recommendation:'Monitor frequency of Albuterol use as an indicator of asthma control.' },
+    ],
+    dosage:{ prescribed:'90mcg/actuation', frequency:'PRN (2 puffs as needed)', duration:'Ongoing', maxDaily:'8 puffs', safeRange:'90–180mcg per use', indication:'Asthma / Bronchospasm', score:100, checks:[
+      { label:'Dose within safe range',    status:'pass', note:'Standard 90mcg/puff is appropriate' },
+      { label:'Frequency appropriate',     status:'pass', note:'PRN use is standard for rescue inhaler' },
+      { label:'Duration appropriate',      status:'pass', note:'Ongoing appropriate for asthma management' },
+      { label:'Renal function considered', status:'pass', note:'No renal dosing adjustment needed' },
+      { label:'No allergy-class conflict', status:'pass', note:'Aspirin allergy does not affect Albuterol' },
+    ]},
+  },
+];
+
+const PLBL = { ph:'⚠ High Priority', pr:'Routine', pref:'Refill' };
+const PCLS = { ph:'ph', pr:'pr', pref:'pref' };
+const SEV  = { moderate:{ cls:'aii-a', label:'Moderate', color:'var(--amber)' }, low:{ cls:'aii-g', label:'Low', color:'var(--green)' }, high:{ cls:'aii-r', label:'High', color:'var(--red)' } };
+
+let selectedId = null, docZoom = 1, docRot = 0, queueData = [...QUEUE];
+
+/* ── RENDER QUEUE ── */
+function renderQueue(list) {
+  document.getElementById('queueList').innerHTML = list.map(rx => `
+    <div class="queue-item ${selectedId===rx.id?'active':''}" onclick="selectRx('${rx.id}')">
+      <div class="qi-top"><span class="qi-name">${rx.patient}</span><span class="qi-time">${rx.time}</span></div>
+      <div class="qi-med">${rx.med}</div>
+      <span class="pbadge ${PCLS[rx.priority]}">${PLBL[rx.priority]}</span>
+    </div>`).join('') || '<div style="padding:24px;text-align:center;font-size:0.82rem;color:var(--muted);">Queue is empty</div>';
+  document.getElementById('pendingCount').textContent = `${list.length} Pending`;
+}
+
+/* ── SELECT RX ── */
+function selectRx(id) {
+  selectedId = id;
+  const rx = QUEUE.find(r => r.id === id); if (!rx) return;
+  renderQueue(queueData);
+  document.getElementById('docLabel').textContent = `SCANNED DOCUMENT (${rx.id})`;
+  renderDoc(rx);
+  document.getElementById('patName').textContent = rx.patient;
+  document.getElementById('patMeta').textContent = `DOB: ${rx.dob} (${rx.age} Yrs) • ${rx.gender}`;
+  renderVerification(rx);
+  renderInteractions(rx);
+  renderAllergies(rx);
+  renderDosage(rx);
+}
+
+/* ── RENDER DOCUMENT ── */
+function renderDoc(rx) {
+  docZoom=1; docRot=0;
+  document.getElementById('docViewer').innerHTML = `
+    <div class="rx-doc" id="rxDoc">
+      <div class="rx-dh">
+        <div><div class="rx-clinic">${rx.clinic.toUpperCase()}</div><div class="rx-csub">${rx.doctor}</div></div>
+        <div class="rx-sym">&#8478;</div>
+      </div>
+      <div class="rx-field"><div class="rfl">Patient</div><div class="rfv">${rx.patient}</div></div>
+      <div class="rx-field"><div class="rfl">DOB</div><div class="rfv">${rx.dob}</div></div>
+      <div class="rx-field"><div class="rfl">Medication</div><div class="rfv" style="color:var(--primary);font-size:1rem;">${rx.med}</div></div>
+      <div class="rx-field"><div class="rfl">Sig</div><div class="rfv">${rx.prescribed.freq} · ${rx.prescribed.duration}</div></div>
+      <div class="rx-field"><div class="rfl">Qty / Refills</div><div class="rfv">#${rx.prescribed.qty} · ${rx.prescribed.refills} Refill(s)</div></div>
+      <div class="rx-sig-box"><div class="rx-sig-l">Prescriber Signature</div><div class="rx-sig-v">${rx.doctor}</div></div>
+      <div class="rx-stamp"><div class="rx-stamp-txt">VERIFIED<br/>CLINIC</div></div>
+    </div>`;
+}
+
+/* ── TAB 1: VERIFICATION ── */
+function renderVerification(rx) {
+  const p = rx.prescribed;
+  const hasDanger = rx.allergies.length > 0 && (p.class.toLowerCase().includes('penicillin') || p.drug.toLowerCase().includes('amoxicillin'));
+  document.getElementById('verificationContent').innerHTML = `
+    ${hasDanger ? `<div class="ai ai-danger" style="margin-bottom:12px;">
+      <div class="ai-row"><div class="ai-icon aii-r"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div><div class="ai-title">⚠ Allergy Conflict Detected</div><div class="ai-desc">Prescriber should be notified before dispensing.</div></div></div>
+    </div>` : ''}
+    <div class="ai ai-ok" style="margin-bottom:10px;">
+      <div class="ai-row"><div class="ai-icon aii-g"><i class="fa-solid fa-file-prescription"></i></div>
+      <div><div class="ai-title">Prescription Authentic</div><div class="ai-desc">Document verified — issued by licensed provider ${rx.doctor}.</div></div></div>
+    </div>
+    <table class="dosage-table">
+      <tr><th>Field</th><th>Detail</th></tr>
+      <tr><td>Drug</td><td><strong>${p.drug}</strong></td></tr>
+      <tr><td>Class</td><td>${p.class}</td></tr>
+      <tr><td>Form</td><td>${p.form}</td></tr>
+      <tr><td>Route</td><td>${p.route}</td></tr>
+      <tr><td>Frequency</td><td>${p.freq}</td></tr>
+      <tr><td>Duration</td><td>${p.duration}</td></tr>
+      <tr><td>Quantity</td><td>#${p.qty}</td></tr>
+      <tr><td>Refills</td><td>${p.refills}</td></tr>
+      <tr><td>Prescriber</td><td>${rx.doctor}</td></tr>
+      <tr><td>Clinic</td><td>${rx.clinic}</td></tr>
+    </table>`;
+}
+
+/* ── TAB 2: DRUG INTERACTIONS ── */
+function renderInteractions(rx) {
+  const hasMod = rx.interactions.some(i => i.severity === 'moderate' || i.severity === 'high');
+  document.getElementById('interactionContent').innerHTML = `
+    <div class="ai ${hasMod?'ai-warn':'ai-ok'}" style="margin-bottom:12px;">
+      <div class="ai-row">
+        <div class="ai-icon ${hasMod?'aii-a':'aii-g'}"><i class="fa-solid ${hasMod?'fa-flask-vial':'fa-circle-check'}"></i></div>
+        <div><div class="ai-title">${hasMod?`${rx.interactions.filter(i=>i.severity==='moderate').length} Moderate Interaction(s) Found`:'No Significant Interactions'}</div>
+        <div class="ai-desc">Checked against ${rx.activeMeds.length} active medication(s).</div></div>
+      </div>
+    </div>
+    ${rx.interactions.map(i => {
+      const s = SEV[i.severity] || SEV.low;
+      return `<div class="ai ${i.severity==='high'?'ai-danger':i.severity==='moderate'?'ai-warn':'ai-ok'}" style="margin-bottom:10px;">
+        <div class="ai-row">
+          <div class="ai-icon ${s.cls}"><i class="fa-solid fa-flask-vial"></i></div>
+          <div>
+            <div class="ai-title">${i.drug1} ↔ ${i.drug2} <span style="font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:10px;background:${s.color};color:#fff;margin-left:4px;">${s.label}</span></div>
+            <div class="ai-desc" style="margin-bottom:6px;">${i.effect}</div>
+            <div style="font-size:0.73rem;color:var(--primary);font-weight:600;"><i class="fa-solid fa-lightbulb"></i> ${i.recommendation}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+    <div class="ai ai-info">
+      <div class="ai-row"><div class="ai-icon aii-b"><i class="fa-solid fa-database"></i></div>
+      <div><div class="ai-title">Database Source</div><div class="ai-desc">Interactions checked against PharmNet Ghana Drug Interaction Database v4.2.</div></div></div>
+    </div>`;
+}
+
+/* ── TAB 3: ALLERGY VALIDATION ── */
+function renderAllergies(rx) {
+  const p = rx.prescribed;
+  const classConflict = (rx.allergies.includes('Penicillin') && p.class.toLowerCase().includes('penicillin'));
+  const aspConflict   = (rx.allergies.includes('Aspirin') && p.class.toLowerCase().includes('nsaid'));
+  const hasConflict   = classConflict || aspConflict;
+
+  document.getElementById('allergyContent').innerHTML = `
+    ${rx.allergies.length ? `
+      <div class="allergy-box">
+        <div class="allergy-title">Documented Allergies (${rx.allergies.length})</div>
+        ${rx.allergies.map(a=>`<div class="allergy-item"><i class="fa-solid fa-circle-exclamation" style="margin-right:5px;"></i>${a}</div>`).join('')}
+      </div>` : `
+      <div class="ai ai-ok" style="margin-bottom:12px;">
+        <div class="ai-row"><div class="ai-icon aii-g"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="ai-title">No Known Allergies</div><div class="ai-desc">No allergies documented for this patient.</div></div></div>
+      </div>`
+    }
+    ${hasConflict ? `
+      <div class="ai ai-danger">
+        <div class="ai-row"><div class="ai-icon aii-r"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div>
+          <div class="ai-title">CRITICAL — Drug-Allergy Conflict</div>
+          <div class="ai-desc">${p.drug} belongs to the ${p.class}. Patient has a documented severe allergy to Penicillin. <strong>Do NOT dispense without physician override.</strong></div>
+        </div></div>
+        <div class="ai-acts">
+          <button class="ai-act acr" onclick="showToast('Override logged — physician contacted','warn')">Override Warning</button>
+          <button class="ai-act acb" onclick="showToast('Opening allergy history…')">View Allergy History</button>
+        </div>
+      </div>` : rx.allergies.length ? `
+      <div class="ai ai-ok">
+        <div class="ai-row"><div class="ai-icon aii-g"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="ai-title">No Allergy Conflict</div><div class="ai-desc">Prescribed drug class (${p.class}) does not match any documented patient allergies.</div></div></div>
+      </div>` : ''
+    }
+    <div class="ai ai-info" style="margin-top:10px;">
+      <div class="ai-row"><div class="ai-icon aii-b"><i class="fa-solid fa-pills"></i></div>
+      <div><div class="ai-title">Prescribed Drug Class</div><div class="ai-desc">${p.drug} · ${p.class} · ${p.route}</div></div></div>
+    </div>`;
+}
+
+/* ── TAB 4: DOSAGE SAFETY ── */
+function renderDosage(rx) {
+  const d = rx.dosage;
+  const scoreColor = d.score >= 90 ? 'var(--green)' : d.score >= 70 ? 'var(--amber)' : 'var(--red)';
+  const scoreLabel = d.score >= 90 ? 'Safe to Dispense' : d.score >= 70 ? 'Review Required' : 'Do Not Dispense';
+  const checks = d.checks.map(c => `
+    <div class="check-item">
+      <div class="check-icon ${c.status==='pass'?'ci-pass':c.status==='fail'?'ci-fail':'ci-warn'}">
+        <i class="fa-solid ${c.status==='pass'?'fa-check':c.status==='fail'?'fa-xmark':'fa-minus'}"></i>
+      </div>
+      <div>
+        <div class="check-label">${c.label}</div>
+        <div class="check-sub">${c.note}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dosageContent').innerHTML = `
+    <table class="dosage-table" style="margin-bottom:12px;">
+      <tr><th>Parameter</th><th>Value</th></tr>
+      <tr><td>Prescribed Dose</td><td><strong>${d.prescribed}</strong></td></tr>
+      <tr><td>Frequency</td><td>${d.frequency}</td></tr>
+      <tr><td>Duration</td><td>${d.duration}</td></tr>
+      <tr><td>Max Daily Dose</td><td>${d.maxDaily}</td></tr>
+      <tr><td>Safe Range</td><td>${d.safeRange}</td></tr>
+      <tr><td>Indication</td><td>${d.indication}</td></tr>
+    </table>
+    <div class="sec-title">Safety Checklist</div>
+    ${checks}
+    <div class="approval-footer">
+      <div class="approval-score">
+        <div><div class="score-lbl">Safety Score</div><div class="score-val" style="color:${scoreColor};">${d.score}%</div></div>
+        <span style="font-size:0.72rem;font-weight:700;padding:4px 10px;border-radius:20px;background:${scoreColor};color:#fff;">${scoreLabel}</span>
+      </div>
+      <div class="score-bar-wrap"><div class="score-bar" style="width:${d.score}%;background:${scoreColor};"></div></div>
+      ${d.score < 90 ? `<div style="font-size:0.75rem;color:var(--red);font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> Review flagged items before approving.</div>` : `<div style="font-size:0.75rem;color:var(--green);font-weight:600;"><i class="fa-solid fa-circle-check"></i> All safety checks passed. Safe to dispense.</div>`}
+    </div>`;
+}
+
+/* ── TAB SWITCH ── */
+function switchAuditTab(btn, tabId) {
+  document.querySelectorAll('.audit-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+/* ── DOCUMENT CONTROLS ── */
+function zoomIn()    { docZoom = Math.min(docZoom + .15, 2);  applyT(); }
+function zoomOut()   { docZoom = Math.max(docZoom - .15, .5); applyT(); }
+function rotateDoc() { docRot  = (docRot + 90) % 360;         applyT(); }
+function applyT()    { const d = document.getElementById('rxDoc'); if (d) d.style.transform = `scale(${docZoom}) rotate(${docRot}deg)`; }
+
+/* ── QUEUE FILTER ── */
+function filterQueue(q) {
+  queueData = q ? QUEUE.filter(rx => rx.patient.toLowerCase().includes(q.toLowerCase()) || rx.med.toLowerCase().includes(q.toLowerCase())) : [...QUEUE];
+  renderQueue(queueData);
+}
+
+/* ── APPROVE ── */
+function approveRx() {
+  if (!selectedId) { showToast('Select a prescription first', 'warn'); return; }
+  const rx = QUEUE.find(r => r.id === selectedId);
+  if (rx && rx.dosage.score < 90) { showToast('Safety score too low — review required before approving', 'warn'); return; }
+  removeRx(selectedId);
+  showToast(`✓ Prescription ${selectedId} approved and queued for dispensing`);
+}
+
+/* ── DENY ── */
+function confirmDeny() {
+  if (!selectedId) { closeModal('denyModal'); return; }
+  const reason = document.getElementById('denyReason').value;
+  removeRx(selectedId);
+  closeModal('denyModal');
+  showToast(`Prescription denied — ${reason}`, 'warn');
+}
+
+/* ── REMOVE FROM QUEUE ── */
+function removeRx(id) {
+  const idx = QUEUE.findIndex(r => r.id === id);
+  if (idx > -1) QUEUE.splice(idx, 1);
+  queueData = [...QUEUE]; selectedId = null; renderQueue(queueData);
+  document.getElementById('docViewer').innerHTML = '<div class="empty-doc"><i class="fa-solid fa-file-prescription"></i><p>Select a prescription from the queue</p></div>';
+  document.getElementById('docLabel').textContent = 'Select a prescription';
+  document.getElementById('patName').textContent = 'Select a patient';
+  document.getElementById('patMeta').textContent = '—';
+  ['verificationContent','interactionContent','allergyContent','dosageContent'].forEach(id => {
+    document.getElementById(id).innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--light);font-size:0.82rem;">Select a prescription from the queue</div>`;
+  });
+}
+
+/* ── NEW RX ── */
+function submitNewRx() {
+  const p = document.getElementById('nrxPatient').value.trim();
+  const m = document.getElementById('nrxMed').value.trim();
+  if (!p || !m) { showToast('Please fill required fields', 'warn'); return; }
+  const newId = `RX-${9917 - QUEUE.length}`;
+  QUEUE.unshift({
+    id:newId, patient:p, med:m, priority:document.getElementById('nrxPriority').value,
+    time:'Just now', dob:'—', age:'—', gender:'—', doctor:'—', clinic:'—',
+    allergies:[], activeMeds:[], interactions:[],
+    prescribed:{ drug:m, class:'Unknown', form:'—', route:'—', freq:'—', duration:'—', qty:0, refills:0 },
+    dosage:{ prescribed:'—', frequency:'—', duration:'—', maxDaily:'—', safeRange:'—', indication:'—', score:0, checks:[] }
+  });
+  queueData = [...QUEUE]; renderQueue(queueData);
+  closeModal('newRxModal');
+  showToast(`New prescription for ${p} added to queue`);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let _t;
+function showToast(msg, type = 'success') {
+  clearTimeout(_t);
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').style.color = type === 'warn' ? '#fbbf24' : type === 'error' ? '#f87171' : '#4ade80';
+  t.classList.add('show');
+  _t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ── INIT ── */
+renderQueue(QUEUE);
+setTimeout(() => selectRx(QUEUE[0].id), 300);
+</script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Shopping Cart – MedTrust Systems</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#F5F5F5;--card:#fff;
+      --primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
+      --green:#16a34a;--green-light:#dcfce7;
+      --amber:#d97706;--amber-light:#fef9c3;
+      --red:#dc2626;--red-light:#fee2e2;
+      --text:#111827;--muted:#6B7280;--light:#9CA3AF;
+      --border:#E5E7EB;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+    /* ── TOPNAV ── */
+    .topnav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;height:54px;gap:24px;position:sticky;top:0;z-index:100;}
+    .nav-brand{font-size:1rem;font-weight:800;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:7px;}
+    .nav-links{display:flex;align-items:center;gap:2px;}
+    .nav-link{padding:5px 12px;border-radius:8px;font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;}
+    .nav-link:hover{background:var(--primary-light);color:var(--primary);}
+    .nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px;}
+    .cart-count{position:absolute;top:-2px;right:-4px;background:var(--primary);color:#fff;font-size:0.58rem;font-weight:700;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;}
+    .btn-signin{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
+    .btn-signin:hover{background:var(--primary-dark);}
+
+    /* ── PAGE ── */
+    .page{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:32px 24px;}
+    .page-title{font-size:1.6rem;font-weight:800;margin-bottom:6px;}
+    .page-sub{font-size:0.82rem;color:var(--muted);margin-bottom:28px;}
+
+    /* ── LAYOUT ── */
+    .cart-layout{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:flex-start;}
+
+    /* ── CARD ── */
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:0;}
+
+    /* ── CART ITEM ── */
+    .cart-item{display:flex;align-items:flex-start;gap:16px;padding:20px;border-bottom:1px solid var(--border);transition:background .15s;}
+    .cart-item:last-child{border-bottom:none;}
+    .cart-item:hover{background:#fafafa;}
+    .item-img{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f3f4f6;flex-shrink:0;}
+    .item-body{flex:1;}
+    .item-name-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+    .item-name{font-size:0.92rem;font-weight:700;}
+    .rx-badge{background:var(--red);color:#fff;font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em;flex-shrink:0;}
+    .medical-badge{background:var(--primary-light);color:var(--primary);font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em;flex-shrink:0;}
+    .otc-badge{background:var(--green-light);color:var(--green);font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+    .item-sub{font-size:0.75rem;color:var(--muted);margin-bottom:10px;}
+
+    /* QTY CONTROL */
+    .qty-row{display:flex;align-items:center;gap:12px;}
+    .qty-ctrl{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
+    .qty-btn{width:30px;height:30px;border:none;background:#fff;cursor:pointer;font-size:0.9rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .15s;}
+    .qty-btn:hover{background:var(--primary-light);color:var(--primary);}
+    .qty-val{width:36px;text-align:center;font-size:0.85rem;font-weight:700;border:none;outline:none;font-family:inherit;border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);}
+    .remove-btn{background:none;border:none;cursor:pointer;font-size:0.78rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px;font-family:inherit;padding:0;transition:color .15s;}
+    .remove-btn:hover{color:var(--red);}
+    .item-price{font-size:1rem;font-weight:800;color:var(--primary);flex-shrink:0;white-space:nowrap;}
+
+    /* RX NOTICE */
+    .rx-notice{background:var(--primary-light);border-radius:8px;padding:9px 12px;display:flex;align-items:flex-start;gap:8px;margin-top:10px;}
+    .rx-notice i{color:var(--primary);margin-top:1px;flex-shrink:0;font-size:0.82rem;}
+    .rx-notice p{font-size:0.73rem;color:var(--primary);line-height:1.5;}
+
+    /* CART ACTIONS */
+    .cart-actions{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border);background:#fafafa;}
+    .btn-continue{background:none;border:none;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px;font-family:inherit;padding:0;}
+    .btn-continue:hover{text-decoration:underline;}
+    .btn-clear{background:none;border:none;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--muted);font-family:inherit;padding:0;}
+    .btn-clear:hover{color:var(--red);}
+
+    /* ── ORDER SUMMARY ── */
+    .summary-title{font-size:1rem;font-weight:800;padding:18px 20px;border-bottom:1px solid var(--border);}
+    .summary-body{padding:18px 20px;}
+    .summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.83rem;}
+    .summary-row.total-row{margin-top:4px;padding-top:12px;border-top:2px solid var(--border);}
+    .total-label{font-size:0.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+    .total-val{font-size:1.4rem;font-weight:800;color:var(--primary);}
+    .free-tag{color:var(--green);font-weight:700;}
+    .btn-checkout{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;transition:background .2s;}
+    .btn-checkout:hover{background:var(--primary-dark);}
+    .secure-note{display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.72rem;color:var(--muted);margin-top:8px;}
+    .secure-note i{color:var(--green);}
+
+    /* PROMO CODE */
+    .promo-wrap{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+    .promo-input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.82rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s;}
+    .promo-input:focus{border-color:var(--primary);}
+    .promo-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
+    .promo-btn:hover{background:var(--primary-dark);}
+
+    /* TRUST BADGES */
+    .trust-badges{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+    .trust-badge{display:flex;align-items:center;gap:7px;padding:8px 10px;background:#fafafa;border-radius:8px;border:1px solid var(--border);}
+    .trust-badge i{font-size:0.9rem;color:var(--primary);}
+    .trust-badge-txt{font-size:0.68rem;font-weight:600;color:var(--muted);}
+
+    /* ── FREQUENTLY BOUGHT TOGETHER ── */
+    .section-eyebrow{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:6px;}
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .section-title{font-size:1.1rem;font-weight:800;}
+    .view-all-link{font-size:0.8rem;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px;}
+    .view-all-link:hover{text-decoration:underline;}
+    .fbt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+    .fbt-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+    .fbt-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+    .fbt-img{width:100%;height:120px;object-fit:cover;background:#f3f4f6;}
+    .fbt-body{padding:10px 12px;}
+    .fbt-name{font-size:0.8rem;font-weight:700;margin-bottom:2px;}
+    .fbt-sub{font-size:0.68rem;color:var(--muted);margin-bottom:8px;}
+    .fbt-footer{display:flex;justify-content:space-between;align-items:center;}
+    .fbt-price{font-size:0.88rem;font-weight:800;color:var(--text);}
+    .fbt-add-btn{width:28px;height:28px;border-radius:50%;background:var(--primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;transition:background .2s;}
+    .fbt-add-btn:hover{background:var(--primary-dark);}
+
+    /* EMPTY STATE */
+    .empty-cart{text-align:center;padding:60px 20px;}
+    .empty-cart i{font-size:3rem;color:var(--light);margin-bottom:16px;opacity:.5;}
+    .empty-cart h3{font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+    .empty-cart p{font-size:0.82rem;color:var(--muted);margin-bottom:20px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
+    .toast.show{display:flex;animation:su .3s ease;}
+    @keyframes su{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+    /* FOOTER */
+    footer{background:#fff;border-top:1px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:auto;}
+    .footer-brand{font-size:0.85rem;font-weight:700;margin-bottom:2px;}
+    .footer-copy{font-size:0.7rem;color:var(--muted);}
+    .footer-links{display:flex;gap:18px;}
+    .footer-links a{font-size:0.72rem;color:var(--muted);text-decoration:none;}
+    .footer-links a:hover{color:var(--primary);}
+
+    /* STRIKETHROUGH */
+    .strike{text-decoration:line-through;color:var(--muted);font-size:0.78rem;margin-right:4px;}
+
+    @media(max-width:900px){.cart-layout{grid-template-columns:1fr;}.fbt-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:600px){.fbt-grid{grid-template-columns:1fr 1fr;}.cart-item{flex-wrap:wrap;}}
+  </style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <a class="nav-brand" href="marketplace.html"><i class="fa-solid fa-pills"></i> MedTrust Systems</a>
+  <div class="nav-links">
+    <a class="nav-link" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="prescription.html">Prescriptions</a>
+    <a class="nav-link" href="#">Pharmacies</a>
+    <a class="nav-link" href="#">Insurance</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn" onclick="showToast('Notifications')">
+      <i class="fa-solid fa-bell"></i>
+    </button>
+    <button class="icon-btn" onclick="showToast('Cart has ' + CART.length + ' items')">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="cart-count" id="cartCountBadge">3</span>
+    </button>
+    <button class="btn-signin" onclick="window.location='login.html'">Sign In</button>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="page-title">Your Shopping Cart</div>
+  <div class="page-sub">Review your medical supplies and prescriptions before proceeding.</div>
+
+  <div class="cart-layout">
+
+    <!-- LEFT: CART ITEMS -->
+    <div>
+      <div class="card" id="cartCard">
+        <div id="cartItems"></div>
+        <div class="cart-actions">
+          <button class="btn-continue" onclick="window.location='marketplace-landing.html'">
+            <i class="fa-solid fa-arrow-left"></i> Continue Shopping
+          </button>
+          <button class="btn-clear" onclick="clearCart()">Clear All Cart</button>
+        </div>
+      </div>
+
+      <!-- FREQUENTLY BOUGHT TOGETHER -->
+      <div style="margin-top:32px;">
+        <div class="section-eyebrow">ENHANCE YOUR CARE</div>
+        <div class="section-header">
+          <div class="section-title">Frequently Bought Together</div>
+          <a class="view-all-link" href="marketplace-landing.html">View Marketplace <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+        </div>
+        <div class="fbt-grid" id="fbtGrid"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div>
+      <div class="card" style="position:sticky;top:70px;">
+        <div class="summary-title">Order Summary</div>
+        <div class="summary-body">
+          <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+          <div class="summary-row"><span>Shipping</span><span class="free-tag">Free</span></div>
+          <div class="summary-row"><span>Estimated Tax</span><span id="taxAmt">$0.00</span></div>
+          <div class="summary-row" id="discountRow" style="display:none;">
+            <span style="color:var(--green);">Promo Discount</span>
+            <span style="color:var(--green);" id="discountAmt">-$0.00</span>
+          </div>
+          <div class="summary-row total-row">
+            <div>
+              <div class="total-label">Total Amount</div>
+            </div>
+            <div class="total-val" id="totalAmt">$0.00</div>
+          </div>
+
+          <button class="btn-checkout" onclick="window.location='payment-checkout.html'">
+            Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <div class="secure-note"><i class="fa-solid fa-lock"></i> Secure HIPAA Compliant Checkout</div>
+
+          <!-- PROMO CODE -->
+          <div class="promo-wrap">
+            <input class="promo-input" id="promoInput" placeholder="Enter code" onkeydown="if(event.key==='Enter')applyPromo()"/>
+            <button class="promo-btn" onclick="applyPromo()">Apply</button>
+          </div>
+
+          <!-- TRUST BADGES -->
+          <div class="trust-badges">
+            <div class="trust-badge"><i class="fa-solid fa-pills"></i><div class="trust-badge-txt">Authentic<br/>Meds Only</div></div>
+            <div class="trust-badge"><i class="fa-solid fa-truck"></i><div class="trust-badge-txt">Express<br/>Delivery</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">MedTrust Systems</div>
+    <div class="footer-copy">© 2024 MedTrust Systems. HIPAA Compliant &amp; Secure.</div>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">FDA Notices</a>
+    <a href="#">Contact Support</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   MOCK DATA — replace with fetch('api/cart.php')
+═══════════════════════════════════════════════════ */
+const CART = [
+  {
+    id: 1,
+    name: 'Atorvastatin (20mg)',
+    sub: 'Quantity: 30 Tablets · Refillable: Yes',
+    price: 14.50,
+    qty: 1,
+    img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=160&h=160&fit=crop',
+    badge: 'rx',
+    rxNotice: true,
+  },
+  {
+    id: 2,
+    name: 'Digital Pulse Oximeter',
+    sub: 'Model: Pro-Track V2 · Warranty Included',
+    price: 45.00,
+    qty: 1,
+    img: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=160&h=160&fit=crop',
+    badge: 'medical',
+    rxNotice: false,
+  },
+  {
+    id: 3,
+    name: 'Immune Booster Pack',
+    sub: '30-Day Supply · Vitamin C + Zinc Complex',
+    price: 19.99,
+    qty: 2,
+    img: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=160&h=160&fit=crop',
+    badge: 'otc',
+    rxNotice: false,
+  },
+];
+
+const FBT = [
+  { name:'7-Day Pill Organizer',    sub:'Large capacity, BPA-free',          price:'$12.99', img:'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&h=240&fit=crop' },
+  { name:'Infrared Thermometer',    sub:'Non-contact, 1s Reading',           price:'$34.99', img:'https://images.unsplash.com/photo-1584515933487-779824d29309?w=300&h=240&fit=crop' },
+  { name:'Nitrile Exam Gloves',     sub:'Box of 100, Latex-Free',            price:'$18.50', img:'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=300&h=240&fit=crop' },
+  { name:'BP Monitor Pro',          sub:'Bluetooth Syncing Enabled',         price:'$59.00', img:'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=300&h=240&fit=crop' },
+];
+
+const TAX_RATE = 0.083;
+let promoApplied = false;
+
+/* ── RENDER CART ── */
+function renderCart() {
+  const container = document.getElementById('cartItems');
+
+  if (CART.length === 0) {
+    container.innerHTML = `
+      <div class="empty-cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <h3>Your cart is empty</h3>
+        <p>Add medications and health products to get started.</p>
+        <button class="btn-checkout" style="width:auto;padding:11px 28px;" onclick="window.location='marketplace-landing.html'">
+          <i class="fa-solid fa-store"></i> Browse Marketplace
+        </button>
+      </div>`;
+    updateSummary();
+    return;
+  }
+
+  container.innerHTML = CART.map(item => {
+    const badge =
+      item.badge === 'rx'      ? `<span class="rx-badge">Rx REQUIRED</span>` :
+      item.badge === 'medical' ? `<span class="medical-badge">MEDICAL DEVICE</span>` :
+      item.badge === 'otc'     ? `<span class="otc-badge">OTC</span>` : '';
+
+    const notice = item.rxNotice ? `
+      <div class="rx-notice">
+        <i class="fa-solid fa-circle-info"></i>
+        <p>Prescription Needed: Our pharmacist will contact your physician to verify this order during checkout. Have your insurance details ready.</p>
+      </div>` : '';
+
+    return `
+      <div class="cart-item" id="item-${item.id}">
+        <img class="item-img" src="${item.img}" alt="${item.name}" onerror="this.style.background='#f3f4f6';this.src=''"/>
+        <div class="item-body">
+          <div class="item-name-row">
+            <span class="item-name">${item.name}</span>
+            ${badge}
+          </div>
+          <div class="item-sub">${item.sub}</div>
+          <div class="qty-row">
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty(${item.id},-1)"><i class="fa-solid fa-minus" style="font-size:0.65rem;"></i></button>
+              <input class="qty-val" type="number" value="${item.qty}" min="1" onchange="setQty(${item.id},this.value)" id="qty-${item.id}"/>
+              <button class="qty-btn" onclick="changeQty(${item.id},1)"><i class="fa-solid fa-plus" style="font-size:0.65rem;"></i></button>
+            </div>
+            <button class="remove-btn" onclick="removeItem(${item.id})">
+              <i class="fa-solid fa-trash" style="font-size:0.72rem;"></i> Remove
+            </button>
+          </div>
+          ${notice}
+        </div>
+        <div class="item-price">$${(item.price * item.qty).toFixed(2)}</div>
+      </div>`;
+  }).join('');
+
+  updateSummary();
+  document.getElementById('cartCountBadge').textContent = CART.reduce((a,i)=>a+i.qty,0);
+}
+
+/* ── SUMMARY ── */
+function updateSummary() {
+  const subtotal = CART.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const tax      = subtotal * TAX_RATE;
+  const discount = promoApplied ? subtotal * 0.10 : 0;
+  const total    = subtotal + tax - discount;
+
+  document.getElementById('subtotal').textContent  = `$${subtotal.toFixed(2)}`;
+  document.getElementById('taxAmt').textContent    = `$${tax.toFixed(2)}`;
+  document.getElementById('totalAmt').textContent  = `$${total.toFixed(2)}`;
+
+  const discRow = document.getElementById('discountRow');
+  if (promoApplied) {
+    discRow.style.display = 'flex';
+    document.getElementById('discountAmt').textContent = `-$${discount.toFixed(2)}`;
+  } else {
+    discRow.style.display = 'none';
+  }
+}
+
+/* ── QTY CONTROLS ── */
+function changeQty(id, delta) {
+  const item = CART.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCart();
+  /* TODO: fetch('api/cart/update.php',{method:'POST',body:JSON.stringify({id,qty:item.qty})}) */
+}
+
+function setQty(id, val) {
+  const item = CART.find(i => i.id === id);
+  if (!item) return;
+  const qty = Math.max(1, parseInt(val) || 1);
+  item.qty = qty;
+  renderCart();
+}
+
+/* ── REMOVE ── */
+function removeItem(id) {
+  const idx = CART.findIndex(i => i.id === id);
+  if (idx > -1) {
+    const name = CART[idx].name;
+    CART.splice(idx, 1);
+    renderCart();
+    showToast(`"${name}" removed from cart`, 'warn');
+    /* TODO: fetch('api/cart/remove.php',{method:'POST',body:JSON.stringify({id})}) */
+  }
+}
+
+/* ── CLEAR ── */
+function clearCart() {
+  if (!confirm('Remove all items from your cart?')) return;
+  CART.length = 0;
+  renderCart();
+  showToast('Cart cleared', 'warn');
+}
+
+/* ── PROMO ── */
+const VALID_CODES = { 'MEDTRUST10':'10% off your order', 'HEALTH10':'10% health discount' };
+function applyPromo() {
+  const code = document.getElementById('promoInput').value.trim().toUpperCase();
+  if (!code) { showToast('Please enter a promo code', 'warn'); return; }
+  if (VALID_CODES[code]) {
+    promoApplied = true;
+    renderCart();
+    showToast(`Promo applied — ${VALID_CODES[code]}`);
+    document.getElementById('promoInput').disabled = true;
+  } else {
+    showToast('Invalid promo code', 'warn');
+  }
+  /* TODO: fetch('api/cart/promo.php',{method:'POST',body:JSON.stringify({code})}) */
+}
+
+/* ── FBT GRID ── */
+function renderFBT() {
+  document.getElementById('fbtGrid').innerHTML = FBT.map(p => `
+    <div class="fbt-card">
+      <img class="fbt-img" src="${p.img}" alt="${p.name}" onerror="this.style.background='#f3f4f6';this.src=''"/>
+      <div class="fbt-body">
+        <div class="fbt-name">${p.name}</div>
+        <div class="fbt-sub">${p.sub}</div>
+        <div class="fbt-footer">
+          <div class="fbt-price">${p.price}</div>
+          <button class="fbt-add-btn" onclick="addFBT('${p.name}','${p.price}',this)">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function addFBT(name, price, btn) {
+  btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+  btn.style.background = 'var(--green)';
+  showToast(`"${name}" added to cart`);
+  const priceNum = parseFloat(price.replace('$',''));
+  CART.push({ id: Date.now(), name, sub: 'Add-on item', price: priceNum, qty: 1, img:'', badge:'otc', rxNotice:false });
+  setTimeout(() => renderCart(), 500);
+  /* TODO: fetch('api/cart/add.php',{method:'POST',body:JSON.stringify({name,price:priceNum})}) */
+}
+
+/* ── TOAST ── */
+let _t;
+function showToast(msg, type = 'success') {
+  clearTimeout(_t);
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').style.color = type === 'warn' ? '#fbbf24' : type === 'error' ? '#f87171' : '#4ade80';
+  t.classList.add('show');
+  _t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ── INIT ── */
+renderCart();
+renderFBT();
+</script>
+</body>
+</html>

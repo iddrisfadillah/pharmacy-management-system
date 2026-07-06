@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Audit Logs – PharmaAdmin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin-shared.css"/>
+  <style>
+    .log-timeline { padding: 8px 0; }
+    .log-entry {
+      display: flex; gap: 14px; padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .log-entry:hover { background: #fafafa; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+    .log-body { flex: 1; }
+    .log-event { font-size: 0.83rem; font-weight: 600; margin-bottom: 2px; }
+    .log-detail { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+    .log-meta { display: flex; gap: 14px; }
+    .log-meta span { font-size: 0.7rem; color: var(--text-light); }
+    .log-meta i { margin-right: 4px; }
+    .severity-info    { background: var(--primary-light); color: var(--primary); }
+    .severity-warning { background: #fef9c3; color: #854d0e; }
+    .severity-critical{ background: #fee2e2; color: var(--accent-red); }
+    .severity-success { background: #dcfce7; color: var(--accent-green); }
+    .category-chip { font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<div class="main">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row cols-4">
+      <div class="stat-card">
+        <div class="label">Total Events (Today)</div>
+        <div class="value" id="sToday">—</div>
+        <div class="sub">Across all categories</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Critical Alerts</div>
+        <div class="value" style="color:var(--accent-red)" id="sCritical">—</div>
+        <div class="sub">Requires attention</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Security Events</div>
+        <div class="value" style="color:var(--accent-amber)" id="sSecurity">—</div>
+        <div class="sub">Login & access</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Data Changes</div>
+        <div class="value" style="color:var(--primary)" id="sData">—</div>
+        <div class="sub">CRUD operations</div>
+      </div>
+    </div>
+
+    <!-- FILTERS + EXPORT -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header" style="border-bottom:none;padding-bottom:10px;">
+        <h3><i class="fa-solid fa-scroll" style="color:var(--primary);margin-right:6px;"></i>System Audit Log</h3>
+        <div class="filter-row">
+          <select id="filterSeverity" onchange="applyFilters()">
+            <option value="">All Severities</option>
+            <option value="info">Info</option>
+            <option value="success">Success</option>
+            <option value="warning">Warning</option>
+            <option value="critical">Critical</option>
+          </select>
+          <select id="filterCategory" onchange="applyFilters()">
+            <option value="">All Categories</option>
+            <option value="Auth">Auth</option>
+            <option value="Vendor">Vendor</option>
+            <option value="User">User</option>
+            <option value="Order">Order</option>
+            <option value="System">System</option>
+            <option value="Payment">Payment</option>
+          </select>
+          <input type="date" id="filterDate" onchange="applyFilters()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:0.82rem;font-family:inherit;"/>
+          <input type="text" id="searchLog" placeholder="Search event or user…" oninput="applyFilters()"/>
+          <button class="btn btn-primary" onclick="downloadAudit()"><i class="fa-solid fa-download"></i> Download Trail</button>
+          <button class="btn btn-ghost" onclick="clearFilters()"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG ENTRIES -->
+    <div class="card">
+      <div class="log-timeline" id="logTimeline"></div>
+      <div id="emptyLogs" class="empty-state" style="display:none;">
+        <i class="fa-solid fa-scroll"></i>
+        <p>No log entries match your filter.</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--border);">
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="pageInfo">—</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn btn-ghost" onclick="changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script src="admin-layout.js"></script>
+<script>
+renderAdminLayout({ activePage: 'audit-logs', pageTitle: 'Audit Logs' });
+
+/* ── MOCK DATA — replace with fetch('api/admin/audit-logs.php') ── */
+const LOGS = [
+  { id:1,  icon:'fa-right-to-bracket', severity:'info',     category:'Auth',    event:'Admin Login',                 detail:'Admin User logged in from IP 197.255.62.10',                      user:'Admin User',  time:'Today, 5:41 PM' },
+  { id:2,  icon:'fa-shop',             severity:'success',  category:'Vendor',  event:'Vendor Approved',             detail:'City Health Pharma was approved by Admin User',                   user:'Admin User',  time:'Today, 5:30 PM' },
+  { id:3,  icon:'fa-triangle-exclamation', severity:'critical', category:'Auth', event:'Multiple Failed Logins',     detail:'5 failed login attempts from IP 192.168.1.42 — account locked',   user:'Unknown',     time:'Today, 4:15 PM' },
+  { id:4,  icon:'fa-tag',              severity:'info',     category:'System',  event:'Price Rule Updated',          detail:'Admin adjusted Tier 1 Insulin tax rates from 5% to 7.5%',         user:'Admin User',  time:'Today, 3:00 PM' },
+  { id:5,  icon:'fa-heart-pulse',      severity:'success',  category:'System',  event:'Health Check Passed',         detail:'Automated integrity scan completed — 0 errors detected',           user:'System',      time:'Today, 12:00 PM' },
+  { id:6,  icon:'fa-user-plus',        severity:'info',     category:'User',    event:'New User Registered',         detail:'Nana Agyei (nana@meds.gh) created a customer account',             user:'System',      time:'Today, 11:30 AM' },
+  { id:7,  icon:'fa-ban',              severity:'warning',  category:'User',    event:'User Suspended',              detail:'Ama Boateng account suspended due to policy violation',            user:'Admin User',  time:'Today, 10:45 AM' },
+  { id:8,  icon:'fa-credit-card',      severity:'warning',  category:'Payment', event:'Payment Failure',             detail:'Order ORD-2404 payment declined — card ending in 4242',           user:'Ama Boateng', time:'Today, 10:30 AM' },
+  { id:9,  icon:'fa-bag-shopping',     severity:'success',  category:'Order',   event:'Order Delivered',             detail:'Order ORD-2401 marked as delivered by City Health Pharma',        user:'System',      time:'Yesterday, 6:00 PM' },
+  { id:10, icon:'fa-file-invoice',     severity:'info',     category:'Order',   event:'Refund Issued',               detail:'Order ORD-2406 refunded GH₵ 190.00 to Akosua Frimpong',          user:'Admin User',  time:'Yesterday, 3:20 PM' },
+  { id:11, icon:'fa-right-from-bracket', severity:'info',   category:'Auth',    event:'Admin Logout',                detail:'Admin User logged out from session',                               user:'Admin User',  time:'Yesterday, 1:00 PM' },
+  { id:12, icon:'fa-database',         severity:'success',  category:'System',  event:'Database Backup Completed',   detail:'Automated daily backup completed — 2.4GB stored in cloud',         user:'System',      time:'Yesterday, 2:00 AM' },
+];
+/* TODO: const LOGS = await fetch('api/admin/audit-logs.php').then(r=>r.json()); */
+
+let filtered=[...LOGS], currentPage=1;
+const PER_PAGE=8;
+
+const iconClass = s => ({ info:'severity-info', warning:'severity-warning', critical:'severity-critical', success:'severity-success' }[s]||'severity-info');
+
+function renderLogs(){
+  const start=(currentPage-1)*PER_PAGE;
+  const page=filtered.slice(start,start+PER_PAGE);
+  const container=document.getElementById('logTimeline');
+  document.getElementById('emptyLogs').style.display = filtered.length?'none':'block';
+
+  container.innerHTML=page.map(l=>`
+    <div class="log-entry">
+      <div class="log-icon ${iconClass(l.severity)}"><i class="fa-solid ${l.icon}"></i></div>
+      <div class="log-body">
+        <div class="log-event">
+          ${l.event}
+          <span class="category-chip" style="margin-left:6px;">${l.category}</span>
+        </div>
+        <div class="log-detail">${l.detail}</div>
+        <div class="log-meta">
+          <span><i class="fa-solid fa-user"></i>${l.user}</span>
+          <span><i class="fa-solid fa-clock"></i>${l.time}</span>
+          <span><i class="fa-solid fa-circle" style="font-size:0.5rem;color:${l.severity==='critical'?'var(--accent-red)':l.severity==='warning'?'var(--accent-amber)':l.severity==='success'?'var(--accent-green)':'var(--primary)'};"></i>${l.severity.toUpperCase()}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('pageInfo').textContent=`Showing ${Math.min(start+PER_PAGE,filtered.length)} of ${filtered.length} events`;
+}
+
+function updateStats(){
+  document.getElementById('sToday').textContent    = LOGS.filter(l=>l.time.startsWith('Today')).length;
+  document.getElementById('sCritical').textContent = LOGS.filter(l=>l.severity==='critical').length;
+  document.getElementById('sSecurity').textContent = LOGS.filter(l=>l.category==='Auth').length;
+  document.getElementById('sData').textContent     = LOGS.filter(l=>['Order','Vendor','User'].includes(l.category)).length;
+}
+
+function applyFilters(){
+  const sev=document.getElementById('filterSeverity').value;
+  const cat=document.getElementById('filterCategory').value;
+  const q=document.getElementById('searchLog').value.toLowerCase();
+  filtered=LOGS.filter(l=>
+    (!sev||l.severity===sev)&&(!cat||l.category===cat)&&
+    (!q||l.event.toLowerCase().includes(q)||l.user.toLowerCase().includes(q)||l.detail.toLowerCase().includes(q))
+  );
+  currentPage=1; renderLogs();
+}
+
+function clearFilters(){
+  document.getElementById('filterSeverity').value='';
+  document.getElementById('filterCategory').value='';
+  document.getElementById('filterDate').value='';
+  document.getElementById('searchLog').value='';
+  filtered=[...LOGS]; currentPage=1; renderLogs();
+}
+
+function changePage(d){currentPage+=d;renderLogs();}
+
+function downloadAudit(){
+  showToast('Generating audit trail PDF…');
+  /* TODO: window.location='api/admin/download-audit.php'; */
+}
+
+updateStats(); renderLogs();
+</script>
+</body>
+</html>

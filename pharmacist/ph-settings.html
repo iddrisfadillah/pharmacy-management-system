@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings – Pharmacist Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="pharmacist-shared.css"/>
+  <style>
+    .settings-layout{display:grid;grid-template-columns:210px 1fr;gap:20px;}
+    .settings-nav{display:flex;flex-direction:column;gap:2px;background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:10px;box-shadow:var(--shadow);height:fit-content;}
+    .s-tab{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:8px;font-size:0.82rem;font-weight:500;cursor:pointer;color:var(--muted);background:transparent;border:none;font-family:inherit;text-align:left;transition:background .15s,color .15s;width:100%;}
+    .s-tab:hover{background:var(--primary-light);color:var(--primary);}
+    .s-tab.active{background:var(--primary-light);color:var(--primary);font-weight:600;}
+    .s-tab i{width:16px;text-align:center;}
+    .panel{display:none;}
+    .panel.active{display:block;}
+    .card-header h3{font-size:0.95rem;font-weight:700;margin-bottom:3px;}
+    .card-header p{font-size:0.78rem;color:var(--muted);}
+    .card-body{padding:24px;}
+    .card-footer{padding:16px 24px;border-top:1px solid var(--border);background:#fafafa;display:flex;justify-content:flex-end;gap:10px;}
+    .section-divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+    .section-subtitle{font-size:0.88rem;font-weight:700;margin-bottom:4px;}
+    .section-subdesc{font-size:0.78rem;color:var(--muted);margin-bottom:16px;}
+    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
+    .toggle-row:last-child{border-bottom:none;}
+    .toggle-label{font-size:0.85rem;font-weight:600;margin-bottom:2px;}
+    .toggle-sub{font-size:0.74rem;color:var(--muted);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .avatar-row{display:flex;align-items:center;gap:18px;margin-bottom:24px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+    .big-avatar{width:72px;height:72px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;position:relative;flex-shrink:0;}
+    .avatar-cam{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--primary-dark);border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.6rem;color:#fff;}
+    .danger-zone{background:#fff5f5;border:1.5px solid #fecaca;border-radius:var(--radius);padding:20px 24px;}
+    .danger-zone h4{color:var(--red);font-size:0.9rem;font-weight:700;margin-bottom:6px;}
+    .danger-zone p{font-size:0.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+    .staff-card{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+    .staff-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#fff;flex-shrink:0;}
+    .staff-name{font-size:0.83rem;font-weight:600;margin-bottom:2px;}
+    .staff-role{font-size:0.72rem;color:var(--muted);}
+    .input-wrap{position:relative;}
+    .input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--light);font-size:0.85rem;}
+    .input-wrap .form-control{padding-left:34px;}
+    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--light);font-size:0.85rem;}
+    .strength-bars{display:flex;gap:4px;margin-top:6px;}
+    .strength-bar{flex:1;height:3px;border-radius:2px;background:var(--border);}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:#fff;border-radius:var(--radius);padding:28px;width:460px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .modal-header h3{font-size:1rem;font-weight:700;}
+    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;}
+    .modal-body{margin-bottom:20px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+    @media(max-width:900px){.settings-layout{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="phSidebar"></aside>
+<div class="main">
+  <header class="topbar" id="phTopbar"></header>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title"><i class="fa-solid fa-gear" style="color:var(--primary);margin-right:8px;"></i>Settings</div>
+        <div class="page-sub">Manage your pharmacy profile, staff, security, and system preferences.</div>
+      </div>
+    </div>
+
+    <div class="settings-layout">
+
+      <!-- LEFT NAV -->
+      <div class="settings-nav">
+        <button class="s-tab active" onclick="switchTab(this,'profile')"><i class="fa-solid fa-user"></i> My Profile</button>
+        <button class="s-tab" onclick="switchTab(this,'pharmacy')"><i class="fa-solid fa-hospital"></i> Pharmacy Info</button>
+        <button class="s-tab" onclick="switchTab(this,'staff')"><i class="fa-solid fa-user-group"></i> Staff & Roles</button>
+        <button class="s-tab" onclick="switchTab(this,'notifications')"><i class="fa-solid fa-bell"></i> Notifications</button>
+        <button class="s-tab" onclick="switchTab(this,'security')"><i class="fa-solid fa-shield-halved"></i> Security</button>
+        <button class="s-tab" onclick="switchTab(this,'integrations')"><i class="fa-solid fa-plug"></i> Integrations</button>
+      </div>
+
+      <!-- RIGHT PANELS -->
+      <div>
+
+        <!-- MY PROFILE -->
+        <div class="panel active" id="panel-profile">
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>My Profile</h3>
+              <p>Update your personal details and credentials.</p>
+            </div>
+            <div class="card-body">
+              <div class="avatar-row">
+                <div class="big-avatar">
+                  SC
+                  <div class="avatar-cam" onclick="showToast('Photo upload opening…')"><i class="fa-solid fa-camera"></i></div>
+                </div>
+                <div>
+                  <div style="font-size:1rem;font-weight:700;">Dr. Sarah Chen</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">Lead Pharmacist · License #PH-2019-0042</div>
+                  <button class="btn btn-ghost btn-sm" onclick="showToast('Opening photo upload…')"><i class="fa-solid fa-camera"></i> Change Photo</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">First Name</label><input class="form-control" value="Sarah"/></div>
+                <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" value="Chen"/></div>
+                <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" type="email" value="sarah.chen@centralpharm.gh"/></div>
+                <div class="form-group"><label class="form-label">Phone Number</label><input class="form-control" value="+233 20 111 0042"/></div>
+                <div class="form-group"><label class="form-label">License Number</label><input class="form-control" value="PH-2019-0042" disabled style="background:#f9fafb;color:var(--muted);"/></div>
+                <div class="form-group"><label class="form-label">Specialization</label>
+                  <select class="form-control">
+                    <option selected>Clinical Pharmacist</option>
+                    <option>Community Pharmacist</option>
+                    <option>Hospital Pharmacist</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-primary" onclick="showToast('Profile updated successfully')"><i class="fa-solid fa-save"></i> Save Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHARMACY INFO -->
+        <div class="panel" id="panel-pharmacy">
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>Pharmacy Information</h3>
+              <p>Update your pharmacy's public details and operating hours.</p>
+            </div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Pharmacy Name</label><input class="form-control" value="Central Pharmacy"/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">License / Registration No.</label><input class="form-control" value="GH-PH-2019-8821" disabled style="background:#f9fafb;color:var(--muted);"/></div>
+                <div class="form-group"><label class="form-label">NHIS Accreditation</label><input class="form-control" value="NHIS-ACC-00421" disabled style="background:#f9fafb;color:var(--muted);"/></div>
+                <div class="form-group"><label class="form-label">Phone</label><input class="form-control" value="+233 30 222 8821"/></div>
+                <div class="form-group"><label class="form-label">Email</label><input class="form-control" value="info@centralpharm.gh"/></div>
+              </div>
+              <div class="form-group"><label class="form-label">Street Address</label><input class="form-control" value="15 Independence Avenue, Accra"/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">City</label><input class="form-control" value="Accra"/></div>
+                <div class="form-group"><label class="form-label">Region</label>
+                  <select class="form-control"><option selected>Greater Accra</option><option>Ashanti</option><option>Western</option></select>
+                </div>
+              </div>
+              <hr class="section-divider"/>
+              <div class="section-subtitle">Operating Hours</div>
+              <div class="section-subdesc">Set your pharmacy's opening and closing times.</div>
+              <div id="hoursGrid"></div>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-primary" onclick="showToast('Pharmacy info saved')"><i class="fa-solid fa-save"></i> Save Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAFF & ROLES -->
+        <div class="panel" id="panel-staff">
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>Staff &amp; Roles</h3>
+              <p>Manage pharmacists and assistants with their access levels.</p>
+            </div>
+            <div class="card-body">
+              <div id="staffList"></div>
+              <button class="btn btn-outline" style="margin-top:4px;" onclick="openModal('addStaffModal')">
+                <i class="fa-solid fa-user-plus"></i> Invite Staff Member
+              </button>
+            </div>
+          </div>
+
+          <!-- PERMISSIONS TABLE -->
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;"><h3>Role Permissions</h3></div>
+            <div style="padding:0 24px 20px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Permission</th>
+                    <th style="text-align:center;">Lead Pharmacist</th>
+                    <th style="text-align:center;">Pharmacist</th>
+                    <th style="text-align:center;">Technician</th>
+                  </tr>
+                </thead>
+                <tbody id="permBody"></tbody>
+              </table>
+              <button class="btn btn-primary" style="margin-top:14px;" onclick="showToast('Permissions saved')"><i class="fa-solid fa-save"></i> Save Permissions</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="panel" id="panel-notifications">
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>Notification Preferences</h3>
+              <p>Control which alerts you receive and through which channel.</p>
+            </div>
+            <div class="card-body" id="notifList"></div>
+            <div class="card-footer">
+              <button class="btn btn-ghost">Reset Defaults</button>
+              <button class="btn btn-primary" onclick="showToast('Notification preferences saved')"><i class="fa-solid fa-save"></i> Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="panel" id="panel-security">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>Change Password</h3>
+              <p>Use a strong password of at least 8 characters.</p>
+            </div>
+            <div class="card-body" style="max-width:440px;">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <div class="input-wrap">
+                  <i class="input-icon fa-solid fa-lock"></i>
+                  <input class="form-control" type="password" id="curPw" placeholder="Current password"/>
+                  <button class="pw-toggle" onclick="togglePw('curPw',this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <div class="input-wrap">
+                  <i class="input-icon fa-solid fa-lock"></i>
+                  <input class="form-control" type="password" id="newPw" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/>
+                  <button class="pw-toggle" onclick="togglePw('newPw',this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+                <div class="strength-bars"><div class="strength-bar" id="sb1"></div><div class="strength-bar" id="sb2"></div><div class="strength-bar" id="sb3"></div><div class="strength-bar" id="sb4"></div></div>
+                <div style="font-size:0.68rem;color:var(--muted);margin-top:3px;" id="strengthLabel"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-wrap">
+                  <i class="input-icon fa-solid fa-lock"></i>
+                  <input class="form-control" type="password" id="confPw" placeholder="Repeat new password"/>
+                  <button class="pw-toggle" onclick="togglePw('confPw',this)"><i class="fa-solid fa-eye"></i></button>
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="changePassword()"><i class="fa-solid fa-key"></i> Update Password</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header" style="padding:20px 24px;"><h3>Two-Factor Authentication</h3></div>
+            <div class="card-body" id="securityToggles"></div>
+          </div>
+
+          <div class="danger-zone">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
+            <p>Revoking all sessions will log out all devices immediately. Deactivating your account will require admin reactivation.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-ghost" onclick="showToast('All sessions revoked','warn')"><i class="fa-solid fa-right-from-bracket"></i> Revoke All Sessions</button>
+              <button class="btn btn-danger" onclick="showToast('Contact admin to deactivate account','error')"><i class="fa-solid fa-user-slash"></i> Deactivate Account</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTEGRATIONS -->
+        <div class="panel" id="panel-integrations">
+          <div class="card">
+            <div class="card-header" style="padding:20px 24px;">
+              <h3>System Integrations</h3>
+              <p>Connect your pharmacy with third-party services and APIs.</p>
+            </div>
+            <div class="card-body" id="integrationsList"></div>
+          </div>
+        </div>
+
+      </div><!-- end right column -->
+    </div><!-- end settings-layout -->
+
+  </div>
+  <footer>
+    <div><span style="font-size:0.82rem;font-weight:700;">MedTrust Systems</span><br/><span style="font-size:0.7rem;color:var(--muted);">© 2026 MedTrust Systems</span></div>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Drug Safety</a><a href="#">Support</a></div>
+  </footer>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="modal-overlay" id="addStaffModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Invite Staff Member</h3>
+      <button class="modal-close" onclick="closeModal('addStaffModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="sFN" placeholder="Kofi"/></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="sSN" placeholder="Mensah"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" id="sEmail" type="email" placeholder="kofi@centralpharm.gh"/></div>
+      <div class="form-group"><label class="form-label">Role</label>
+        <select class="form-control" id="sRole">
+          <option>Pharmacist</option>
+          <option>Technician</option>
+          <option>Lead Pharmacist</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addStaffModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="inviteStaff()"><i class="fa-solid fa-paper-plane"></i> Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<script src="pharmacist-layout.js"></script>
+<script>
+renderPharmacistLayout({ activePage:'settings', pageTitle:'Settings' });
+
+/* ── DATA ── */
+const STAFF = [
+  { initials:'SC', name:'Dr. Sarah Chen',   role:'Lead Pharmacist', email:'sarah.chen@centralpharm.gh', color:'#1a6fc4', status:'Active'  },
+  { initials:'KA', name:'Kofi Asante',      role:'Pharmacist',      email:'k.asante@centralpharm.gh',   color:'#16a34a', status:'Active'  },
+  { initials:'AB', name:'Abena Boateng',    role:'Technician',      email:'a.boateng@centralpharm.gh',  color:'#d97706', status:'Active'  },
+  { initials:'YD', name:'Yaw Darko',        role:'Pharmacist',      email:'y.darko@centralpharm.gh',    color:'#7c3aed', status:'Invited' },
+];
+
+const PERMS = [
+  { label:'View Dashboard',         lead:true,  pharm:true,  tech:true  },
+  { label:'Dispense Prescriptions', lead:true,  pharm:true,  tech:false },
+  { label:'Manage Inventory',       lead:true,  pharm:true,  tech:false },
+  { label:'View Patient Records',   lead:true,  pharm:true,  tech:false },
+  { label:'Generate Reports',       lead:true,  pharm:false, tech:false },
+  { label:'Manage Staff',           lead:true,  pharm:false, tech:false },
+  { label:'Edit Settings',          lead:true,  pharm:false, tech:false },
+];
+
+const NOTIFS = [
+  { label:'New Order Received',     sub:'Alert when a new prescription order comes in.', checked:true  },
+  { label:'Low Stock Alert',        sub:'Notify when a product hits reorder threshold.', checked:true  },
+  { label:'Expiry Warning',         sub:'Alert 30 days before any stock expires.',       checked:true  },
+  { label:'Insurance Issue',        sub:'Flag when an order has an insurance problem.',  checked:true  },
+  { label:'New Patient Registered', sub:'Alert when a new patient is added.',            checked:false },
+  { label:'Daily Summary Email',    sub:'Receive a daily report summary each morning.',  checked:false },
+  { label:'Security Alerts',        sub:'Login attempts and account changes.',           checked:true  },
+];
+
+const SECURITY_TOGGLES = [
+  { label:'Two-Factor Authentication', sub:'Verify identity via authenticator app on login.', checked:false },
+  { label:'SMS Verification',          sub:'Receive a code via SMS on each login.',           checked:true  },
+  { label:'Session Timeout (30 min)',  sub:'Automatically log out after 30 min inactivity.',  checked:true  },
+];
+
+const INTEGRATIONS = [
+  { icon:'fa-hospital',       name:'NHIS Portal',        desc:'Ghana National Health Insurance Authority — claims and billing.',   connected:true  },
+  { icon:'fa-database',       name:'PharmNet Ghana',     desc:'National drug database and interaction checker.',                   connected:true  },
+  { icon:'fa-mobile-screen',  name:'SMS Gateway (MTN)',  desc:'Send prescription reminders and delivery updates via SMS.',         connected:true  },
+  { icon:'fa-credit-card',    name:'Paystack',           desc:'Accept online and mobile money payments from patients.',            connected:false },
+  { icon:'fa-truck',          name:'Dispatch Courier',   desc:'Integrate with local delivery partners for medicine delivery.',     connected:false },
+];
+
+const HOURS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+/* ── TAB SWITCH ── */
+function switchTab(btn, id) {
+  document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+/* ── PHARMACY HOURS ── */
+function renderHours() {
+  const defaults = { Monday:'8:00 AM',Tuesday:'8:00 AM',Wednesday:'8:00 AM',Thursday:'8:00 AM',Friday:'8:00 AM',Saturday:'9:00 AM',Sunday:'Closed' };
+  const close =    { Monday:'9:00 PM',Tuesday:'9:00 PM',Wednesday:'9:00 PM',Thursday:'9:00 PM',Friday:'9:00 PM',Saturday:'6:00 PM',Sunday:'Closed' };
+  document.getElementById('hoursGrid').innerHTML = HOURS.map(day => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="width:90px;font-size:0.82rem;font-weight:600;">${day}</span>
+      <input class="form-control" style="width:110px;" value="${defaults[day]}" ${defaults[day]==='Closed'?'disabled style="background:#f9fafb;color:var(--muted);"':''}/>
+      <span style="font-size:0.78rem;color:var(--muted);">to</span>
+      <input class="form-control" style="width:110px;" value="${close[day]}" ${close[day]==='Closed'?'disabled style="background:#f9fafb;color:var(--muted);"':''}/>
+      <label class="toggle" style="margin-left:auto;">
+        <input type="checkbox" ${defaults[day]!=='Closed'?'checked':''} onchange="toggleDay(this,'${day}')"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+function toggleDay(cb, day) {
+  showToast(`${day} ${cb.checked ? 'enabled' : 'set to closed'}`);
+}
+
+/* ── STAFF ── */
+function renderStaff() {
+  document.getElementById('staffList').innerHTML = STAFF.map((s,i) => `
+    <div class="staff-card">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="staff-avatar" style="background:${s.color};">${s.initials}</div>
+        <div>
+          <div class="staff-name">${s.name}</div>
+          <div class="staff-role">${s.role} · ${s.email}</div>
+        </div>
+        ${s.status==='Invited'?'<span class="badge badge-amber" style="margin-left:8px;">Invited</span>':''}
+      </div>
+      <div style="display:flex;gap:6px;">
+        ${i>0?`<button class="btn btn-ghost btn-sm" onclick="showToast('Edit ${s.name}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="removeStaff(${i})"><i class="fa-solid fa-trash"></i></button>`:'<span style="font-size:0.72rem;color:var(--muted);padding:0 8px;">Owner</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeStaff(i) {
+  STAFF.splice(i, 1);
+  renderStaff();
+  showToast('Staff member removed', 'warn');
+}
+
+function inviteStaff() {
+  const fn = document.getElementById('sFN').value.trim();
+  const ln = document.getElementById('sSN').value.trim();
+  const email = document.getElementById('sEmail').value.trim();
+  if (!fn||!ln||!email) { showToast('Please fill all fields','warn'); return; }
+  const colors = ['#1a6fc4','#16a34a','#d97706','#7c3aed','#dc2626','#0d9488'];
+  STAFF.push({ initials:fn[0]+ln[0], name:`${fn} ${ln}`, role:document.getElementById('sRole').value, email, color:colors[STAFF.length%colors.length], status:'Invited' });
+  closeModal('addStaffModal');
+  renderStaff();
+  showToast(`Invite sent to ${email}`);
+}
+
+/* ── PERMISSIONS ── */
+function renderPerms() {
+  document.getElementById('permBody').innerHTML = PERMS.map((p,i) => `
+    <tr>
+      <td style="font-size:0.82rem;">${p.label}</td>
+      ${['lead','pharm','tech'].map(r => `
+        <td style="text-align:center;">
+          <label class="toggle" style="margin:0 auto;">
+            <input type="checkbox" ${p[r]?'checked':''} onchange="PERMS[${i}]['${r}']=this.checked"/>
+            <span class="toggle-slider"></span>
+          </label>
+        </td>`).join('')}
+    </tr>`).join('');
+}
+
+/* ── NOTIFICATIONS ── */
+function renderNotifs() {
+  document.getElementById('notifList').innerHTML = NOTIFS.map((n,i) => `
+    <div class="toggle-row">
+      <div><div class="toggle-label">${n.label}</div><div class="toggle-sub">${n.sub}</div></div>
+      <label class="toggle">
+        <input type="checkbox" ${n.checked?'checked':''} onchange="NOTIFS[${i}].checked=this.checked"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+/* ── SECURITY ── */
+function renderSecurityToggles() {
+  document.getElementById('securityToggles').innerHTML = SECURITY_TOGGLES.map((s,i) => `
+    <div class="toggle-row">
+      <div><div class="toggle-label">${s.label}</div><div class="toggle-sub">${s.sub}</div></div>
+      <label class="toggle">
+        <input type="checkbox" ${s.checked?'checked':''} onchange="SECURITY_TOGGLES[${i}].checked=this.checked;showToast('${s.label} '+(this.checked?'enabled':'disabled'))"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+/* ── INTEGRATIONS ── */
+function renderIntegrations() {
+  document.getElementById('integrationsList').innerHTML = INTEGRATIONS.map((it,i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:${it.connected?'var(--primary-light)':'#F3F4F6'};display:flex;align-items:center;justify-content:center;font-size:1rem;color:${it.connected?'var(--primary)':'var(--muted)'};">
+          <i class="fa-solid ${it.icon}"></i>
+        </div>
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;">${it.name}</div>
+          <div style="font-size:0.74rem;color:var(--muted);">${it.desc}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        ${it.connected?`<span class="badge badge-green">Connected</span><button class="btn btn-ghost btn-sm" onclick="disconnectIntegration(${i})">Disconnect</button>`
+          :`<button class="btn btn-primary btn-sm" onclick="connectIntegration(${i})"><i class="fa-solid fa-plug"></i> Connect</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function connectIntegration(i) {
+  INTEGRATIONS[i].connected = true;
+  renderIntegrations();
+  showToast(`${INTEGRATIONS[i].name} connected successfully`);
+}
+function disconnectIntegration(i) {
+  INTEGRATIONS[i].connected = false;
+  renderIntegrations();
+  showToast(`${INTEGRATIONS[i].name} disconnected`, 'warn');
+}
+
+/* ── PASSWORD ── */
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  const icon  = btn.querySelector('i');
+  const hide  = input.type === 'password';
+  input.type  = hide ? 'text' : 'password';
+  icon.className = hide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
+function checkStrength(val) {
+  let s = 0;
+  if (val.length >= 8) s++;
+  if (/[A-Z]/.test(val)) s++;
+  if (/[0-9]/.test(val)) s++;
+  if (/[^A-Za-z0-9]/.test(val)) s++;
+  const colors = ['','#dc2626','#d97706','#16a34a','#16a34a'];
+  const labels = ['','Weak','Fair','Strong','Very Strong'];
+  for (let i=1;i<=4;i++) document.getElementById('sb'+i).style.background = i<=s ? colors[s] : 'var(--border)';
+  document.getElementById('strengthLabel').textContent = val.length ? labels[s] : '';
+  document.getElementById('strengthLabel').style.color = colors[s];
+}
+
+function changePassword() {
+  const cur  = document.getElementById('curPw').value;
+  const nw   = document.getElementById('newPw').value;
+  const conf = document.getElementById('confPw').value;
+  if (!cur||!nw||!conf) { showToast('Please fill all fields','warn'); return; }
+  if (nw.length < 8)    { showToast('Password must be at least 8 characters','warn'); return; }
+  if (nw !== conf)       { showToast('Passwords do not match','warn'); return; }
+  /* TODO: fetch('api/pharmacist/change-password.php',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})}) */
+  document.getElementById('curPw').value = '';
+  document.getElementById('newPw').value = '';
+  document.getElementById('confPw').value = '';
+  showToast('Password updated successfully');
+}
+
+/* ── INIT ── */
+renderHours();
+renderStaff();
+renderPerms();
+renderNotifs();
+renderSecurityToggles();
+renderIntegrations();
+</script>
+</body>
+</html>

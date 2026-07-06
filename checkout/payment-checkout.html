@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout – MedTrust Systems</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#F5F5F5;--card:#fff;
+      --primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
+      --green:#16a34a;--green-light:#dcfce7;
+      --amber:#d97706;--amber-light:#fef9c3;
+      --red:#dc2626;--red-light:#fee2e2;
+      --text:#111827;--muted:#6B7280;--light:#9CA3AF;
+      --border:#E5E7EB;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+    /* ── TOPNAV ── */
+    .topnav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;height:54px;gap:24px;position:sticky;top:0;z-index:100;}
+    .nav-brand{font-size:1rem;font-weight:800;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:7px;}
+    .nav-links{display:flex;align-items:center;gap:4px;}
+    .nav-link{padding:5px 12px;border-radius:8px;font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;}
+    .nav-link:hover{background:var(--primary-light);color:var(--primary);}
+    .nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px;}
+
+    /* ── STEPPER ── */
+    .stepper-wrap{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;}
+    .stepper{display:flex;align-items:center;max-width:720px;margin:0 auto;padding:16px 0;}
+    .step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+    .step:not(:last-child)::after{content:'';position:absolute;top:16px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:var(--border);z-index:0;}
+    .step.completed:not(:last-child)::after{background:var(--primary);}
+    .step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;z-index:1;transition:all .3s;}
+    .step-dot.done{background:var(--primary);color:#fff;}
+    .step-dot.active{background:var(--primary);color:#fff;box-shadow:0 0 0 4px var(--primary-light);}
+    .step-dot.pending{background:#fff;color:var(--muted);border:2px solid var(--border);}
+    .step-label{font-size:0.68rem;font-weight:600;color:var(--muted);margin-top:5px;text-align:center;}
+    .step-label.active{color:var(--primary);}
+
+    /* ── CONTENT ── */
+    .checkout-wrap{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:28px 24px;display:flex;gap:24px;align-items:flex-start;}
+    .checkout-main{flex:1;}
+    .checkout-side{width:300px;flex-shrink:0;}
+
+    /* ── CARD ── */
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+    .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+    .card-title{font-size:0.9rem;font-weight:700;}
+    .card-body{padding:20px;}
+
+    /* ── FORM ── */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:0.78rem;font-weight:600;margin-bottom:6px;}
+    .form-control{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s;}
+    .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+    select.form-control{cursor:pointer;background:#fff;}
+
+    /* ── BTN ── */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:9px;font-size:0.85rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
+    .btn-primary{background:var(--primary);color:#fff;width:100%;justify-content:center;}.btn-primary:hover{background:var(--primary-dark);}
+    .btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary);}.btn-outline:hover{background:var(--primary-light);}
+    .btn-ghost{background:#fff;color:var(--muted);border:1.5px solid var(--border);}.btn-ghost:hover{background:var(--bg);}
+
+    /* ── STEP PANELS ── */
+    .step-panel{display:none;}
+    .step-panel.active{display:block;}
+
+    /* ── RX BADGE ── */
+    .rx-badge{background:var(--red);color:#fff;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.05em;}
+    .rx-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+    .rx-item:last-child{border-bottom:none;}
+    .rx-item-icon{width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--primary);flex-shrink:0;}
+    .rx-item-info{flex:1;}
+    .rx-item-name{font-size:0.85rem;font-weight:700;margin-bottom:2px;}
+    .rx-item-sub{font-size:0.72rem;color:var(--muted);}
+
+    /* UPLOAD ZONE */
+    .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:var(--primary-light);}
+    .upload-zone i{font-size:1.4rem;color:var(--light);margin-bottom:6px;}
+    .upload-zone p{font-size:0.78rem;color:var(--muted);}
+    .upload-zone .upload-btn-txt{font-size:0.8rem;font-weight:600;color:var(--primary);margin-top:4px;}
+
+    /* POLICY NOTE */
+    .policy-note{background:var(--primary-light);border-radius:9px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-top:14px;}
+    .policy-note i{color:var(--primary);margin-top:2px;flex-shrink:0;}
+    .policy-note p{font-size:0.78rem;color:var(--primary);line-height:1.55;}
+
+    /* DELIVERY OPTIONS */
+    .delivery-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+    .delivery-opt{border:2px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:10px;}
+    .delivery-opt:hover{border-color:var(--primary);}
+    .delivery-opt.selected{border-color:var(--primary);background:var(--primary-light);}
+    .delivery-opt-icon{width:34px;height:34px;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--primary);flex-shrink:0;}
+    .delivery-opt-title{font-size:0.83rem;font-weight:700;margin-bottom:2px;}
+    .delivery-opt-sub{font-size:0.72rem;color:var(--muted);line-height:1.4;}
+    .sel-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;}
+    .sel-dot.checked{border-color:var(--primary);background:var(--primary);}
+    .sel-dot.checked::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;}
+
+    /* PAYMENT TABS */
+    .pay-tabs{display:flex;gap:4px;background:#F3F4F6;border-radius:9px;padding:4px;margin-bottom:18px;}
+    .pay-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .pay-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .pay-panel{display:none;}
+    .pay-panel.active{display:block;}
+
+    /* CARD INPUT */
+    .card-number-wrap{position:relative;}
+    .card-number-wrap input{padding-right:80px;}
+    .card-type-icons{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;gap:5px;}
+    .card-type-icon{font-size:1.2rem;}
+
+    /* MOMO */
+    .momo-logos{display:flex;gap:8px;margin-bottom:14px;}
+    .momo-logo{padding:6px 12px;border-radius:7px;font-size:0.72rem;font-weight:800;cursor:pointer;border:1.5px solid var(--border);transition:border .15s;}
+    .momo-mtn{background:#ffd700;color:#111;}.momo-voda{background:#e60000;color:#fff;}.momo-at{background:#003399;color:#fff;}
+
+    /* INSURANCE */
+    .insurance-coverage{background:var(--green-light);border-radius:9px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+    .coverage-label{font-size:0.75rem;color:var(--muted);}
+    .coverage-val{font-size:0.9rem;font-weight:700;color:var(--green);}
+    .coverage-pct-bar{height:6px;background:var(--border);border-radius:3px;margin-top:6px;}
+    .coverage-fill{height:100%;border-radius:3px;background:var(--green);}
+
+    /* ORDER SUMMARY */
+    .summary-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .summary-item:last-child{border-bottom:none;}
+    .summary-img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f3f4f6;flex-shrink:0;}
+    .summary-name{font-size:0.82rem;font-weight:600;margin-bottom:2px;}
+    .summary-sub{font-size:0.7rem;color:var(--muted);}
+    .summary-price{font-weight:700;font-size:0.83rem;margin-left:auto;flex-shrink:0;}
+    .summary-divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+    .summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.82rem;}
+    .summary-row.total{font-weight:800;font-size:0.95rem;margin-top:4px;}
+    .free-tag{color:var(--green);font-weight:700;}
+    .secure-note{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);justify-content:center;margin-top:10px;}
+    .secure-note i{color:var(--green);}
+
+    /* CONFIRMATION PAGE */
+    .confirm-page{max-width:900px;margin:0 auto;padding:28px 24px;}
+    .confirm-hero{text-align:center;padding:32px 0 24px;}
+    .confirm-icon{width:64px;height:64px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;margin:0 auto 16px;}
+    .confirm-title{font-size:1.6rem;font-weight:800;margin-bottom:8px;}
+    .confirm-sub{font-size:0.85rem;color:var(--muted);max-width:460px;margin:0 auto;line-height:1.6;}
+    .confirm-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+    .tracking-steps{display:flex;flex-direction:column;gap:0;}
+    .track-item{display:flex;gap:14px;padding:12px 0;}
+    .track-dot-wrap{display:flex;flex-direction:column;align-items:center;}
+    .track-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;}
+    .td-done{background:var(--primary);color:#fff;}
+    .td-next{background:var(--primary-light);color:var(--primary);border:2px solid var(--primary);}
+    .td-pending{background:#F3F4F6;color:var(--muted);}
+    .track-line{width:2px;background:var(--border);flex:1;min-height:16px;}
+    .track-line.done{background:var(--primary);}
+    .track-label{font-size:0.83rem;font-weight:600;margin-bottom:2px;}
+    .track-sub{font-size:0.72rem;color:var(--muted);}
+    .map-placeholder{background:linear-gradient(135deg,#1e3a5f,#2d6a4f);border-radius:var(--radius);height:160px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:0.82rem;}
+    .related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px;}
+    .related-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+    .related-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+    .related-img{width:100%;height:130px;object-fit:cover;background:#f3f4f6;}
+    .related-body{padding:10px 12px;}
+    .related-name{font-size:0.8rem;font-weight:700;margin-bottom:3px;}
+    .related-sub{font-size:0.7rem;color:var(--muted);margin-bottom:6px;}
+    .related-price{font-size:0.85rem;font-weight:800;color:var(--primary);}
+
+    /* BADGE */
+    .badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:0.68rem;font-weight:600;}
+    .badge-green{background:var(--green-light);color:var(--green);}
+    .badge-blue{background:var(--primary-light);color:var(--primary);}
+    .badge-red{background:var(--red-light);color:var(--red);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
+    .toast.show{display:flex;animation:su .3s ease;}
+    @keyframes su{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+    /* FOOTER */
+    footer{background:#e8edf5;border-top:1px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:auto;}
+    .footer-copy{font-size:0.72rem;color:var(--muted);}
+    .footer-links{display:flex;gap:16px;}
+    .footer-links a{font-size:0.72rem;color:var(--muted);text-decoration:none;}
+    .footer-links a:hover{color:var(--primary);}
+
+    @media(max-width:900px){.checkout-wrap{flex-direction:column;}.checkout-side{width:100%;}.confirm-grid{grid-template-columns:1fr;}.related-grid{grid-template-columns:1fr 1fr;}.form-row{grid-template-columns:1fr;}}
+    @media(max-width:600px){.delivery-opts{grid-template-columns:1fr;}.related-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <a class="nav-brand" href="../customer_dashboard/marketplace.html"><i class="fa-solid fa-pills"></i> MedTrust Systems</a>
+  <div class="nav-links">
+    <a class="nav-link" href="../customer_dashboard/marketplace.html">Marketplace</a>
+    <a class="nav-link" href="../customer_dashboard/prescription.html">Prescriptions</a>
+    <!-- <a class="nav-link" href="../customer_dashboard/marketplace-landing.html">Pharmacies</a> -->
+    <a class="nav-link" href="#">Insurance</a>
+  </div>
+  <div class="nav-right">
+    <a href="../login/sign_in/login.html" style="font-size:0.82rem;font-weight:600;color:var(--muted);text-decoration:none;">Sign In</a>
+    <button class="icon-btn" onclick="showToast('Cart: 2 items')"><i class="fa-solid fa-cart-shopping"></i></button>
+  </div>
+</nav>
+
+<!-- STEPPER -->
+<div class="stepper-wrap">
+  <div class="stepper" id="stepper"></div>
+</div>
+
+<!-- STEP PANELS WRAPPER -->
+<div id="stepsContainer">
+
+  <!-- ══════════ STEP 1: PRESCRIPTION ══════════ -->
+  <div class="step-panel active" id="panel-1">
+    <div class="checkout-wrap">
+      <div class="checkout-main">
+
+        <!-- VERIFY PRESCRIPTIONS -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Verify Prescriptions</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">We need a valid prescription for the following marked items in your cart.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- RX Item 1 -->
+            <div class="rx-item">
+              <div class="rx-item-icon"><i class="fa-solid fa-pills"></i></div>
+              <div class="rx-item-info">
+                <div class="rx-item-name">Amoxicillin 500mg <span class="rx-badge">REQUIRED RX</span></div>
+                <div class="rx-item-sub">Antibiotic · 30 Capsules · 1 Refill Available</div>
+              </div>
+              <div>
+                <div class="upload-zone" style="width:200px;padding:14px;" id="uploadZone1"
+                     ondragover="dragOver(event,'uploadZone1')" ondragleave="dragLeave('uploadZone1')" ondrop="dropFile(event,'uploadZone1')"
+                     onclick="document.getElementById('file1').click()">
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                  <div class="upload-btn-txt">Drag & Drop or Click to Upload</div>
+                  <p>PDF, JPEG, or PNG. Max 5MB</p>
+                  <input type="file" id="file1" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'uploadZone1')"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- RX Item 2 (no rx needed) -->
+            <div class="rx-item">
+              <div class="rx-item-icon"><i class="fa-solid fa-capsules"></i></div>
+              <div class="rx-item-info">
+                <div class="rx-item-name">Vitamin C Complex</div>
+                <div class="rx-item-sub">Dietary Supplement · 60 Tablets</div>
+              </div>
+              <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> No Rx Needed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- POLICY NOTE -->
+        <div class="policy-note">
+          <i class="fa-solid fa-shield-halved"></i>
+          <p><strong>Physician Review Policy:</strong> All uploaded prescriptions are verified by our HIPAA-compliant panel within 15 minutes. You will receive a notification once approved.</p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button class="btn btn-ghost" style="width:auto;" onclick="showToast('Returning to cart…')"><i class="fa-solid fa-arrow-left"></i> Back to Cart</button>
+          <button class="btn btn-primary" onclick="goStep(2)">Continue to Delivery <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="checkout-side">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Order Summary</div></div>
+          <div class="card-body">
+            <div class="summary-row"><span>Subtotal (2 items)</span><span>$42.00</span></div>
+            <div class="summary-row"><span>Estimated Shipping</span><span style="color:var(--muted);">Calculated next</span></div>
+            <div class="summary-row"><span>Taxes</span><span>$3.40</span></div>
+            <hr class="summary-divider"/>
+            <div class="summary-row total"><span>Total</span><span>$45.40</span></div>
+            <button class="btn btn-primary" style="margin-top:14px;" onclick="goStep(2)">Continue to Delivery <i class="fa-solid fa-arrow-right"></i></button>
+            <div class="secure-note"><i class="fa-solid fa-lock"></i> Secure Checkout with SSL Encryption</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 2: DELIVERY ══════════ -->
+  <div class="step-panel" id="panel-2">
+    <div class="checkout-wrap">
+      <div class="checkout-main">
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Delivery &amp; Fulfilment</div></div>
+          <div class="card-body">
+
+            <!-- DELIVERY OPTIONS -->
+            <div class="delivery-opts" id="deliveryOpts">
+              <div class="delivery-opt selected" onclick="selectDelivery(this,'home')">
+                <div class="delivery-opt-icon"><i class="fa-solid fa-house"></i></div>
+                <div>
+                  <div class="delivery-opt-title">Home Delivery</div>
+                  <div class="delivery-opt-sub">Fast &amp; convenient delivery to your doorstep. Estimated 2–3 business days.</div>
+                </div>
+                <div class="sel-dot checked" id="dot-home"></div>
+              </div>
+              <div class="delivery-opt" onclick="selectDelivery(this,'pickup')">
+                <div class="delivery-opt-icon"><i class="fa-solid fa-store"></i></div>
+                <div>
+                  <div class="delivery-opt-title">Pharmacy Pickup</div>
+                  <div class="delivery-opt-sub">Select a local pharmacy. Available as soon as today.</div>
+                </div>
+                <div class="sel-dot" id="dot-pickup"></div>
+              </div>
+            </div>
+
+            <!-- SHIPPING FORM -->
+            <div id="shippingForm">
+              <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> Shipping Information
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="shipFN" placeholder="Kofi"/></div>
+                <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="shipLN" placeholder="Mensah"/></div>
+              </div>
+              <div class="form-group"><label class="form-label">Street Address</label><input class="form-control" id="shipAddr" placeholder="123 MedTrust Ave, Suite 400"/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">City</label><input class="form-control" id="shipCity" placeholder="San Francisco"/></div>
+                <div class="form-group"><label class="form-label">State</label><input class="form-control" id="shipState" placeholder="CA"/></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Area / Region</label><input class="form-control" placeholder="Area"/></div>
+                <div class="form-group"><label class="form-label">ZIP Code</label><input class="form-control" placeholder="94102"/></div>
+              </div>
+            </div>
+
+            <!-- PICKUP FORM (hidden by default) -->
+            <div id="pickupForm" style="display:none;">
+              <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-store" style="color:var(--primary);"></i> Select Pickup Pharmacy
+              </div>
+              <div class="form-group"><label class="form-label">Search for a pharmacy</label>
+                <input class="form-control" placeholder="Enter your city or postcode…"/>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;" id="pharmacyList">
+                <div style="border:1.5px solid var(--primary);border-radius:10px;padding:12px 14px;background:var(--primary-light);cursor:pointer;">
+                  <div style="font-size:0.83rem;font-weight:700;">Central Pharmacy — Accra</div>
+                  <div style="font-size:0.72rem;color:var(--muted);">15 Independence Avenue · Open until 9:00 PM</div>
+                  <div style="font-size:0.72rem;color:var(--green);font-weight:600;margin-top:3px;"><i class="fa-solid fa-circle-check"></i> Ready Today by 3:00 PM</div>
+                </div>
+                <div style="border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;" onclick="this.style.border='1.5px solid var(--primary)';this.style.background='var(--primary-light)'">
+                  <div style="font-size:0.83rem;font-weight:700;">North Star Meds — Kumasi</div>
+                  <div style="font-size:0.72rem;color:var(--muted);">88 Ring Road West · Open until 8:00 PM</div>
+                  <div style="font-size:0.72rem;color:var(--amber);font-weight:600;margin-top:3px;"><i class="fa-solid fa-clock"></i> Ready Tomorrow by 10:00 AM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back to Cart</button>
+          <button class="btn btn-primary" onclick="goStep(3)">Continue to Payment <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="checkout-side">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Order Summary</div></div>
+          <div class="card-body">
+            <div class="summary-item">
+              <img class="summary-img" src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=88&h=88&fit=crop" alt="Amoxicillin" onerror="this.style.background='#f3f4f6'"/>
+              <div class="summary-name">Amoxicillin 500mg<div class="summary-sub">Qty: 30 Capsules</div></div>
+              <div class="summary-price">$42.80</div>
+            </div>
+            <div class="summary-item">
+              <img class="summary-img" src="https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=88&h=88&fit=crop" alt="Vitamin C" onerror="this.style.background='#f3f4f6'"/>
+              <div class="summary-name">Digital Glucose Monitor<div class="summary-sub">Qty: 1</div></div>
+              <div class="summary-price">$99.34</div>
+            </div>
+            <hr class="summary-divider"/>
+            <div class="summary-row"><span>Subtotal</span><span>$120.14</span></div>
+            <div class="summary-row"><span>Shipping</span><span class="free-tag">FREE</span></div>
+            <div class="summary-row"><span>Estimated Tax</span><span>$11.14</span></div>
+            <hr class="summary-divider"/>
+            <div class="summary-row total"><span>Total</span><span>$142.14</span></div>
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+              <span class="badge badge-blue"><i class="fa-solid fa-shield-halved"></i> HIPAA</span>
+              <span class="badge badge-green"><i class="fa-solid fa-lock"></i> Encrypted</span>
+              <span class="badge badge-blue"><i class="fa-solid fa-certificate"></i> Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 3: PAYMENT ══════════ -->
+  <div class="step-panel" id="panel-3">
+    <div class="checkout-wrap">
+      <div class="checkout-main">
+
+        <!-- INSURANCE CLAIM -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-shield-halved" style="color:var(--primary);margin-right:6px;"></i>Insurance Claim</div>
+            <span class="badge badge-blue">Optional</span>
+          </div>
+          <div class="card-body">
+            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">Enter your provider details to see the estimated coverage and reduce your out-of-pocket cost.</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Select Provider</label>
+                <select class="form-control" id="insProvider" onchange="updateCoverage()">
+                  <option value="">Select insurance provider…</option>
+                  <option value="nhis">NHIS (National Health Insurance)</option>
+                  <option value="enterprise">Enterprise Health Insurance</option>
+                  <option value="star">StarLife Insurance</option>
+                  <option value="none">No Insurance</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Member ID</label><input class="form-control" placeholder="e.g. NGT2714000" id="insMember"/></div>
+            </div>
+            <div id="coverageBox" style="display:none;">
+              <div class="insurance-coverage">
+                <div>
+                  <div class="coverage-label">Estimated Coverage</div>
+                  <div class="coverage-val" id="coverageAmt">GH₵ 0.00</div>
+                  <div class="coverage-pct-bar"><div class="coverage-fill" id="coverageFill" style="width:0%;"></div></div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="coverage-label">You Pay</div>
+                  <div style="font-size:0.9rem;font-weight:800;color:var(--text);" id="youPayAmt">$142.14</div>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="width:auto;" onclick="showToast('Checking coverage details…')"><i class="fa-solid fa-magnifying-glass"></i> Check Coverage</button>
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:10px;"><i class="fa-solid fa-circle-info" style="color:var(--primary);"></i> Your plan typically covers 80% of prescription costs for covered medications categories.</div>
+          </div>
+        </div>
+
+        <!-- PAYMENT METHOD -->
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-credit-card" style="color:var(--primary);margin-right:6px;"></i>Payment Method</div></div>
+          <div class="card-body">
+            <div class="pay-tabs">
+              <button class="pay-tab active" onclick="switchPayTab(this,'card')"><i class="fa-solid fa-credit-card"></i> Credit / Debit Card</button>
+              <button class="pay-tab" onclick="switchPayTab(this,'momo')"><i class="fa-solid fa-mobile-screen"></i> Mobile Money</button>
+              <button class="pay-tab" onclick="switchPayTab(this,'bank')"><i class="fa-solid fa-building-columns"></i> Bank Transfer</button>
+            </div>
+
+            <!-- CARD -->
+            <div class="pay-panel active" id="pay-card">
+              <div class="form-group">
+                <label class="form-label">Card Number</label>
+                <div class="card-number-wrap">
+                  <input class="form-control" id="cardNum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"/>
+                  <div class="card-type-icons">
+                    <i class="fa-brands fa-cc-visa card-type-icon" style="color:#1a1f71;"></i>
+                    <i class="fa-brands fa-cc-mastercard card-type-icon" style="color:#eb001b;"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group"><label class="form-label">Cardholder Name</label><input class="form-control" placeholder="Name on card"/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Expiry Date</label><input class="form-control" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)"/></div>
+                <div class="form-group"><label class="form-label">CVV</label><input class="form-control" placeholder="•••" maxlength="4" type="password"/></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:0.75rem;color:var(--muted);">
+                <input type="checkbox" style="accent-color:var(--primary);"/> Save this card for future purchases
+              </div>
+            </div>
+
+            <!-- MOBILE MONEY -->
+            <div class="pay-panel" id="pay-momo">
+              <div style="font-size:0.8rem;font-weight:600;margin-bottom:10px;">Select Mobile Network</div>
+              <div class="momo-logos">
+                <div class="momo-logo momo-mtn" onclick="selectMomo(this)">MTN</div>
+                <div class="momo-logo momo-voda" onclick="selectMomo(this)">Vodafone</div>
+                <div class="momo-logo momo-at" onclick="selectMomo(this)">AirtelTigo</div>
+              </div>
+              <div class="form-group"><label class="form-label">Mobile Money Number</label><input class="form-control" placeholder="+233 24 000 0000"/></div>
+              <div class="form-group"><label class="form-label">Account Name</label><input class="form-control" placeholder="Name registered on MoMo"/></div>
+              <div style="background:var(--amber-light);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:#854d0e;">
+                <i class="fa-solid fa-circle-info"></i> You will receive a prompt on your phone to confirm the payment of <strong>GH₵ 142.14</strong>.
+              </div>
+            </div>
+
+            <!-- BANK TRANSFER -->
+            <div class="pay-panel" id="pay-bank">
+              <div class="form-group"><label class="form-label">Bank Name</label>
+                <select class="form-control"><option>GCB Bank</option><option>Ecobank Ghana</option><option>Absa Bank</option><option>Standard Chartered</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Account Number</label><input class="form-control" placeholder="Enter account number"/></div>
+              <div class="form-group"><label class="form-label">Account Name</label><input class="form-control" placeholder="Name on account"/></div>
+              <div style="background:var(--primary-light);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:var(--primary);">
+                <i class="fa-solid fa-circle-info"></i> Bank transfers may take 1–2 business days to confirm. Your order will be held until payment clears.
+              </div>
+            </div>
+
+            <!-- SECURITY ICONS -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+              <div style="text-align:center;font-size:0.65rem;color:var(--muted);"><i class="fa-solid fa-lock" style="font-size:1rem;display:block;margin-bottom:2px;color:var(--green);"></i>SSL Secure</div>
+              <div style="text-align:center;font-size:0.65rem;color:var(--muted);"><i class="fa-solid fa-shield-halved" style="font-size:1rem;display:block;margin-bottom:2px;color:var(--primary);"></i>HIPAA</div>
+              <div style="text-align:center;font-size:0.65rem;color:var(--muted);"><i class="fa-brands fa-cc-visa" style="font-size:1rem;display:block;margin-bottom:2px;color:#1a1f71;"></i>Visa</div>
+              <div style="text-align:center;font-size:0.65rem;color:var(--muted);"><i class="fa-brands fa-cc-mastercard" style="font-size:1rem;display:block;margin-bottom:2px;color:#eb001b;"></i>Mastercard</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button class="btn btn-primary" onclick="placeOrder()"><i class="fa-solid fa-lock"></i> Complete Secure Payment — $142.14</button>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="checkout-side">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Order Summary</div></div>
+          <div class="card-body">
+            <div class="summary-item">
+              <img class="summary-img" src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=88&h=88&fit=crop" alt="Med" onerror="this.style.background='#f3f4f6'"/>
+              <div class="summary-name">Amoxicillin 500mg<div class="summary-sub">Qty: 30 Caps · $42.80</div></div>
+            </div>
+            <div class="summary-item">
+              <img class="summary-img" src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=88&h=88&fit=crop" alt="Monitor" onerror="this.style.background='#f3f4f6'"/>
+              <div class="summary-name">Digital Glucose Monitor<div class="summary-sub">Qty: 1 · $99.34</div></div>
+            </div>
+            <hr class="summary-divider"/>
+            <div class="summary-row"><span>Subtotal</span><span>$120.14</span></div>
+            <div class="summary-row"><span>Shipping</span><span class="free-tag">FREE</span></div>
+            <div class="summary-row"><span>Estimated Tax</span><span>$11.14</span></div>
+            <div class="summary-row" id="insuranceRow" style="display:none;"><span>Insurance Discount</span><span style="color:var(--green);" id="insuranceDiscount">-$0.00</span></div>
+            <hr class="summary-divider"/>
+            <div class="summary-row total"><span>Total</span><span id="finalTotal">$142.14</span></div>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="placeOrder()"><i class="fa-solid fa-lock"></i> Complete Secure Payment</button>
+            <div class="secure-note"><i class="fa-solid fa-lock"></i> 256-bit SSL Encrypted</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 4: CONFIRMATION ══════════ -->
+  <div class="step-panel" id="panel-4">
+    <div class="confirm-page">
+      <!-- HERO -->
+      <div class="confirm-hero">
+        <div class="confirm-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="confirm-title">Order #MT-9045 Successfully Placed</div>
+        <div class="confirm-sub">Your order has been verified and confirmed. A confirmation email with clinical instructions has been sent to your registered address.</div>
+      </div>
+
+      <div class="confirm-grid">
+        <!-- DELIVERY TRACKING -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="badge badge-blue" style="margin-bottom:6px;display:inline-block;"><i class="fa-solid fa-truck"></i> EXPRESS DELIVERY</span>
+              <div class="card-title">Arriving October 26th</div>
+              <div style="font-size:0.72rem;color:var(--muted);">Est. Delivery: Oct 26, 2024 · 2:00 PM – 6:00 PM</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="tracking-steps">
+              <div class="track-item">
+                <div class="track-dot-wrap"><div class="track-dot td-done"><i class="fa-solid fa-check" style="font-size:.6rem;"></i></div><div class="track-line done"></div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Order Confirmed</div><div class="track-sub">Oct 24, 2024 · 10:41 AM</div></div>
+              </div>
+              <div class="track-item">
+                <div class="track-dot-wrap"><div class="track-dot td-done"><i class="fa-solid fa-check" style="font-size:.6rem;"></i></div><div class="track-line done"></div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Pharmacy Processing</div><div class="track-sub">Oct 24, 2024 · 11:30 AM</div></div>
+              </div>
+              <div class="track-item">
+                <div class="track-dot-wrap"><div class="track-dot td-next"><i class="fa-solid fa-truck" style="font-size:.6rem;"></i></div><div class="track-line"></div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label" style="color:var(--primary);">Out for Delivery</div><div class="track-sub">Expected: Oct 26</div></div>
+              </div>
+              <div class="track-item">
+                <div class="track-dot-wrap"><div class="track-dot td-pending"><i class="fa-solid fa-house" style="font-size:.6rem;"></i></div></div>
+                <div style="padding-left:12px;"><div class="track-label" style="color:var(--muted);">Delivered</div><div class="track-sub">Pending</div></div>
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px;">
+              <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="showToast('Opening live tracking…')"><i class="fa-solid fa-location-dot"></i> Live View</button>
+              <button class="btn btn-outline" style="padding:10px 14px;" onclick="showToast('Contacting courier…')"><i class="fa-solid fa-phone"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: MAP + ORDER SUMMARY -->
+        <div>
+          <!-- MAP placeholder -->
+          <div class="card" style="margin-bottom:16px;">
+            <div class="map-placeholder">
+              <div style="text-align:center;"><i class="fa-solid fa-map-location-dot" style="font-size:2.5rem;margin-bottom:8px;opacity:.4;display:block;"></i>Live delivery map<br/>tracking active</div>
+            </div>
+          </div>
+
+          <!-- ORDER SUMMARY -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Order Summary</div></div>
+            <div class="card-body" style="padding:14px 16px;">
+              <div class="summary-row"><span style="font-size:0.78rem;">Lisinopril Vera</span><span>$42.50</span></div>
+              <div class="summary-row"><span style="font-size:0.78rem;">Metformin Extendo</span><span>$11.32</span></div>
+              <hr class="summary-divider" style="margin:8px 0;"/>
+              <div class="summary-row"><span>Subtotal</span><span>$120.14</span></div>
+              <div class="summary-row"><span>Shipping</span><span class="free-tag">FREE</span></div>
+              <div class="summary-row"><span>Pharmacy Fee</span><span>$3.18</span></div>
+              <hr class="summary-divider" style="margin:8px 0;"/>
+              <div class="summary-row total"><span>Total Paid</span><span>$36.32</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
+                <button class="btn btn-outline" style="justify-content:center;" onclick="showToast('Downloading invoice…')"><i class="fa-solid fa-download"></i> Download Invoice</button>
+                <button class="btn btn-ghost" style="justify-content:center;" onclick="window.location='marketplace-landing.html'"><i class="fa-solid fa-store"></i> Back to Storefront</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- HIPAA SECURE -->
+          <div style="background:var(--green-light);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:9px;margin-top:12px;">
+            <i class="fa-solid fa-shield-halved" style="color:var(--green);"></i>
+            <span style="font-size:0.75rem;color:var(--green);font-weight:600;">HIPAA Secure — 256-bit encryption applied to this order.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RELATED PRODUCTS -->
+      <div style="margin-top:8px;">
+        <div style="font-size:0.9rem;font-weight:700;margin-bottom:14px;">Related to your order</div>
+        <div class="related-grid">
+          <div class="related-card">
+            <img class="related-img" src="https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&h=260&fit=crop" alt="Supplement" onerror="this.style.background='#f3f4f6'"/>
+            <div class="related-body">
+              <div class="related-name">Smart Pill Dispenser</div>
+              <div class="related-sub">Never miss a dose with auto-scheduling</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="related-price">$45.00</div>
+                <button class="btn btn-primary" style="width:auto;padding:5px 12px;font-size:0.72rem;" onclick="showToast('Added to cart')">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="related-card">
+            <img class="related-img" src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=260&fit=crop" alt="Monitor" onerror="this.style.background='#f3f4f6'"/>
+            <div class="related-body">
+              <div class="related-name">Digital Stress Monitor</div>
+              <div class="related-sub">Real-time stress &amp; activity tracking</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="related-price">$32.00</div>
+                <button class="btn btn-primary" style="width:auto;padding:5px 12px;font-size:0.72rem;" onclick="showToast('Added to cart')">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="related-card">
+            <img class="related-img" src="https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=260&fit=crop" alt="Vitamins" onerror="this.style.background='#f3f4f6'"/>
+            <div class="related-body">
+              <div class="related-name">Immune Booster Pack</div>
+              <div class="related-sub">Vitamin C, D3 &amp; Zinc — 90 day supply</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="related-price">$19.99</div>
+                <button class="btn btn-primary" style="width:auto;padding:5px 12px;font-size:0.72rem;" onclick="showToast('Added to cart')">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end stepsContainer -->
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant &amp; Secure.</span>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Drug Safety</a><a href="#">Contact Support</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script>
+/* ── STEPS ── */
+const STEPS = [
+  { label:'Prescription', icon:'fa-file-prescription' },
+  { label:'Delivery',     icon:'fa-truck'             },
+  { label:'Payment',      icon:'fa-credit-card'       },
+  { label:'Review',       icon:'fa-circle-check'      },
+];
+
+let currentStep = 1;
+
+function renderStepper() {
+  document.getElementById('stepper').innerHTML = STEPS.map((s, i) => {
+    const n = i + 1;
+    const cls = n < currentStep ? 'done' : n === currentStep ? 'active' : 'pending';
+    const stepCls = n < currentStep ? 'completed' : '';
+    const icon = n < currentStep ? 'fa-check' : s.icon;
+    return `
+      <div class="step ${stepCls}">
+        <div class="step-dot ${cls}"><i class="fa-solid ${icon}" style="font-size:0.75rem;"></i></div>
+        <div class="step-label ${cls==='active'?'active':''}">${s.label}</div>
+      </div>`;
+  }).join('');
+}
+
+function goStep(n) {
+  document.getElementById(`panel-${currentStep}`).classList.remove('active');
+  currentStep = n;
+  document.getElementById(`panel-${currentStep}`).classList.add('active');
+  renderStepper();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── DELIVERY ── */
+let deliveryMode = 'home';
+function selectDelivery(el, mode) {
+  deliveryMode = mode;
+  document.querySelectorAll('.delivery-opt').forEach(o => { o.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('dot-home').className   = 'sel-dot' + (mode==='home'?' checked':'');
+  document.getElementById('dot-pickup').className = 'sel-dot' + (mode==='pickup'?' checked':'');
+  document.getElementById('shippingForm').style.display = mode === 'home' ? 'block' : 'none';
+  document.getElementById('pickupForm').style.display   = mode === 'pickup' ? 'block' : 'none';
+}
+
+/* ── PAYMENT TABS ── */
+function switchPayTab(btn, id) {
+  document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pay-'+id).classList.add('active');
+}
+
+/* ── MOMO SELECTION ── */
+function selectMomo(el) {
+  document.querySelectorAll('.momo-logo').forEach(m => m.style.border='1.5px solid var(--border)');
+  el.style.border = '1.5px solid var(--primary)';
+  el.style.boxShadow = '0 0 0 3px var(--primary-light)';
+}
+
+/* ── INSURANCE ── */
+function updateCoverage() {
+  const val = document.getElementById('insProvider').value;
+  const box = document.getElementById('coverageBox');
+  if (!val || val === 'none') { box.style.display='none'; return; }
+  box.style.display = 'block';
+  const pcts = { nhis:80, enterprise:60, star:50 };
+  const pct = pcts[val] || 0;
+  const total = 142.14;
+  const covered = (total * pct / 100).toFixed(2);
+  const youPay = (total - covered).toFixed(2);
+  document.getElementById('coverageAmt').textContent = `$${covered}`;
+  document.getElementById('youPayAmt').textContent   = `$${youPay}`;
+  document.getElementById('coverageFill').style.width = pct + '%';
+  document.getElementById('insuranceRow').style.display = 'flex';
+  document.getElementById('insuranceDiscount').textContent = `-$${covered}`;
+  document.getElementById('finalTotal').textContent = `$${youPay}`;
+}
+
+/* ── CARD FORMAT ── */
+function formatCard(input) {
+  let v = input.value.replace(/\D/g,'').substring(0,16);
+  input.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g,'');
+  if (v.length >= 3) v = v.substring(0,2) + ' / ' + v.substring(2,4);
+  input.value = v;
+}
+
+/* ── UPLOAD ── */
+function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('dragover'); }
+function dragLeave(id)   { document.getElementById(id).classList.remove('dragover'); }
+function dropFile(e, id) {
+  e.preventDefault(); dragLeave(id);
+  const f = e.dataTransfer.files[0];
+  if (f) processUpload(f, id);
+}
+function handleFile(input, id) { if (input.files[0]) processUpload(input.files[0], id); }
+function processUpload(f, id) {
+  const zone = document.getElementById(id);
+  zone.innerHTML = `<i class="fa-solid fa-file-circle-check" style="color:var(--green);"></i><div class="upload-btn-txt" style="color:var(--green);">${f.name}</div><p>Uploaded — pending verification</p>`;
+  zone.style.borderColor = 'var(--green)';
+  zone.style.background  = 'var(--green-light)';
+  showToast(`"${f.name}" uploaded — under review`);
+}
+
+/* ── PLACE ORDER ── */
+function placeOrder() {
+  showToast('Processing payment…');
+  setTimeout(() => goStep(4), 1500);
+}
+
+/* ── TOAST ── */
+let _t;
+function showToast(msg, type='success') {
+  clearTimeout(_t);
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').style.color = type==='warn'?'#fbbf24':type==='error'?'#f87171':'#4ade80';
+  t.classList.add('show');
+  _t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ── INIT ── */
+renderStepper();
+</script>
+</body>
+</html>

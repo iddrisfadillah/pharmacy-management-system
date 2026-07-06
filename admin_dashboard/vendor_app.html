@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Approvals – PharmaAdmin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin-shared.css"/>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<div class="main">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row cols-4">
+      <div class="stat-card">
+        <div class="label">Total Applications</div>
+        <div class="value" id="statTotal">—</div>
+        <div class="sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pending Review</div>
+        <div class="value" style="color:var(--accent-amber)" id="statPending">—</div>
+        <div class="sub">Awaiting action</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Approved</div>
+        <div class="value" style="color:var(--accent-green)" id="statApproved">—</div>
+        <div class="sub">Active vendors</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Rejected</div>
+        <div class="value" style="color:var(--accent-red)" id="statRejected">—</div>
+        <div class="sub">Declined applications</div>
+      </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-shop" style="color:var(--primary);margin-right:6px;"></i>Vendor Applications</h3>
+        <div class="filter-row">
+          <select id="filterStatus" onchange="filterVendors()">
+            <option value="">All Statuses</option>
+            <option value="Pending Review">Pending</option>
+            <option value="License Verified">Verified</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Action Required">Action Required</option>
+          </select>
+          <input type="text" placeholder="Search vendor…" id="searchVendor" oninput="filterVendors()"/>
+          <button class="btn btn-primary" onclick="exportTable()">
+            <i class="fa-solid fa-download"></i> Export
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Location</th>
+            <th>License No.</th>
+            <th>Status</th>
+            <th>Date Submitted</th>
+            <th>Documents</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="vendorBody"></tbody>
+      </table>
+
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <i class="fa-solid fa-shop"></i>
+        <p>No vendors match your filter.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--border);">
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="pageInfo">Showing 0 of 0</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" onclick="changePage(-1)" id="btnPrev"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn btn-ghost" onclick="changePage(1)"  id="btnNext"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="width:540px;">
+    <div class="modal-header">
+      <h3 id="modalVendorName">Vendor Details</h3>
+      <button class="modal-close" onclick="closeModal('detailModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div><div class="form-label">Business Name</div><div id="mName" style="font-size:0.85rem;"></div></div>
+        <div><div class="form-label">Location</div><div id="mLocation" style="font-size:0.85rem;"></div></div>
+        <div><div class="form-label">License No.</div><div id="mLicense" style="font-size:0.85rem;"></div></div>
+        <div><div class="form-label">Date Submitted</div><div id="mDate" style="font-size:0.85rem;"></div></div>
+        <div><div class="form-label">Contact Email</div><div id="mEmail" style="font-size:0.85rem;"></div></div>
+        <div><div class="form-label">Phone</div><div id="mPhone" style="font-size:0.85rem;"></div></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Admin Notes</div>
+        <textarea class="form-control" id="adminNotes" rows="3" placeholder="Add a note before approving or rejecting…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('detailModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="rejectVendor()"><i class="fa-solid fa-xmark"></i> Reject</button>
+      <button class="btn btn-success" onclick="approveVendor()"><i class="fa-solid fa-check"></i> Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script src="admin-layout.js"></script>
+<script>
+    
+renderAdminLayout({ activePage: 'vendor-approvals', pageTitle: 'Vendor Approvals' });
+
+/* ── MOCK DATA — replace with fetch('api/admin/vendors.php') ── */
+const VENDORS = [
+  { id:1, initials:'CH', color:'av-blue',   name:'City Health Pharma',      location:'Accra, Ghana',     license:'GH-PH-20231001', status:'License Verified', date:'Oct 24, 2023', email:'info@cityhealth.gh',  phone:'+233 20 111 2233', docs:3 },
+  { id:2, initials:'NS', color:'av-amber',  name:'North Star Meds',         location:'Kumasi, Ghana',    license:'GH-PH-20231015', status:'Pending Review',   date:'Oct 25, 2023', email:'ns@northstar.gh',     phone:'+233 24 555 6677', docs:2 },
+  { id:3, initials:'EP', color:'av-green',  name:'Elite Pharma Solutions',  location:'Takoradi, Ghana',  license:'GH-PH-20231020', status:'Action Required',  date:'Oct 26, 2023', email:'elite@pharma.gh',     phone:'+233 27 888 9900', docs:1 },
+  { id:4, initials:'GH', color:'av-teal',   name:'GoldCoast Health Ltd',    location:'Cape Coast, Ghana',license:'GH-PH-20231102', status:'Approved',         date:'Nov 02, 2023', email:'hello@goldcoast.gh',  phone:'+233 26 444 3322', docs:4 },
+  { id:5, initials:'SA', color:'av-red',    name:'SafeMeds Africa',         location:'Tamale, Ghana',    license:'GH-PH-20231110', status:'Rejected',         date:'Nov 10, 2023', email:'safe@safeafrica.gh',  phone:'+233 20 777 8811', docs:2 },
+  { id:6, initials:'PL', color:'av-purple', name:'PharmaLink Ghana',        location:'Ho, Ghana',        license:'GH-PH-20231115', status:'Pending Review',   date:'Nov 15, 2023', email:'link@pharmalink.gh',  phone:'+233 23 222 3344', docs:3 },
+];
+/* TODO: const VENDORS = await fetch('api/admin/vendors.php').then(r=>r.json()); */
+
+let filtered = [...VENDORS];
+let currentPage = 1;
+const PER_PAGE = 5;
+let selectedVendorId = null;
+
+function statusBadge(s) {
+  const map = { 'License Verified':'badge-green','Pending Review':'badge-amber','Action Required':'badge-red','Approved':'badge-green','Rejected':'badge-gray' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${s}</span>`;
+}
+
+function renderTable() {
+  const start = (currentPage-1)*PER_PAGE;
+  const page  = filtered.slice(start, start+PER_PAGE);
+  const tbody = document.getElementById('vendorBody');
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+
+  tbody.innerHTML = page.map(v => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="avatar ${v.color}">${v.initials}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.83rem;">${v.name}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);">${v.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${v.location}</td>
+      <td style="font-family:monospace;font-size:0.78rem;">${v.license}</td>
+      <td>${statusBadge(v.status)}</td>
+      <td>${v.date}</td>
+      <td><span style="font-size:0.78rem;color:var(--text-muted);">${v.docs} file${v.docs>1?'s':''}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline" onclick="openDetail(${v.id})"><i class="fa-solid fa-eye"></i> Review</button>
+          ${v.status==='Pending Review'||v.status==='License Verified'||v.status==='Action Required'
+            ? `<button class="btn btn-success" onclick="quickApprove(${v.id})"><i class="fa-solid fa-check"></i></button>
+               <button class="btn btn-danger"  onclick="quickReject(${v.id})"><i class="fa-solid fa-xmark"></i></button>`
+            : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No results</td></tr>';
+
+  document.getElementById('pageInfo').textContent = `Showing ${Math.min(start+PER_PAGE,filtered.length)} of ${filtered.length}`;
+  document.getElementById('btnPrev').disabled = currentPage===1;
+  document.getElementById('btnNext').disabled = start+PER_PAGE>=filtered.length;
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent    = VENDORS.length;
+  document.getElementById('statPending').textContent  = VENDORS.filter(v=>v.status==='Pending Review').length;
+  document.getElementById('statApproved').textContent = VENDORS.filter(v=>v.status==='Approved').length;
+  document.getElementById('statRejected').textContent = VENDORS.filter(v=>v.status==='Rejected').length;
+  const badge = document.getElementById('badge-pending');
+  if(badge){ badge.textContent = VENDORS.filter(v=>v.status==='Pending Review').length; badge.style.display='inline'; }
+}
+
+function filterVendors() {
+  const status = document.getElementById('filterStatus').value;
+  const search = document.getElementById('searchVendor').value.toLowerCase();
+  filtered = VENDORS.filter(v =>
+    (!status || v.status===status) &&
+    (!search || v.name.toLowerCase().includes(search) || v.location.toLowerCase().includes(search))
+  );
+  currentPage=1; renderTable();
+}
+
+function changePage(dir) { currentPage+=dir; renderTable(); }
+
+function openDetail(id) {
+  const v = VENDORS.find(x=>x.id===id);
+  if(!v) return;
+  selectedVendorId = id;
+  document.getElementById('modalVendorName').textContent = v.name;
+  document.getElementById('mName').textContent     = v.name;
+  document.getElementById('mLocation').textContent = v.location;
+  document.getElementById('mLicense').textContent  = v.license;
+  document.getElementById('mDate').textContent     = v.date;
+  document.getElementById('mEmail').textContent    = v.email;
+  document.getElementById('mPhone').textContent    = v.phone;
+  document.getElementById('adminNotes').value      = '';
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function approveVendor() {
+  updateStatus(selectedVendorId, 'Approved');
+  closeModal('detailModal');
+  showToast('Vendor approved successfully', 'success');
+}
+
+function rejectVendor() {
+  updateStatus(selectedVendorId, 'Rejected');
+  closeModal('detailModal');
+  showToast('Vendor rejected', 'warn');
+}
+
+function quickApprove(id) { updateStatus(id,'Approved'); showToast('Vendor approved','success'); }
+function quickReject(id)  { updateStatus(id,'Rejected'); showToast('Vendor rejected','warn'); }
+
+function updateStatus(id, newStatus) {
+  /* TODO: fetch('api/admin/update-vendor.php',{method:'POST',body:JSON.stringify({id,status:newStatus})}) */
+  const v = VENDORS.find(x=>x.id===id);
+  if(v) v.status = newStatus;
+  filtered = [...VENDORS];
+  updateStats(); renderTable();
+}
+
+function exportTable() {
+  showToast('Exporting vendor list…');
+  /* TODO: window.location='api/admin/export-vendors.php'; */
+}
+
+updateStats(); renderTable();
+</script>
+</body>
+</html>

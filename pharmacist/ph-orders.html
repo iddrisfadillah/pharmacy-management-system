@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orders – Pharmacist Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="pharmacist-shared.css"/>
+  <style>
+    .order-tabs{display:flex;gap:4px;background:#F3F4F6;border-radius:10px;padding:4px;margin-bottom:20px;}
+    .order-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:7px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .order-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.83rem;margin-bottom:16px;}
+    .dl{font-size:0.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+    .timeline{display:flex;flex-direction:column;gap:0;padding:8px 0;}
+    .tl-item{display:flex;gap:12px;padding:10px 0;}
+    .tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;flex-shrink:0;}
+    .tl-done{background:var(--primary);color:#fff;}
+    .tl-pending{background:#E5E7EB;color:var(--muted);}
+    .tl-label{font-size:0.82rem;font-weight:600;margin-bottom:2px;}
+    .tl-sub{font-size:0.72rem;color:var(--muted);}
+  </style>
+</head>
+<body>
+<aside class="sidebar" id="phSidebar"></aside>
+<div class="main">
+  <header class="topbar" id="phTopbar"></header>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title"><i class="fa-solid fa-bag-shopping" style="color:var(--primary);margin-right:8px;"></i>Orders</div>
+        <div class="page-sub">Review, dispense and manage all prescription orders.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="showToast('Exporting orders…')"><i class="fa-solid fa-download"></i> Export CSV</button>
+        <button class="btn btn-primary" onclick="showToast('Processing all ready orders…')"><i class="fa-solid fa-check-double"></i> Process All Ready</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-grid cols-4">
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-amber"><i class="fa-solid fa-hourglass-half"></i></div><span class="stat-badge sb-amber">Pending</span></div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value" style="color:var(--amber);">14</div>
+        <div class="stat-sub">Awaiting processing</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-green"><i class="fa-solid fa-circle-check"></i></div><span class="stat-badge sb-green">Today</span></div>
+        <div class="stat-label">Dispensed Today</div>
+        <div class="stat-value" style="color:var(--green);">38</div>
+        <div class="stat-sub">Since midnight</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-red"><i class="fa-solid fa-shield-halved"></i></div><span class="stat-badge sb-red">Issues</span></div>
+        <div class="stat-label">Insurance Issues</div>
+        <div class="stat-value" style="color:var(--red);">3</div>
+        <div class="stat-sub">Needs resolution</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon si-blue"><i class="fa-solid fa-truck"></i></div><span class="stat-badge sb-blue">Live</span></div>
+        <div class="stat-label">In Transit</div>
+        <div class="stat-value">9</div>
+        <div class="stat-sub">Out for delivery</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="order-tabs">
+      <button class="order-tab active" onclick="switchTab(this,'all')"><i class="fa-solid fa-list"></i> All Orders</button>
+      <button class="order-tab" onclick="switchTab(this,'pending')"><i class="fa-solid fa-clock"></i> Pending <span class="nav-badge" style="background:var(--amber-light);color:var(--amber);">14</span></button>
+      <button class="order-tab" onclick="switchTab(this,'ready')"><i class="fa-solid fa-check"></i> Ready to Fill</button>
+      <button class="order-tab" onclick="switchTab(this,'insurance')"><i class="fa-solid fa-shield-halved"></i> Insurance Issues</button>
+      <button class="order-tab" onclick="switchTab(this,'dispensed')"><i class="fa-solid fa-circle-check"></i> Dispensed</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="tableTitle">All Orders</span>
+        <div class="filter-row">
+          <input type="date" id="filterDate" onchange="filterOrders()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:0.82rem;font-family:inherit;"/>
+          <input type="text" id="searchOrder" placeholder="Search order or patient…" oninput="filterOrders()"/>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Patient</th>
+            <th>Medication</th>
+            <th>Qty</th>
+            <th>Status</th>
+            <th>Insurance</th>
+            <th>Placed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+      <div class="pagination">
+        <span id="pageInfo">—</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div><span style="font-size:0.82rem;font-weight:700;">MedTrust Systems</span><br/><span style="font-size:0.7rem;color:var(--muted);">© 2026 MedTrust Systems</span></div>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Drug Safety</a><a href="#">Support</a></div>
+  </footer>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" style="width:540px;">
+    <div class="modal-header">
+      <h3 id="orderModalTitle">Order Details</h3>
+      <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="orderDetailGrid"></div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Order Timeline</div>
+      <div class="timeline" id="orderTimeline"></div>
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label">Pharmacist Notes</label>
+        <textarea class="form-control" rows="2" placeholder="Add dispensing notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('orderModal')">Close</button>
+      <button class="btn btn-ghost" onclick="showToast('Order flagged','warn');closeModal('orderModal')"><i class="fa-solid fa-flag"></i> Flag</button>
+      <button class="btn btn-success" onclick="dispenseFromModal()"><i class="fa-solid fa-check"></i> Dispense</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<script src="pharmacist-layout.js"></script>
+<script>
+renderPharmacistLayout({ activePage:'orders', pageTitle:'Order Management' });
+
+const ALL_ORDERS = [
+  { id:'#ORD-00110', patient:'Robert J. Wilson',    med:'Atorvastatin 20mg', qty:90,  status:'In Verification', insurance:'NHIS',    placed:'2 hrs ago',   step:1 },
+  { id:'#ORD-00116', patient:'Elena Rodriguez',     med:'Ventolin HFA',      qty:1,   status:'Ready to Fill',   insurance:'None',    placed:'5 hrs ago',   step:2 },
+  { id:'#ORD-00115', patient:'Marcus Thorne',       med:'Gabapentin 300mg',  qty:90,  status:'Insurance Issue', insurance:'Private', placed:'Yesterday',   step:1 },
+  { id:'#ORD-00112', patient:'Sarah Jenkins',       med:'Levothyroxine 50',  qty:30,  status:'Ready to Fill',   insurance:'None',    placed:'Yesterday',   step:2 },
+  { id:'#ORD-00108', patient:'James Owusu',         med:'Metformin 500mg',   qty:60,  status:'Dispensed',       insurance:'NHIS',    placed:'2 days ago',  step:4 },
+  { id:'#ORD-00104', patient:'Abena Frimpong',      med:'Lisinopril 10mg',   qty:30,  status:'In Transit',      insurance:'None',    placed:'2 days ago',  step:3 },
+  { id:'#ORD-00101', patient:'Kwame Asante',        med:'Amoxicillin 500mg', qty:21,  status:'Dispensed',       insurance:'NHIS',    placed:'3 days ago',  step:4 },
+  { id:'#ORD-00099', patient:'Yaw Darko',           med:'Omeprazole 20mg',   qty:30,  status:'In Verification', insurance:'None',    placed:'3 days ago',  step:1 },
+  { id:'#ORD-00097', patient:'Akosua Mensah',       med:'Cetirizine 10mg',   qty:14,  status:'Ready to Fill',   insurance:'None',    placed:'4 days ago',  step:2 },
+  { id:'#ORD-00094', patient:'Nana Boateng',        med:'Gabapentin 300mg',  qty:60,  status:'Insurance Issue', insurance:'Private', placed:'4 days ago',  step:1 },
+];
+
+const STEPS = ['Received','Verification','Ready','Dispensed / Transit'];
+const statusClass = { 'In Verification':'badge-purple','Ready to Fill':'badge-green','Insurance Issue':'badge-red','Dispensed':'badge-gray','In Transit':'badge-blue' };
+const insClass = { 'NHIS':'badge-green','Private':'badge-blue','None':'badge-gray' };
+
+let activeTab='all', filtered=[...ALL_ORDERS], page=1, selectedId=null;
+const PER=6;
+
+function renderOrders(){
+  const start=(page-1)*PER;
+  const slice=filtered.slice(start,start+PER);
+  document.getElementById('ordersBody').innerHTML=slice.map(o=>`
+    <tr>
+      <td style="font-family:monospace;font-size:0.78rem;font-weight:700;color:var(--primary);">${o.id}</td>
+      <td style="font-weight:600;font-size:0.82rem;">${o.patient}</td>
+      <td style="font-size:0.82rem;">${o.med}</td>
+      <td style="font-size:0.82rem;">${o.qty}</td>
+      <td><span class="badge ${statusClass[o.status]||'badge-gray'}">${o.status}</span></td>
+      <td><span class="badge ${insClass[o.insurance]||'badge-gray'}">${o.insurance}</span></td>
+      <td style="font-size:0.78rem;color:var(--muted);">${o.placed}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-outline btn-sm" onclick="openOrder('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+          ${o.status==='Ready to Fill'?`<button class="btn btn-success btn-sm" onclick="quickDispense('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('pageInfo').textContent=`Showing ${Math.min(start+PER,filtered.length)} of ${filtered.length}`;
+}
+
+function switchTab(btn,tab){
+  document.querySelectorAll('.order-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  activeTab=tab;
+  const tabMap={ all:ALL_ORDERS, pending:ALL_ORDERS.filter(o=>o.status==='In Verification'), ready:ALL_ORDERS.filter(o=>o.status==='Ready to Fill'), insurance:ALL_ORDERS.filter(o=>o.status==='Insurance Issue'), dispensed:ALL_ORDERS.filter(o=>o.status==='Dispensed'||o.status==='In Transit') };
+  filtered=tabMap[tab]||ALL_ORDERS;
+  const titles={ all:'All Orders', pending:'Pending Orders', ready:'Ready to Fill', insurance:'Insurance Issues', dispensed:'Dispensed & In Transit' };
+  document.getElementById('tableTitle').textContent=titles[tab];
+  page=1; renderOrders();
+}
+
+function filterOrders(){
+  const q=document.getElementById('searchOrder').value.toLowerCase();
+  const base=activeTab==='all'?ALL_ORDERS:ALL_ORDERS.filter(o=>{ const map={pending:'In Verification',ready:'Ready to Fill',insurance:'Insurance Issue'}; return o.status===(map[activeTab]||''); });
+  filtered=q?base.filter(o=>o.id.toLowerCase().includes(q)||o.patient.toLowerCase().includes(q)||o.med.toLowerCase().includes(q)):base;
+  page=1; renderOrders();
+}
+
+function changePage(d){page=Math.max(1,page+d);renderOrders();}
+
+function openOrder(id){
+  const o=ALL_ORDERS.find(x=>x.id===id); if(!o) return;
+  selectedId=id;
+  document.getElementById('orderModalTitle').textContent=`Order ${o.id}`;
+  document.getElementById('orderDetailGrid').innerHTML=`
+    <div><div class="dl">Patient</div>${o.patient}</div>
+    <div><div class="dl">Medication</div>${o.med}</div>
+    <div><div class="dl">Quantity</div>${o.qty} units</div>
+    <div><div class="dl">Status</div><span class="badge ${statusClass[o.status]}">${o.status}</span></div>
+    <div><div class="dl">Insurance</div><span class="badge ${insClass[o.insurance]}">${o.insurance}</span></div>
+    <div><div class="dl">Placed</div>${o.placed}</div>
+  `;
+  document.getElementById('orderTimeline').innerHTML=STEPS.map((s,i)=>`
+    <div class="tl-item">
+      <div class="tl-dot ${i<o.step?'tl-done':'tl-pending'}"><i class="fa-solid ${i<o.step?'fa-check':'fa-circle'}" style="font-size:0.65rem;"></i></div>
+      <div><div class="tl-label" style="color:${i<o.step?'var(--primary)':'var(--muted)'};">${s}</div></div>
+    </div>`).join('');
+  openModal('orderModal');
+}
+
+function dispenseFromModal(){
+  const o=ALL_ORDERS.find(x=>x.id===selectedId); if(!o) return;
+  o.status='Dispensed'; o.step=4;
+  closeModal('orderModal'); filtered=[...ALL_ORDERS]; renderOrders();
+  showToast(`Order ${selectedId} dispensed`);
+}
+
+function quickDispense(id){
+  const o=ALL_ORDERS.find(x=>x.id===id); if(!o) return;
+  o.status='Dispensed'; o.step=4;
+  filtered=filtered.filter(x=>x.id!==id); renderOrders();
+  showToast(`Order ${id} dispensed`);
+}
+
+function handleGlobalSearch(q){ document.getElementById('searchOrder').value=q; filterOrders(); }
+
+renderOrders();
+</script>
+</body>
+</html>

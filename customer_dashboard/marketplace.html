@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketplace – MedTrust Systems</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F5F5;
+      --card: #FFFFFF;
+      --primary: #1a6fc4;
+      --primary-light: #e8f1fb;
+      --primary-dark: #155ba0;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --amber: #d97706;
+      --red: #dc2626;
+      --text: #111827;
+      --muted: #6B7280;
+      --light: #9CA3AF;
+      --border: #E5E7EB;
+      --radius: 12px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── TOPNAV ── */
+    .topnav {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      height: 54px;
+      gap: 28px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand { font-size: 1rem; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .nav-brand i { font-size: 1.1rem; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-link { padding: 6px 14px; border-radius: 8px; font-size: 0.83rem; font-weight: 500; color: var(--muted); text-decoration: none; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+    .nav-link.active { color: var(--primary); font-weight: 700; border-bottom: 2px solid var(--primary); border-radius: 0; padding-bottom: 4px; }
+    .nav-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; position: relative; padding: 4px 6px; }
+    .notif-dot { width: 7px; height: 7px; background: var(--red); border-radius: 50%; position: absolute; top: 2px; right: 4px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; text-decoration: none; }
+    .btn-ghost { background: transparent; color: var(--text); }
+    .btn-ghost:hover { color: var(--primary); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-white { background: #fff; color: var(--primary); border: 1px solid #fff; }
+    .btn-white:hover { background: var(--primary-light); }
+    .btn-outline-white { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.6); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; flex: 1; }
+
+    /* ── LEFT SIDEBAR ── */
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 0;
+      position: sticky;
+      top: 54px;
+      height: calc(100vh - 54px);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .sidebar-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .sidebar-user-name { font-size: 0.82rem; font-weight: 700; }
+    .sidebar-user-role { font-size: 0.7rem; color: var(--muted); }
+
+    .sidebar-upload {
+      margin: 0 12px 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .sidebar-upload:hover { background: var(--primary-dark); }
+
+    .sidebar-section { padding: 6px 16px 4px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; color: var(--light); text-transform: uppercase; }
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 16px;
+      font-size: 0.82rem; font-weight: 500;
+      color: var(--muted); cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-nav-item:hover { background: var(--primary-light); color: var(--primary); }
+    .sidebar-nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; border-left-color: var(--primary); }
+    .sidebar-nav-item i { width: 16px; text-align: center; font-size: 0.85rem; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; padding: 24px; overflow-x: hidden; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .search-input-wrap {
+      flex: 1; display: flex; align-items: center; gap: 10px;
+      background: #fff; border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 10px 16px;
+      transition: border-color 0.15s;
+    }
+    .search-input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .search-input-wrap i { color: var(--light); }
+    .search-input-wrap input { border: none; background: transparent; font-size: 0.88rem; font-family: inherit; color: var(--text); outline: none; width: 100%; }
+    .search-input-wrap input::placeholder { color: var(--light); }
+
+    /* ── FILTER TABS ── */
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--border);
+      background: #fff; color: var(--muted);
+      transition: all 0.15s; font-family: inherit;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .filter-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+
+    /* ── CATEGORY GRID ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+      height: 300px;
+    }
+
+    .cat-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .cat-card:hover { transform: scale(1.01); }
+    .cat-card.large { grid-row: span 2; }
+
+    .cat-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Category card image fills */
+    .cat-card .cat-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.72);
+      transition: filter 0.3s;
+    }
+    .cat-card:hover .cat-img { filter: brightness(0.85); }
+
+    .cat-label-wrap {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 14px 16px;
+      background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+    }
+    .cat-label { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .cat-sub   { font-size: 0.68rem; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+    /* top-right badge for no-label cards */
+    .cat-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.7rem; font-weight: 600; color: #fff;
+    }
+
+    /* ── PRESCRIPTION BANNER ── */
+    .rx-banner {
+      background: linear-gradient(135deg, #1a6fc4 0%, #7c3aed 100%);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .rx-banner::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      top: -80px; right: 100px;
+    }
+    .rx-banner::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      bottom: -60px; right: 200px;
+    }
+    .rx-banner-left { position: relative; z-index: 1; }
+    .rx-banner-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .rx-banner-sub   { font-size: 0.82rem; color: rgba(255,255,255,0.75); max-width: 420px; line-height: 1.6; margin-bottom: 18px; }
+    .rx-banner-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+
+    /* Shield icon decoration */
+    .rx-banner-icon {
+      position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: rgba(255,255,255,0.4);
+      z-index: 1;
+    }
+
+    /* ── PRODUCT SECTION ── */
+    .product-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+    }
+    .product-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; }
+
+    .sort-select {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .sort-select select {
+      border: 1px solid var(--border); border-radius: 7px;
+      padding: 5px 10px; font-size: 0.78rem; font-family: inherit;
+      background: #fff; color: var(--text); cursor: pointer; outline: none;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .product-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .product-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+    .product-img-wrap {
+      background: #f9fafb;
+      height: 140px;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rx-required-badge {
+      position: absolute; top: 8px; left: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .wishlist-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--light); font-size: 0.8rem;
+      transition: color 0.2s;
+    }
+    .wishlist-btn:hover { color: var(--red); }
+    .wishlist-btn.active { color: var(--red); }
+
+    .product-body { padding: 12px 14px; }
+    .product-vendor { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .product-name   { font-size: 0.83rem; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+    .product-stars  { display: flex; align-items: center; gap: 3px; margin-bottom: 8px; }
+    .product-stars i { font-size: 0.65rem; color: var(--amber); }
+    .product-stars span { font-size: 0.68rem; color: var(--muted); margin-left: 3px; }
+    .product-footer { display: flex; justify-content: space-between; align-items: center; }
+    .product-price  { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .product-add-btn {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 7px;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .product-add-btn:hover { background: var(--primary-dark); }
+
+    /* ── LOAD MORE ── */
+    .load-more-wrap { text-align: center; margin-top: 24px; }
+    .btn-load-more {
+      background: #fff; color: var(--primary);
+      border: 1.5px solid var(--primary);
+      padding: 10px 32px; border-radius: 9px;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-load-more:hover { background: var(--primary); color: #fff; }
+
+    /* ── SKELETON ── */
+    .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:24px; right:24px; background:#111827; color:#fff; padding:12px 20px; border-radius:9px; font-size:0.82rem; font-weight:500; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:999; display:none; align-items:center; gap:10px; }
+    .toast.show { display:flex; animation:slideUp 0.3s ease; }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+
+    /* ── FOOTER ── */
+    footer { background:#e8edf5; border-top:1px solid var(--border); padding:24px 32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-top:auto; }
+    .footer-brand { font-size:0.88rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .footer-copy  { font-size:0.72rem; color:var(--muted); max-width:340px; line-height:1.5; }
+    .footer-links { display:flex; gap:20px; flex-wrap:wrap; }
+    .footer-links a { font-size:0.78rem; color:var(--muted); text-decoration:none; }
+    .footer-links a:hover { color:var(--primary); }
+    .footer-badges { display:flex; gap:8px; }
+    .footer-badge { width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:center; font-size:0.85rem; color:var(--primary); }
+
+    /* cart count */
+    .cart-count { background:var(--red); color:#fff; font-size:0.6rem; font-weight:700; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; position:absolute; top:0; right:0; }
+
+    @media(max-width:900px) { .sidebar { display:none; } .cat-grid { grid-template-columns:1fr 1fr; height:auto; } .cat-card.large { grid-row:span 1; } }
+    @media(max-width:600px) { .product-grid { grid-template-columns:1fr 1fr; } .rx-banner { flex-direction:column; gap:16px; } }
+  </style>
+</head>
+<body>
+
+<!-- ── TOPNAV ── -->
+<nav class="topnav">
+  <a class="nav-brand" href="customer-dashboard.html">
+    <i class="fa-solid fa-pills"></i> MedTrust Systems
+  </a>
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Marketplace</a>
+    <a class="nav-link" href="#">Pharmacy Network</a>
+    <a class="nav-link" href="#">Enterprise</a>
+  </div>
+  <div class="nav-right">
+    <a class="btn btn-ghost" href="../login/sign_in\login.html">Log In</a>
+    <div style="position:relative;">
+      <button class="icon-btn" onclick="showToast('Cart: ' + cartCount + ' items')">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+    <button class="icon-btn" onclick="showToast('3 new notifications')">
+      <i class="fa-solid fa-bell"></i>
+      <span class="notif-dot"></span>
+    </button>
+    <a class="btn btn-primary" href="../login/sign_in\login.html">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">R</div>
+      <div>
+        <div class="sidebar-user-name">Patient Portal</div>
+        <div class="sidebar-user-role">Radical – Active Account</div>
+      </div>
+    </div>
+
+    <button class="sidebar-upload" onclick="showToast('Opening prescription upload…')">
+      <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload Prescription
+    </button>
+
+    <div class="sidebar-section">Navigation</div>
+    <a class="sidebar-nav-item active" href="#">
+      <i class="fa-solid fa-store"></i> Marketplace
+    </a>
+    <a class="sidebar-nav-item" href="customer.html">
+      <i class="fa-solid fa-gauge-high"></i> Dashboard
+    </a>
+    <a class="sidebar-nav-item" href="prescription.html">
+      <i class="fa-solid fa-file-prescription"></i> Prescriptions
+    </a>
+    <a class="sidebar-nav-item" href="order_history.html">
+      <i class="fa-solid fa-clock-rotate-left"></i> Order History
+    </a>
+    <a class="sidebar-nav-item" href="settings.html">
+      <i class="fa-solid fa-gear"></i> Account Settings
+    </a>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- SEARCH BAR -->
+    <div class="search-wrap">
+      <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search for medications, health products, or pharmacies…" id="searchInput" oninput="handleSearch(this.value)"/>
+      </div>
+      <button class="btn btn-primary" onclick="doSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i> Find Products
+      </button>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" onclick="filterTab(this,'all')">
+        <i class="fa-solid fa-border-all"></i> All Categories
+      </button>
+      <button class="filter-tab" onclick="filterTab(this,'prescriptions')">
+        <i class="fa-solid fa-file-prescription"></i> Prescriptions
+      </button>
+      <button class="filter-tab" onclick="filterTab(this,'wellness')">
+        <i class="fa-solid fa-spa"></i> Wellness
+      </button>
+      <button class="filter-tab" onclick="filterTab(this,'first-aid')">
+        <i class="fa-solid fa-kit-medical"></i> First Aid
+      </button>
+      <button class="filter-tab" onclick="filterTab(this,'chronic-care')">
+        <i class="fa-solid fa-heart-pulse"></i> Chronic Care
+      </button>
+      <button class="filter-tab" onclick="filterTab(this,'devices')">
+        <i class="fa-solid fa-stethoscope"></i> Medical Devices
+      </button>
+      <button class="filter-tab" style="margin-left:auto;border-color:var(--border);" onclick="showToast('Opening filters panel…')">
+        <i class="fa-solid fa-sliders"></i> Filters
+      </button>
+    </div>
+
+    <!-- TOP CATEGORIES -->
+    <div class="section-title">Top Categories</div>
+    <div class="cat-grid">
+
+      <!-- Chronic Care — large left -->
+      <div class="cat-card large" onclick="filterTab(null,'chronic-care')">
+        <img class="cat-img" src="https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&h=400&fit=crop" alt="Chronic Care"/>
+        <div class="cat-label-wrap">
+          <div class="cat-label">Chronic Care</div>
+          <div class="cat-sub">Specialized medicines for long-term health management.</div>
+        </div>
+      </div>
+
+      <!-- Wellness — top right -->
+      <div class="cat-card" onclick="filterTab(null,'wellness')">
+        <img class="cat-img" src="https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=300&h=200&fit=crop" alt="Wellness"/>
+        <div class="cat-badge">Wellness</div>
+        <div class="cat-label-wrap" style="padding:8px 12px;">
+          <div class="cat-label" style="font-size:0.78rem;">Wellness</div>
+        </div>
+      </div>
+
+      <!-- Devices — top right 2 -->
+      <div class="cat-card" onclick="filterTab(null,'devices')">
+        <img class="cat-img" src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=300&h=200&fit=crop" alt="Medical Devices"/>
+        <div class="cat-badge">Devices</div>
+        <div class="cat-label-wrap" style="padding:8px 12px;">
+          <div class="cat-label" style="font-size:0.78rem;">Devices</div>
+        </div>
+      </div>
+
+      <!-- First Aid — bottom right -->
+      <div class="cat-card" style="grid-column:span 2;" onclick="filterTab(null,'first-aid')">
+        <img class="cat-img" src="https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=600&h=200&fit=crop" alt="First Aid"/>
+        <div class="cat-label-wrap">
+          <div class="cat-label">First Aid &amp; Emergency</div>
+          <div class="cat-sub">Essential first-response medical supplies.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PRESCRIPTION UPLOAD BANNER -->
+    <div class="rx-banner">
+      <div class="rx-banner-left">
+        <div class="rx-banner-title">Have a Physical Prescription?</div>
+        <div class="rx-banner-sub">
+          Skip the manual search. Upload a photo of your prescription and our HIPAA-compliant
+          system will automatically process your order through our verified network.
+        </div>
+        <div class="rx-banner-actions">
+          <button class="btn btn-white" onclick="showToast('Opening prescription upload…')">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload Prescription Now
+          </button>
+          <button class="btn btn-outline-white" onclick="showToast('Opening "How it works" guide…')">
+            How it works
+          </button>
+        </div>
+      </div>
+      <div class="rx-banner-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+    </div>
+
+    <!-- PRODUCTS SECTION -->
+    <div class="product-header">
+      <div>
+        <div class="section-title" style="margin-bottom:0;" id="productSectionTitle">Essentials &amp; Common Prescriptions</div>
+      </div>
+      <div class="sort-select">
+        Sort by:
+        <select onchange="sortProducts (this.value)";>
+          <option value="relevance">Relevance</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+          <option value="newest">Newest</option>
+        </select>
+      </div>
+    </div>
+    <div class="product-sub" id="productSubTitle">Browsing 1,248 products available for express delivery</div>
+
+    <div class="product-grid" id="productGrid">
+      <!-- Skeleton -->
+      <div class="product-card" style="pointer-events:none;" v-for="i in 6">
+        <div class="product-img-wrap"><div class="skeleton" style="width:80px;height:80px;border-radius:8px;"></div></div>
+        <div class="product-body">
+          <div class="skeleton" style="height:10px;width:60%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:13px;width:90%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:10px;width:40%;"></div>
+        </div>
+      </div>
+      <div class="product-card" style="pointer-events:none;">
+        <div class="product-img-wrap"><div class="skeleton" style="width:80px;height:80px;border-radius:8px;"></div></div>
+        <div class="product-body">
+          <div class="skeleton" style="height:10px;width:60%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:13px;width:90%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:10px;width:40%;"></div>
+        </div>
+      </div>
+      <div class="product-card" style="pointer-events:none;">
+        <div class="product-img-wrap"><div class="skeleton" style="width:80px;height:80px;border-radius:8px;"></div></div>
+        <div class="product-body">
+          <div class="skeleton" style="height:10px;width:60%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:13px;width:90%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:10px;width:40%;"></div>
+        </div>
+      </div>
+      <div class="product-card" style="pointer-events:none;">
+        <div class="product-img-wrap"><div class="skeleton" style="width:80px;height:80px;border-radius:8px;"></div></div>
+        <div class="product-body">
+          <div class="skeleton" style="height:10px;width:60%;margin-bottom:6px;"></div>
+          <div class="skeleton" style="height:13px;width:90%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:10px;width:40%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="load-more-wrap">
+      <button class="btn-load-more" id="loadMoreBtn" onclick="loadMoreProducts()">
+        <i class="fa-solid fa-rotate"></i> Load More Products
+      </button>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div>
+    <div class="footer-brand">MedTrust Systems</div>
+    <div class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant Pharmacy Network. All healthcare data is encrypted and secure.</div>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Drug Safety</a>
+    <a href="#">Contact Support</a>
+    <a href="#">Security Certifications</a>
+  </div>
+  <div class="footer-badges">
+    <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="footer-badge" style="color:var(--green);"><i class="fa-solid fa-circle-check"></i></div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   MOCK DATA — replace with:
+   fetch('api/marketplace/products.php?category='+activeCategory+'&page='+page)
+   .then(r=>r.json()).then(renderProducts)
+═══════════════════════════════════════════════════ */
+
+const ALL_PRODUCTS = [
+  { id:1,  name:'Atorvastatin 20mg',     vendor:'Elida Pharmaceuticals', price:'GH₵ 48.00',  rating:4, reviews:128, rxRequired:true,  category:'prescriptions', img:'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop' },
+  { id:2,  name:'Lisinopril 10mg',       vendor:'City Health Pharma',    price:'GH₵ 36.00',  rating:5, reviews:214, rxRequired:true,  category:'prescriptions', img:'https://images.unsplash.com/photo-1550572017-edd951b55104?w=300&h=200&fit=crop' },
+  { id:3,  name:'Metformin HCL 500mg',   vendor:'North Star Meds',       price:'GH₵ 22.00',  rating:4, reviews: 89, rxRequired:true,  category:'chronic-care',  img:'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&h=200&fit=crop' },
+  { id:4,  name:'Vitamin D3 5000IU',     vendor:'GoldCoast Health',      price:'GH₵ 65.00',  rating:5, reviews:302, rxRequired:false, category:'wellness',      img:'https://images.unsplash.com/photo-1628771065518-0d82f1938462?w=300&h=200&fit=crop' },
+  { id:5,  name:'Blood Pressure Monitor',vendor:'MedDevice Ghana',       price:'GH₵ 380.00', rating:4, reviews: 56, rxRequired:false, category:'devices',       img:'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=300&h=200&fit=crop' },
+  { id:6,  name:'First Aid Kit Deluxe',  vendor:'SafeMeds Africa',       price:'GH₵ 120.00', rating:5, reviews:178, rxRequired:false, category:'first-aid',     img:'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=300&h=200&fit=crop' },
+  { id:7,  name:'Amoxicillin 500mg',     vendor:'PharmaLink Ghana',      price:'GH₵ 18.00',  rating:4, reviews: 67, rxRequired:true,  category:'prescriptions', img:'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=300&h=200&fit=crop' },
+  { id:8,  name:'Omega-3 Fish Oil',      vendor:'GoldCoast Health',      price:'GH₵ 95.00',  rating:4, reviews:143, rxRequired:false, category:'wellness',      img:'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=300&h=200&fit=crop' },
+  { id:9,  name:'Digital Thermometer',   vendor:'MedDevice Ghana',       price:'GH₵ 45.00',  rating:5, reviews: 92, rxRequired:false, category:'devices',       img:'https://images.unsplash.com/photo-1584515933487-779824d29309?w=300&h=200&fit=crop' },
+  { id:10, name:'Omeprazole 20mg',       vendor:'Elite Pharma',          price:'GH₵ 28.00',  rating:3, reviews: 44, rxRequired:true,  category:'prescriptions', img:'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=300&h=200&fit=crop' },
+  { id:11, name:'Antiseptic Wound Spray',vendor:'SafeMeds Africa',       price:'GH₵ 35.00',  rating:4, reviews: 77, rxRequired:false, category:'first-aid',     img:'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=300&h=200&fit=crop' },
+  { id:12, name:'Multivitamin Complex',  vendor:'City Health Pharma',    price:'GH₵ 110.00', rating:5, reviews:256, rxRequired:false, category:'wellness',      img:'https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=300&h=200&fit=crop' },
+];
+
+let cartCount = 0;
+let activeCategory = 'all';
+let displayedProducts = [];
+let page = 1;
+const PER_PAGE = 8;
+let wishlisted = new Set();
+
+function stars(n){
+  return Array.from({length:5},(_,i)=>`<i class="fa-${i<n?'solid':'regular'} fa-star"></i>`).join('');
+}
+
+function renderProducts(products, append=false){
+  const grid = document.getElementById('productGrid');
+  const html = products.map(p=>`
+    <div class="product-card" onclick="addToCart(${p.id},'${p.name}')">
+      <div class="product-img-wrap">
+        ${p.rxRequired ? '<span class="rx-required-badge">Rx Required</span>' : ''}
+        <img
+          src="${p.img}"
+          alt="${p.name}"
+          style="width:100%;height:100%;object-fit:cover;display:block;"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+        />
+        <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#f3f4f6;">
+          <i class="fa-solid fa-image" style="font-size:2rem;color:#d1d5db;"></i>
+        </div>
+        <button class="wishlist-btn ${wishlisted.has(p.id)?'active':''}"
+          id="wish-${p.id}"
+          onclick="event.stopPropagation();toggleWishlist(${p.id},'${p.name}')"
+          style="position:absolute;top:8px;right:8px;">
+          <i class="fa-${wishlisted.has(p.id)?'solid':'regular'} fa-heart"></i>
+        </button>
+      </div>
+      <div class="product-body">
+        <div class="product-vendor">${p.vendor}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-stars">
+          ${stars(p.rating)}
+          <span>(${p.reviews})</span>
+        </div>
+        <div class="product-footer">
+          <div class="product-price">${p.price}</div>
+          <button class="product-add-btn" onclick="event.stopPropagation();addToCart(${p.id},'${p.name}')">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  if(append) grid.innerHTML += html;
+  else grid.innerHTML = html;
+}
+
+function getFiltered(){
+  return activeCategory==='all' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p=>p.category===activeCategory);
+}
+
+function loadProducts(append=false){
+  const filtered = getFiltered();
+  const start = (page-1)*PER_PAGE;
+  const slice = filtered.slice(0, page*PER_PAGE);
+  renderProducts(slice, false);
+  document.getElementById('productSubTitle').textContent =
+    `Browsing ${filtered.length} products available for express delivery`;
+  document.getElementById('loadMoreBtn').style.display =
+    page*PER_PAGE >= filtered.length ? 'none' : 'inline-flex';
+}
+
+function loadMoreProducts(){
+  page++;
+  /* TODO: fetch('api/marketplace/products.php?category='+activeCategory+'&page='+page) */
+  loadProducts();
+}
+
+function filterTab(btn, category){
+  if(btn){
+    document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  activeCategory = category;
+  page = 1;
+  const titles = {
+    all: 'Essentials & Common Prescriptions',
+    prescriptions: 'Prescription Medications',
+    wellness: 'Wellness & Supplements',
+    'first-aid': 'First Aid & Emergency',
+    'chronic-care': 'Chronic Care Medications',
+    devices: 'Medical Devices & Equipment',
+  };
+  document.getElementById('productSectionTitle').textContent = titles[category] || 'Products';
+  loadProducts();
+}
+
+function sortProducts(val){
+  /* TODO: fetch('api/marketplace/products.php?sort='+val) */
+  const sorted = [...getFiltered()];
+  if(val==='price-asc')  sorted.sort((a,b)=>parseFloat(a.price.replace(/[^0-9.]/g,''))-parseFloat(b.price.replace(/[^0-9.]/g,'')));
+  if(val==='price-desc') sorted.sort((a,b)=>parseFloat(b.price.replace(/[^0-9.]/g,''))-parseFloat(a.price.replace(/[^0-9.]/g,'')));
+  if(val==='rating')     sorted.sort((a,b)=>b.rating-a.rating);
+  renderProducts(sorted.slice(0,page*PER_PAGE));
+}
+
+function addToCart(id, name){
+  cartCount++;
+  document.getElementById('cartCount').textContent = cartCount;
+  showToast(`"${name}" added to cart`);
+  /* TODO: fetch('api/customer/cart.php',{method:'POST',body:JSON.stringify({product_id:id,qty:1})}) */
+}
+
+function toggleWishlist(id, name){
+  if(wishlisted.has(id)){
+    wishlisted.delete(id);
+    showToast(`Removed "${name}" from wishlist`,'remove');
+  } else {
+    wishlisted.add(id);
+    showToast(`"${name}" saved to wishlist`);
+  }
+  const btn = document.getElementById('wish-'+id);
+  const icon = btn.querySelector('i');
+  btn.classList.toggle('active', wishlisted.has(id));
+  icon.className = `fa-${wishlisted.has(id)?'solid':'regular'} fa-heart`;
+  /* TODO: fetch('api/customer/wishlist.php',{method:'POST',body:JSON.stringify({product_id:id})}) */
+}
+
+function handleSearch(q){
+  if(!q){ loadProducts(); return; }
+  const results = ALL_PRODUCTS.filter(p=>
+    p.name.toLowerCase().includes(q.toLowerCase()) ||
+    p.vendor.toLowerCase().includes(q.toLowerCase())
+  );
+  renderProducts(results);
+  document.getElementById('productSubTitle').textContent =
+    `${results.length} results for "${q}"`;
+}
+
+function doSearch(){
+  const q = document.getElementById('searchInput').value.trim();
+  if(!q){ showToast('Please enter a search term','warn'); return; }
+  handleSearch(q);
+  /* TODO: fetch('api/marketplace/search.php?q='+encodeURIComponent(q)) */
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success'){
+  clearTimeout(toastTimer);
+  const t=document.getElementById('toast');
+  const icon=document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent=msg;
+  icon.style.color = type==='warn'?'#fbbf24':type==='remove'?'#f87171':'#4ade80';
+  t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Init
+setTimeout(loadProducts, 700); // simulate fetch delay
+</script>
+</body>
+</html>

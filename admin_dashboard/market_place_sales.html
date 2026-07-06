@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketplace Sales – PharmaAdmin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin-shared.css"/>
+  <style>
+    .chart-bar-wrap { display:flex; align-items:flex-end; gap:6px; height:120px; padding:0 20px 12px; }
+    .chart-bar { flex:1; border-radius:4px 4px 0 0; background:var(--primary); opacity:0.8; position:relative; cursor:pointer; transition:opacity 0.2s; min-width:20px; }
+    .chart-bar:hover { opacity:1; }
+    .chart-bar .tip { display:none; position:absolute; top:-32px; left:50%; transform:translateX(-50%); background:#111; color:#fff; font-size:0.68rem; padding:3px 7px; border-radius:4px; white-space:nowrap; }
+    .chart-bar:hover .tip { display:block; }
+    .chart-labels { display:flex; gap:6px; padding:0 20px 16px; }
+    .chart-label { flex:1; text-align:center; font-size:0.68rem; color:var(--text-muted); min-width:20px; }
+    .order-status-dot { width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<div class="main">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row cols-4">
+      <div class="stat-card">
+        <div class="label">Total Revenue</div>
+        <div class="value" id="sRevenue">—</div>
+        <div class="sub" id="sRevenueSub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Orders</div>
+        <div class="value" style="color:var(--primary)" id="sOrders">—</div>
+        <div class="sub" id="sOrdersSub">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg. Order Value</div>
+        <div class="value" style="color:var(--accent-green)" id="sAOV">—</div>
+        <div class="sub">Per transaction</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Commission Earned</div>
+        <div class="value" style="color:var(--accent-amber)" id="sCommission">—</div>
+        <div class="sub">Platform fee (5%)</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;">
+
+      <!-- REVENUE CHART -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-column" style="color:var(--primary);margin-right:6px;"></i>Monthly Revenue</h3>
+          <select class="form-control" style="width:120px;" onchange="renderChart(this.value)">
+            <option value="2023">2023</option>
+            <option value="2024" selected>2024</option>
+          </select>
+        </div>
+        <div class="chart-bar-wrap" id="chartBars"></div>
+        <div class="chart-labels" id="chartLabels"></div>
+      </div>
+
+      <!-- TOP VENDORS -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-trophy" style="color:var(--accent-amber);margin-right:6px;"></i>Top Vendors</h3>
+        </div>
+        <div id="topVendors" style="padding:8px 0;"></div>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-bag-shopping" style="color:var(--primary);margin-right:6px;"></i>Recent Orders</h3>
+        <div class="filter-row">
+          <select id="filterOrder" onchange="filterOrders()">
+            <option value="">All Statuses</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Refunded">Refunded</option>
+          </select>
+          <input type="text" id="searchOrder" placeholder="Search order ID or customer…" oninput="filterOrders()"/>
+          <button class="btn btn-primary" onclick="showToast('Exporting orders…')"><i class="fa-solid fa-download"></i> Export</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Vendor</th>
+            <th>Items</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--border);">
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="pageInfo">—</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn btn-ghost" onclick="changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">
+      <h3 id="orderModalTitle">Order Details</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="showToast('Receipt downloaded')"><i class="fa-solid fa-receipt"></i> Download Receipt</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script src="admin-layout.js"></script>
+<script>
+renderAdminLayout({ activePage: 'marketplace-sales', pageTitle: 'Marketplace Sales' });
+
+/* ── MOCK DATA — replace with fetch('api/admin/sales.php') ── */
+const MONTHLY = {
+  2023: [12000,18500,15000,22000,19000,27000,25000,30000,28000,34000,31000,42000],
+  2024: [38000,42000,36000,48000,51000,44000,59000,62000,55000,70000,68000,80000]
+};
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const TOP_VENDORS = [
+  { name:'City Health Pharma', revenue:'GH₵ 82,400', orders:312, pct:85 },
+  { name:'GoldCoast Health',   revenue:'GH₵ 61,200', orders:247, pct:63 },
+  { name:'North Star Meds',    revenue:'GH₵ 44,800', orders:189, pct:46 },
+  { name:'PharmaLink Ghana',   revenue:'GH₵ 28,600', orders:118, pct:30 },
+  { name:'Elite Pharma',       revenue:'GH₵ 15,200', orders: 64, pct:16 },
+];
+
+const ORDERS = [
+  { id:'ORD-2401', customer:'Kofi Mensah',    vendor:'City Health Pharma', items:3, amount:'GH₵ 240.00', status:'Delivered',  date:'Nov 01, 2024', email:'kofi@gmail.com' },
+  { id:'ORD-2402', customer:'Abena Owusu',    vendor:'North Star Meds',    items:1, amount:'GH₵  85.50', status:'Processing', date:'Nov 02, 2024', email:'abena@gh.com' },
+  { id:'ORD-2403', customer:'Kwame Asante',   vendor:'GoldCoast Health',   items:5, amount:'GH₵ 520.00', status:'Shipped',    date:'Nov 02, 2024', email:'kwame@gh.com' },
+  { id:'ORD-2404', customer:'Ama Boateng',    vendor:'Elite Pharma',       items:2, amount:'GH₵ 138.00', status:'Cancelled',  date:'Nov 03, 2024', email:'ama@gh.com' },
+  { id:'ORD-2405', customer:'Yaw Darko',      vendor:'PharmaLink Ghana',   items:4, amount:'GH₵ 312.00', status:'Delivered',  date:'Nov 04, 2024', email:'yaw@gh.com' },
+  { id:'ORD-2406', customer:'Akosua Frimpong',vendor:'City Health Pharma', items:2, amount:'GH₵ 190.00', status:'Refunded',   date:'Nov 05, 2024', email:'akosua@gh.com' },
+  { id:'ORD-2407', customer:'Nana Agyei',     vendor:'North Star Meds',    items:6, amount:'GH₵ 650.00', status:'Processing', date:'Nov 06, 2024', email:'nana@gh.com' },
+];
+
+let filtered=[...ORDERS], currentPage=1;
+const PER_PAGE=5;
+
+function statusColor(s){ return {Delivered:'#16a34a',Processing:'#d97706',Shipped:'#1a6fc4',Cancelled:'#dc2626',Refunded:'#6B7280'}[s]||'#6B7280'; }
+function statusBadgeClass(s){ return {Delivered:'badge-green',Processing:'badge-amber',Shipped:'badge-blue',Cancelled:'badge-red',Refunded:'badge-gray'}[s]||'badge-gray'; }
+
+function renderChart(year) {
+  const data = MONTHLY[year] || MONTHLY[2024];
+  const max  = Math.max(...data);
+  document.getElementById('chartBars').innerHTML = data.map((v,i)=>
+    `<div class="chart-bar" style="height:${Math.round((v/max)*100)}%"><div class="tip">GH₵ ${v.toLocaleString()}</div></div>`
+  ).join('');
+  document.getElementById('chartLabels').innerHTML = MONTHS.map(m=>`<div class="chart-label">${m}</div>`).join('');
+}
+
+function renderTopVendors(){
+  document.getElementById('topVendors').innerHTML = TOP_VENDORS.map((v,i)=>`
+    <div style="padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <div style="width:20px;text-align:center;font-size:0.78rem;font-weight:700;color:var(--text-muted);">${i+1}</div>
+      <div style="flex:1;">
+        <div style="font-size:0.82rem;font-weight:600;">${v.name}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">${v.orders} orders</div>
+        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:4px;">
+          <div style="height:100%;width:${v.pct}%;background:var(--primary);border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;font-weight:700;color:var(--accent-green);">${v.revenue}</div>
+    </div>
+  `).join('');
+}
+
+function updateStats(){
+  document.getElementById('sRevenue').textContent   = 'GH₵ 232,200';
+  document.getElementById('sRevenueSub').textContent= '+18.4% vs last month';
+  document.getElementById('sOrders').textContent    = ORDERS.length.toString();
+  document.getElementById('sOrdersSub').textContent = '7 this week';
+  document.getElementById('sAOV').textContent       = 'GH₵ 305.00';
+  document.getElementById('sCommission').textContent= 'GH₵ 11,610';
+}
+
+function renderTable(){
+  const start=(currentPage-1)*PER_PAGE;
+  const page=filtered.slice(start,start+PER_PAGE);
+  document.getElementById('ordersBody').innerHTML=page.map(o=>`
+    <tr>
+      <td style="font-family:monospace;font-size:0.78rem;font-weight:600;">${o.id}</td>
+      <td>
+        <div style="font-weight:600;font-size:0.82rem;">${o.customer}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);">${o.email}</div>
+      </td>
+      <td style="font-size:0.82rem;">${o.vendor}</td>
+      <td style="font-size:0.82rem;">${o.items}</td>
+      <td style="font-weight:600;">${o.amount}</td>
+      <td><span class="badge ${statusBadgeClass(o.status)}">${o.status}</span></td>
+      <td style="font-size:0.78rem;">${o.date}</td>
+      <td><button class="btn btn-outline" onclick="openOrder('${o.id}')"><i class="fa-solid fa-eye"></i></button></td>
+    </tr>
+  `).join('');
+  document.getElementById('pageInfo').textContent=`Showing ${Math.min(start+PER_PAGE,filtered.length)} of ${filtered.length}`;
+}
+
+function filterOrders(){
+  const status=document.getElementById('filterOrder').value;
+  const q=document.getElementById('searchOrder').value.toLowerCase();
+  filtered=ORDERS.filter(o=>(!status||o.status===status)&&(!q||o.id.toLowerCase().includes(q)||o.customer.toLowerCase().includes(q)));
+  currentPage=1; renderTable();
+}
+
+function changePage(d){currentPage+=d;renderTable();}
+
+function openOrder(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o)return;
+  document.getElementById('orderModalTitle').textContent=`Order ${o.id}`;
+  document.getElementById('orderModalBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.83rem;">
+      <div><div class="form-label">Customer</div>${o.customer}</div>
+      <div><div class="form-label">Email</div>${o.email}</div>
+      <div><div class="form-label">Vendor</div>${o.vendor}</div>
+      <div><div class="form-label">Date</div>${o.date}</div>
+      <div><div class="form-label">Items</div>${o.items}</div>
+      <div><div class="form-label">Total Amount</div><strong>${o.amount}</strong></div>
+      <div><div class="form-label">Status</div><span class="badge ${statusBadgeClass(o.status)}">${o.status}</span></div>
+      <div><div class="form-label">Commission (5%)</div>GH₵ ${(parseFloat(o.amount.replace(/[^0-9.]/g,''))*0.05).toFixed(2)}</div>
+    </div>
+  `;
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('orderModal').classList.remove('open');}
+
+updateStats(); renderChart(2024); renderTopVendors(); renderTable();
+</script>
+</body>
+</html>

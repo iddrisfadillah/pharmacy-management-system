@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PharmaAdmin – Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F5F5;
+      --sidebar-bg: #FFFFFF;
+      --card-bg: #FFFFFF;
+      --primary: #1a6fc4;
+      --primary-light: #e8f1fb;
+      --accent-green: #16a34a;
+      --accent-red: #dc2626;
+      --accent-amber: #d97706;
+      --text-main: #111827;
+      --text-muted: #6B7280;
+      --text-light: #9CA3AF;
+      --border: #E5E7EB;
+      --sidebar-width: 230px;
+      --topbar-height: 60px;
+      --radius: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-brand h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .sidebar-brand span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: var(--primary-light); color: var(--primary); }
+    .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .nav-item i { width: 18px; text-align: center; font-size: 0.9rem; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .btn-generate {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: background 0.2s;
+    }
+    .btn-generate:hover { background: #155ba0; }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      height: var(--topbar-height);
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .topbar-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-btn:hover:not(.active) { background: var(--primary-light); color: var(--primary); }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      gap: 8px;
+      width: 200px;
+    }
+    .search-bar input {
+      border: none;
+      background: transparent;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      outline: none;
+      width: 100%;
+    }
+    .search-bar i { color: var(--text-muted); font-size: 0.8rem; }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      position: relative;
+    }
+    .notif-dot {
+      width: 8px; height: 8px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      position: absolute;
+      top: -1px; right: -1px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .user-info { line-height: 1.2; }
+    .user-info .name { font-size: 0.82rem; font-weight: 600; }
+    .user-info .role { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* ── CONTENT ── */
+    .content {
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .content-main { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    .content-side { width: 300px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    .badge-green { background: #dcfce7; color: var(--accent-green); }
+    .badge-red { background: #fee2e2; color: var(--accent-red); }
+    .badge-blue { background: var(--primary-light); color: var(--primary); }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    /* Mini bar chart */
+    .mini-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 32px;
+    }
+    .mini-bar {
+      flex: 1;
+      border-radius: 2px;
+      background: var(--primary);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .mini-bar:hover { opacity: 1; }
+    .mini-bar.green { background: var(--accent-green); }
+    .mini-bar.amber { background: var(--accent-amber); }
+
+    /* system health progress */
+    .health-bar-wrap {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-top: 8px;
+    }
+    .health-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent-green);
+    }
+    .health-status {
+      font-size: 0.7rem;
+      color: var(--accent-green);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* ── TABLE CARD ── */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-header h3 { font-size: 0.92rem; font-weight: 600; }
+    .card-header a {
+      font-size: 0.78rem;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .card-header a:hover { text-decoration: underline; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 10px 20px;
+      background: #fafafa;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 12px 20px; font-size: 0.82rem; color: var(--text-main); vertical-align: middle; }
+
+    .vendor-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: #fff;
+      margin-right: 8px;
+    }
+    .av-blue { background: var(--primary); }
+    .av-green { background: var(--accent-green); }
+    .av-amber { background: var(--accent-amber); }
+
+    .vendor-name-cell { display: flex; align-items: center; }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .status-verified { background: #dcfce7; color: var(--accent-green); }
+    .status-pending { background: #fef9c3; color: #854d0e; }
+    .status-action { background: #fee2e2; color: var(--accent-red); }
+
+    /* Action buttons */
+    .btn-approve {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-approve:hover { background: #155ba0; }
+
+    .btn-view {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-view:hover { background: var(--primary-light); }
+
+    .action-cell { display: flex; align-items: center; gap: 8px; }
+
+    .more-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* ── INFRA CARDS ── */
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 16px 20px;
+    }
+    .infra-card {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .infra-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+    .icon-blue { background: var(--primary-light); color: var(--primary); }
+    .icon-green { background: #dcfce7; color: var(--accent-green); }
+    .icon-teal { background: #ccfbf1; color: #0d9488; }
+
+    .infra-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .infra-value { font-size: 0.95rem; font-weight: 700; margin: 2px 0; }
+    .infra-sub { font-size: 0.68rem; color: var(--text-muted); }
+
+    /* ── ACTIVITY LOG ── */
+    .activity-list { padding: 8px 0; }
+    .activity-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .ai-blue { background: var(--primary-light); color: var(--primary); }
+    .ai-red { background: #fee2e2; color: var(--accent-red); }
+    .ai-teal { background: #ccfbf1; color: #0d9488; }
+    .ai-green { background: #dcfce7; color: var(--accent-green); }
+
+    .activity-body { flex: 1; }
+    .activity-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; }
+    .activity-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px; }
+    .activity-time { font-size: 0.68rem; color: var(--text-light); text-transform: uppercase; }
+
+    .btn-audit {
+      display: block;
+      width: calc(100% - 40px);
+      margin: 14px 20px;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-audit:hover { background: var(--bg); }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Loading state */
+    .loading-row td { padding: 16px 20px; }
+    .sk-line { height: 12px; margin-bottom: 4px; }
+    .sk-short { width: 60%; }
+    .sk-long { width: 90%; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #111827;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { display: flex; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .content { flex-direction: column; }
+      .content-side { width: 100%; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Dropdown */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0; top: 110%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      min-width: 150px;
+      z-index: 200;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-menu a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+    .dropdown-menu a:hover { background: var(--bg); }
+    .dropdown-menu a.danger { color: var(--accent-red); }
+    .dropdown-menu hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 440px;
+      max-width: 95vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .modal p { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-cancel {
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.83rem;
+      cursor: pointer;
+    }
+    .btn-confirm {
+      padding: 8px 18px;
+      border-radius: 7px;
+      border: none;
+      background: var(--accent-green);
+      color: #fff;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-confirm:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h2>PharmaAdmin</h2>
+    <span>Platform Owner</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="admin.html" class="nav-item active">
+      <i class="fa-solid fa-gauge-high"></i> Dashboard
+    </a>
+    <a href="vendor_app.html" class="nav-item" id="nav-vendor-approvals">
+      <i class="fa-solid fa-shop"></i> Vendor Approvals
+      <span id="badge-pending" style="margin-left:auto;background:#fee2e2;color:var(--accent-red);font-size:0.65rem;padding:2px 6px;border-radius:20px;font-weight:700;">0</span>
+    </a>
+    <a href="user_management.html" class="nav-item">
+      <i class="fa-solid fa-users"></i> User Management
+    </a>
+    <a href="market_place_sales.html" class="nav-item">
+      <i class="fa-solid fa-store"></i> Marketplace Sales
+    </a>
+    <a href="audit_logs.html" class="nav-item">
+      <i class="fa-solid fa-scroll"></i> Audit Logs
+    </a>
+    <a href="settings.html" class="nav-item">
+      <i class="fa-solid fa-gear"></i> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-generate" onclick="generateReport()">
+      <i class="fa-solid fa-file-chart-column"></i> Generate Report
+    </button>
+    <a href="#" class="nav-item" style="padding:8px 4px;">
+      <i class="fa-solid fa-circle-question"></i> Support
+    </a>
+    <a href="#" class="nav-item" style="padding:8px 4px; color:var(--accent-red);">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-tabs">
+      <button class="tab-btn active" onclick="switchTab(this, 'marketplace')">Pharmacy Marketplace Admin</button>
+      <button class="tab-btn" onclick="switchTab(this, 'analytics')">Global Analytics</button>
+      <button class="tab-btn" onclick="switchTab(this, 'health')">System Health</button>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search systems…" id="globalSearch" oninput="handleSearch(this.value)"/>
+      </div>
+      <button class="notif-btn" onclick="showToast('3 new notifications')">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="dropdown">
+        <div class="user-badge" onclick="toggleDropdown()">
+          <div class="user-avatar" id="adminInitial">A</div>
+          <div class="user-info">
+            <div class="name" id="adminName">Admin User</div>
+            <div class="role">Platform Owner</div>
+          </div>
+          <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-muted);margin-left:4px;"></i>
+        </div>
+        <div class="dropdown-menu" id="userDropdown">
+          <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
+          <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+          <hr/>
+          <a href="login.html" class="danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- LEFT / MAIN COLUMN -->
+    <div class="content-main">
+
+      <!-- STAT CARDS -->
+      <div class="stat-grid" id="statGrid">
+        <!-- Filled by JS / will come from PHP -->
+        <div class="stat-card">
+          <div class="stat-label">
+            Total GMV
+            <span class="stat-badge badge-green" id="gmvChange">+0%</span>
+          </div>
+          <div class="stat-value" id="totalGMV">Loading…</div>
+          <div class="mini-bars" id="gmvBars"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            Active Pharmacies
+            <span class="stat-badge badge-green" id="pharmacyChange">+0%</span>
+          </div>
+          <div class="stat-value" id="activePharmacies">Loading…</div>
+          <div class="mini-bars" id="pharmacyBars"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            New User Signups
+            <span class="stat-badge badge-red" id="signupChange">0%</span>
+          </div>
+          <div class="stat-value" id="newSignups">Loading…</div>
+          <div class="mini-bars" id="signupBars"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">
+            System Health
+            <span class="stat-badge badge-green" id="healthStatus">Optimal</span>
+          </div>
+          <div class="stat-value" id="systemHealth">Loading…</div>
+          <div class="health-bar-wrap">
+            <div class="health-bar-fill" id="healthBar" style="width:0%"></div>
+          </div>
+          <div class="health-status" id="healthStatusText">Checking…</div>
+        </div>
+      </div>
+
+      <!-- VENDOR APPROVAL QUEUE -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-clock" style="color:var(--primary);margin-right:6px;"></i>Vendor Approval Queue</h3>
+          <a href="audit_logs.html">View All Applications</a>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Vendor Name</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Date Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vendorTableBody">
+            <!-- skeleton rows -->
+            <tr class="loading-row">
+              <td><div class="skeleton sk-line sk-long"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+            </tr>
+            <tr class="loading-row">
+              <td><div class="skeleton sk-line sk-long"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+            </tr>
+            <tr class="loading-row">
+              <td><div class="skeleton sk-line sk-long"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+              <td><div class="skeleton sk-line sk-short"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SYSTEM INFRASTRUCTURE -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-server" style="color:var(--primary);margin-right:6px;"></i>System Infrastructure</h3>
+          <span id="lastChecked" style="font-size:0.72rem;color:var(--text-muted);">Last checked: —</span>
+        </div>
+        <div class="infra-grid" id="infraGrid">
+          <div class="infra-card">
+            <div class="infra-icon icon-blue"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+              <div class="infra-label">API Latency</div>
+              <div class="infra-value" id="apiLatency">—</div>
+              <div class="infra-sub" id="apiStatus">—</div>
+            </div>
+          </div>
+          <div class="infra-card">
+            <div class="infra-icon icon-green"><i class="fa-solid fa-database"></i></div>
+            <div>
+              <div class="infra-label">DB Status</div>
+              <div class="infra-value" id="dbStatus">—</div>
+              <div class="infra-sub" id="dbUptime">—</div>
+            </div>
+          </div>
+          <div class="infra-card">
+            <div class="infra-icon icon-teal"><i class="fa-solid fa-cloud"></i></div>
+            <div>
+              <div class="infra-label">CDN Cache</div>
+              <div class="infra-value" id="cdnCache">—</div>
+              <div class="infra-sub" id="cdnStatus">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT / SIDE COLUMN -->
+    <div class="content-side">
+
+      <!-- ACTIVITY LOG -->
+      <div class="card" style="flex:1;">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-wave-square" style="color:var(--primary);margin-right:6px;"></i>System Activity Log</h3>
+          <a href="#">View All</a>
+        </div>
+        <div class="activity-list" id="activityLog">
+          <!-- skeleton -->
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);">
+            <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
+            <div class="skeleton sk-line sk-short" style="height:10px;"></div>
+          </div>
+          <div style="padding:12px 20px;border-bottom:1px solid var(--border);">
+            <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
+            <div class="skeleton sk-line sk-short" style="height:10px;"></div>
+          </div>
+          <div style="padding:12px 20px;">
+            <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
+            <div class="skeleton sk-line sk-short" style="height:10px;"></div>
+          </div>
+        </div>
+        <button class="btn-audit" onclick="downloadAuditTrail()">
+          <i class="fa-solid fa-download"></i> Download Audit Trail
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="modal-overlay" id="approveModal">
+  <div class="modal">
+    <h3>Approve Vendor</h3>
+    <p id="approveModalText">Are you sure you want to approve this vendor? They will gain access to the marketplace immediately.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmApprove()"><i class="fa-solid fa-check"></i> Yes, Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  DATA LAYER — replace these mock functions with real PHP
+ *  API calls when your backend is ready.
+ *
+ *  Each function currently simulates what your PHP endpoint
+ *  would return as JSON. Just swap `mockFetch` with
+ *  `fetch('api/dashboard-stats.php')` etc.
+ * ═══════════════════════════════════════════════════════════
+ */
+
+// ── MOCK DATA (replace with fetch to PHP later) ──────────
+const MOCK = {
+  stats: {
+    totalGMV: "$4,280,940",
+    gmvChange: "+12.5%",
+    gmvTrend: [40, 55, 45, 65, 70, 58, 80],
+
+    activePharmacies: "1,842",
+    pharmacyChange: "+4.2%",
+    pharmacyTrend: [30, 40, 35, 50, 55, 60, 65],
+
+    newSignups: "128",
+    signupChange: "-2.1%",
+    signupTrend: [80, 70, 75, 60, 55, 50, 45],
+
+    systemHealth: "99.98%",
+    healthValue: 99.98,
+  },
+
+  vendors: [
+    { id: 1, initials: "CH", color: "av-blue",  name: "City Health Pharma",       location: "Accra, Ghana",   status: "License Verified", statusClass: "status-verified", date: "Oct 24, 2023", action: "approve" },
+    { id: 2, initials: "NS", color: "av-amber", name: "North Star Meds",          location: "Kumasi, Ghana",  status: "Pending Review",   statusClass: "status-pending",  date: "Oct 25, 2023", action: "view" },
+    { id: 3, initials: "EP", color: "av-green", name: "Elite Pharma Solutions",   location: "Takoradi, Ghana",status: "Action Required",  statusClass: "status-action",   date: "Oct 26, 2023", action: "view" },
+  ],
+
+  infra: {
+    apiLatency: "24ms",
+    apiStatus: "STABLE",
+    dbStatus: "Active",
+    dbUptime: "99.9% UPTIME",
+    cdnCache: "88.2% Hit",
+    cdnStatus: "OPTIMIZED",
+  },
+
+  activity: [
+    { icon: "fa-shop",           iconClass: "ai-blue",  title: "New Vendor Registered",   desc: "City Health Pharma submitted an application for review.", time: "2 minutes ago" },
+    { icon: "fa-triangle-exclamation", iconClass: "ai-red",   title: "Security Alert",          desc: "Multiple failed login attempts detected from IP: 192.168.1.42.", time: "15 minutes ago" },
+    { icon: "fa-tag",            iconClass: "ai-teal",  title: "Global Price Update",      desc: "Admin adjusted tax rates for Tier 1 Insulin medications.", time: "1 hour ago" },
+    { icon: "fa-heart-pulse",    iconClass: "ai-green", title: "System Health Check",      desc: "Automated integrity scan completed with zero errors.", time: "3 hours ago" },
+  ],
+};
+
+// ══════════════════════════════════════════════════════════
+//  WHEN BACKEND IS READY — replace above with calls like:
+//
+//  async function fetchStats() {
+//    const res = await fetch('api/admin/stats.php');
+//    return res.json();
+//  }
+// ══════════════════════════════════════════════════════════
+
+function simulateDelay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// ── MINI BARS ────────────────────────────────────────────
+function renderBars(containerId, data, colorClass = '') {
+  const max = Math.max(...data);
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = data.map(v =>
+    `<div class="mini-bar ${colorClass}" style="height:${Math.round((v/max)*100)}%;" title="${v}"></div>`
+  ).join('');
+}
+
+// ── LOAD STATS ───────────────────────────────────────────
+async function loadStats() {
+  await simulateDelay(600); // remove when using real API
+
+  const s = MOCK.stats;
+  // TODO: replace with → const s = await fetchStats();
+
+  document.getElementById('totalGMV').textContent = s.totalGMV;
+  document.getElementById('gmvChange').textContent = s.gmvChange;
+  document.getElementById('gmvChange').className = 'stat-badge ' + (s.gmvChange.startsWith('+') ? 'badge-green' : 'badge-red');
+
+  document.getElementById('activePharmacies').textContent = s.activePharmacies;
+  document.getElementById('pharmacyChange').textContent = s.pharmacyChange;
+
+  document.getElementById('newSignups').textContent = s.newSignups;
+  document.getElementById('signupChange').textContent = s.signupChange;
+  document.getElementById('signupChange').className = 'stat-badge ' + (s.signupChange.startsWith('+') ? 'badge-green' : 'badge-red');
+
+  document.getElementById('systemHealth').textContent = s.systemHealth;
+  document.getElementById('healthBar').style.width = s.healthValue + '%';
+  document.getElementById('healthStatusText').textContent = s.healthValue >= 99 ? 'All systems operational' : 'Degraded';
+
+  renderBars('gmvBars', s.gmvTrend);
+  renderBars('pharmacyBars', s.pharmacyTrend);
+  renderBars('signupBars', s.signupTrend, 'amber');
+}
+
+// ── LOAD VENDOR QUEUE ────────────────────────────────────
+async function loadVendors() {
+  await simulateDelay(900);
+
+  const vendors = MOCK.vendors;
+  // TODO: replace with → const vendors = await fetchVendors();
+
+  const pendingCount = vendors.filter(v => v.action === 'approve' || v.statusClass === 'status-pending').length;
+  document.getElementById('badge-pending').textContent = pendingCount;
+
+  const tbody = document.getElementById('vendorTableBody');
+  tbody.innerHTML = vendors.map(v => `
+    <tr>
+      <td>
+        <div class="vendor-name-cell">
+          <div class="vendor-avatar ${v.color}">${v.initials}</div>
+          ${v.name}
+        </div>
+      </td>
+      <td>${v.location}</td>
+      <td><span class="status-badge ${v.statusClass}">${v.status}</span></td>
+      <td>${v.date}</td>
+      <td>
+        <div class="action-cell">
+          ${v.action === 'approve'
+            ? `<button class="btn-approve" onclick="openApproveModal(${v.id}, '${v.name}')">Approve</button>`
+            : `<button class="btn-view" onclick="viewVendor(${v.id})">View Details</button>`
+          }
+          <button class="more-btn" onclick="showToast('More options for ${v.name}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── LOAD INFRA ───────────────────────────────────────────
+async function loadInfra() {
+  await simulateDelay(700);
+
+  const i = MOCK.infra;
+  // TODO: replace with → const i = await fetchInfraStatus();
+
+  document.getElementById('apiLatency').textContent = i.apiLatency;
+  document.getElementById('apiStatus').textContent = i.apiStatus;
+  document.getElementById('dbStatus').textContent = i.dbStatus;
+  document.getElementById('dbUptime').textContent = i.dbUptime;
+  document.getElementById('cdnCache').textContent = i.cdnCache;
+  document.getElementById('cdnStatus').textContent = i.cdnStatus;
+  document.getElementById('lastChecked').textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+}
+
+// ── LOAD ACTIVITY LOG ────────────────────────────────────
+async function loadActivity() {
+  await simulateDelay(1000);
+
+  const logs = MOCK.activity;
+  // TODO: replace with → const logs = await fetchActivityLog();
+
+  const container = document.getElementById('activityLog');
+  container.innerHTML = logs.map(l => `
+    <div class="activity-item">
+      <div class="activity-icon ${l.iconClass}"><i class="fa-solid ${l.icon}"></i></div>
+      <div class="activity-body">
+        <div class="activity-title">${l.title}</div>
+        <div class="activity-desc">${l.desc}</div>
+        <div class="activity-time">${l.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── APPROVE MODAL ────────────────────────────────────────
+let pendingApproveId = null;
+
+function openApproveModal(vendorId, vendorName) {
+  pendingApproveId = vendorId;
+  document.getElementById('approveModalText').textContent =
+    `Are you sure you want to approve "${vendorName}"? They will gain access to the marketplace immediately.`;
+  document.getElementById('approveModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('approveModal').classList.remove('open');
+  pendingApproveId = null;
+}
+
+function confirmApprove() {
+  if (!pendingApproveId) return;
+  // TODO: replace with → fetch('api/admin/approve-vendor.php', { method:'POST', body: JSON.stringify({id: pendingApproveId}) })
+  const vendor = MOCK.vendors.find(v => v.id === pendingApproveId);
+  if (vendor) {
+    vendor.status = 'Approved';
+    vendor.statusClass = 'status-verified';
+    vendor.action = 'view';
+  }
+  closeModal();
+  loadVendors();
+  showToast('Vendor approved successfully');
+}
+
+function viewVendor(id) {
+  showToast('Opening vendor #' + id + ' details…');
+  // TODO: redirect to vendor detail page → window.location = 'vendor-detail.php?id=' + id;
+}
+
+// ── TAB SWITCH ───────────────────────────────────────────
+function switchTab(btn, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Switched to: ' + btn.textContent.trim());
+  // TODO: load different data per tab
+}
+
+// ── DROPDOWN ─────────────────────────────────────────────
+function toggleDropdown() {
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) {
+    document.getElementById('userDropdown')?.classList.remove('open');
+  }
+});
+
+// ── TOAST ────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── GENERATE REPORT ──────────────────────────────────────
+function generateReport() {
+  showToast('Generating report… (will download as PDF)');
+  // TODO: window.location = 'api/admin/generate-report.php';
+}
+
+// ── AUDIT TRAIL ──────────────────────────────────────────
+function downloadAuditTrail() {
+  showToast('Downloading audit trail…');
+  // TODO: window.location = 'api/admin/audit-trail.php';
+}
+
+// ── SEARCH ───────────────────────────────────────────────
+function handleSearch(val) {
+  if (!val) return;
+  // TODO: fetch('api/admin/search.php?q=' + encodeURIComponent(val))
+}
+
+// ── LOAD ADMIN INFO ──────────────────────────────────────
+function loadAdminInfo() {
+  // TODO: fetch('api/auth/me.php').then(r => r.json()).then(data => { ... })
+  const name = "Admin User";
+  document.getElementById('adminName').textContent = name;
+  document.getElementById('adminInitial').textContent = name.charAt(0).toUpperCase();
+}
+
+// ── INIT ─────────────────────────────────────────────────
+(function init() {
+  loadAdminInfo();
+  loadStats();
+  loadVendors();
+  loadInfra();
+  loadActivity();
+})();
+</script>
+
+</body>
+</html>

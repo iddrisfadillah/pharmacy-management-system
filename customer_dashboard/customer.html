@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Dashboard – MedTrust Systems</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F5F5;
+      --card: #FFFFFF;
+      --primary: #1a6fc4;
+      --primary-light: #e8f1fb;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --amber: #d97706;
+      --amber-light: #fef9c3;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --text: #111827;
+      --muted: #6B7280;
+      --light: #9CA3AF;
+      --border: #E5E7EB;
+      --radius: 12px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPNAV ── */
+    .topnav {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      height: 56px;
+      gap: 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary);
+      white-space: nowrap;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .nav-brand i { font-size: 1.1rem; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+    .nav-link.active { color: var(--primary); border-bottom: 2px solid var(--primary); border-radius: 0; padding-bottom: 4px; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      width: 200px;
+    }
+    .search-bar input { border: none; background: transparent; font-size: 0.82rem; outline: none; width: 100%; font-family: inherit; color: var(--text); }
+    .search-bar i { color: var(--light); font-size: 0.8rem; }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.1rem;
+      position: relative;
+      padding: 4px;
+    }
+    .notif-dot { width: 7px; height: 7px; background: var(--red); border-radius: 50%; position: absolute; top: 2px; right: 2px; }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* ── PAGE WRAPPER ── */
+    .page {
+      flex: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 28px 24px;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .welcome-title { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+    .welcome-sub   { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+
+    .header-actions { display: flex; gap: 10px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 9px;
+      font-size: 0.83rem; font-weight: 600;
+      cursor: pointer; border: none; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #155ba0; }
+
+    /* ── GRID ── */
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .col-span-2 { grid-column: span 2; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 0.88rem; font-weight: 700; }
+    .card-body  { padding: 20px; }
+
+    /* ── HEALTH PROFILE ── */
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--light);
+      margin-bottom: 8px;
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .tag {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .tag-red    { background: var(--red-light); color: var(--red); }
+    .tag-blue   { background: var(--primary-light); color: var(--primary); }
+    .tag-amber  { background: var(--amber-light); color: var(--amber); }
+    .tag-green  { background: var(--green-light); color: var(--green); }
+    .tag-purple { background: #ede9fe; color: #7c3aed; }
+
+    .verified-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--green-light);
+      border-radius: 9px;
+      padding: 12px 14px;
+      margin-top: 4px;
+    }
+    .verified-box i { color: var(--green); margin-top: 1px; }
+    .verified-box .vb-title { font-size: 0.8rem; font-weight: 600; color: var(--green); }
+    .verified-box .vb-sub   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── ORDER TRACKING TABLE ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead th { font-size: 0.68rem; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); background: #fafafa; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody td { padding: 12px 16px; font-size: 0.82rem; vertical-align: middle; }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 600;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .pill-shipped   { background: var(--primary-light); color: var(--primary); }
+    .pill-pending   { background: var(--amber-light); color: var(--amber); }
+    .pill-delivered { background: var(--green-light); color: var(--green); }
+    .pill-cancelled { background: var(--red-light); color: var(--red); }
+    .dot-shipped    { background: var(--primary); }
+    .dot-pending    { background: var(--amber); }
+    .dot-delivered  { background: var(--green); }
+    .dot-cancelled  { background: var(--red); }
+
+    .link-btn { background: none; border: none; color: var(--primary); font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* ── RECENT ACTIVITY ── */
+    .activity-list { display: flex; flex-direction: column; gap: 0; }
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .act-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; flex-shrink: 0;
+    }
+    .act-icon-blue   { background: var(--primary-light); color: var(--primary); }
+    .act-icon-green  { background: var(--green-light);   color: var(--green); }
+    .act-icon-gray   { background: #F3F4F6;              color: var(--muted); }
+    .act-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; }
+    .act-sub   { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── MANAGE PRESCRIPTIONS ── */
+    .rx-view-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: border-color 0.15s;
+      text-decoration: none;
+      margin-bottom: 14px;
+    }
+    .rx-view-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .rx-view-btn i { color: var(--muted); }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+    .upload-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
+    .upload-zone i { font-size: 1.4rem; color: var(--muted); margin-bottom: 6px; }
+    .upload-zone p { font-size: 0.78rem; color: var(--muted); }
+    .upload-zone input { display: none; }
+
+    /* ── REFILL REMINDERS ── */
+    .refill-list { display: flex; flex-direction: column; gap: 0; }
+    .refill-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .refill-item:last-child { border-bottom: none; }
+    .refill-name  { font-size: 0.83rem; font-weight: 600; margin-bottom: 2px; }
+    .refill-days  { font-size: 0.72rem; color: var(--muted); }
+    .refill-btn-fill {
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .refill-btn-auto {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .refill-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #111827; color: #fff;
+      padding: 12px 20px; border-radius: 9px;
+      font-size: 0.82rem; font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 999; display: none; align-items: center; gap: 10px;
+    }
+    .toast.show { display: flex; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+
+    /* ── SKELETON ── */
+    .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #e8edf5;
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: auto;
+    }
+    .footer-brand { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .footer-copy  { font-size: 0.72rem; color: var(--muted); max-width: 340px; line-height: 1.5; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-badges { display: flex; gap: 8px; }
+    .footer-badge {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: var(--primary);
+    }
+
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:500; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:#fff; border-radius:var(--radius); padding:28px; width:460px; max-width:95vw; box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .modal-header h3 { font-size:1rem; font-weight:700; }
+    .modal-close { background:none; border:none; cursor:pointer; color:var(--muted); font-size:1.1rem; }
+    .modal-body { margin-bottom:20px; font-size:0.85rem; color:var(--muted); }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+    .order-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.83rem; }
+    .detail-label { font-size:0.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
+
+    @media(max-width:900px) {
+      .grid-3 { grid-template-columns:1fr; }
+      .grid-2 { grid-template-columns:1fr; }
+      .col-span-2 { grid-column:span 1; }
+    }
+    @media(max-width:600px) {
+      .page { padding:16px; }
+      .topnav { padding:0 16px; gap:12px; }
+      .search-bar { display:none; }
+    }
+  </style>
+</head>
+<body>
+  
+
+<!-- ── TOPNAV ── -->
+<nav class="topnav">
+  <a class="nav-brand" href="#">
+    <i class="fa-solid fa-pills"></i> MedTrust Systems
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="marketplace.html">Marketplace</a>
+    <a class="nav-link" href="#">Categories</a>
+    <a class="nav-link active">Prescriptions</a>
+    <a class="nav-link" href="#">Help</a>
+  </div>
+  <div class="nav-right">
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search orders…" id="searchOrders" oninput="searchOrders(this.value)"/>
+    </div>
+    <button class="icon-btn" onclick="showToast('Cart: 2 items')">
+      <i class="fa-solid fa-cart-shopping"></i>
+    </button>
+    <button class="icon-btn" onclick="showToast('You have 3 new notifications')">
+      <i class="fa-solid fa-bell"></i>
+      <span class="notif-dot"></span>
+    </button>
+    <div class="avatar" id="userAvatar" onclick="showToast('Profile settings coming soon')">R</div>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="welcome-title" id="welcomeTitle">Welcome back, Radical</h1>
+      <p class="welcome-sub" id="welcomeSub">Your health management overview for today, <span id="todayDate">—</span>.</p>
+    </div><a href="order_history.html">
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="showToast('Loading prescription history…')">
+        <i class="fa-solid fa-clock-rotate-left"></i> View Full History
+      </button>
+      </a>
+      <button class="btn btn-primary" onclick="openNewRx()">
+        <i class="fa-solid fa-plus"></i> New Prescription
+      </button>
+    </div>
+  </div>
+
+  <!-- ROW 1: Health Profile + Order Tracking -->
+  <div class="grid-2" style="grid-template-columns:1fr 1.6fr;">
+
+    <!-- HEALTH PROFILE -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-heart-pulse" style="color:var(--red);margin-right:6px;"></i>Health Profile</span>
+        <button class="icon-btn" onclick="showToast('Edit health profile')"><i class="fa-regular fa-pen-to-square"></i></button>
+      </div>
+      <div class="card-body">
+        <div class="section-label">Known Allergies</div>
+        <div class="tag-row" id="allergyTags">
+          <span class="tag tag-red skeleton" style="width:70px;height:22px;"></span>
+          <span class="tag tag-red skeleton" style="width:80px;height:22px;"></span>
+        </div>
+
+        <div class="section-label">Chronic Conditions</div>
+        <div class="tag-row" id="conditionTags">
+          <span class="tag tag-blue skeleton" style="width:90px;height:22px;"></span>
+          <span class="tag tag-blue skeleton" style="width:100px;height:22px;"></span>
+        </div>
+
+        <div class="verified-box" id="verifiedBox">
+          <i class="fa-solid fa-circle-check"></i>
+          <div>
+            <div class="vb-title skeleton" style="width:140px;height:14px;"></div>
+            <div class="vb-sub skeleton" style="width:190px;height:12px;margin-top:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE ORDER TRACKING -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-truck" style="color:var(--primary);margin-right:6px;"></i>Active Order Tracking</span>
+        <button class="icon-btn" onclick="showToast('Filter orders')"><i class="fa-solid fa-sliders"></i></button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Prescription</th>
+            <th>Status</th>
+            <th>Delivery</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr><td colspan="5" style="padding:20px;text-align:center;">
+            <div class="skeleton" style="height:14px;width:80%;margin:0 auto 8px;"></div>
+            <div class="skeleton" style="height:14px;width:60%;margin:0 auto;"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ROW 2: Activity + Manage Prescriptions + Refill Reminders -->
+  <div class="grid-3">
+
+    <!-- RECENT ACTIVITY -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-wave-square" style="color:var(--primary);margin-right:6px;"></i>Recent Activity</span>
+      </div>
+      <div class="activity-list" id="activityList">
+        <div class="activity-item">
+          <div class="act-icon act-icon-blue skeleton" style="width:32px;height:32px;"></div>
+          <div style="flex:1;">
+            <div class="skeleton" style="height:12px;width:80%;margin-bottom:5px;"></div>
+            <div class="skeleton" style="height:10px;width:60%;"></div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon act-icon-green skeleton" style="width:32px;height:32px;"></div>
+          <div style="flex:1;">
+            <div class="skeleton" style="height:12px;width:75%;margin-bottom:5px;"></div>
+            <div class="skeleton" style="height:10px;width:55%;"></div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-icon act-icon-gray skeleton" style="width:32px;height:32px;"></div>
+          <div style="flex:1;">
+            <div class="skeleton" style="height:12px;width:70%;margin-bottom:5px;"></div>
+            <div class="skeleton" style="height:10px;width:50%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGE PRESCRIPTIONS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary);margin-right:6px;"></i>Manage Prescriptions</span>
+        <button class="icon-btn"><i class="fa-solid fa-ellipsis"></i></button>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+          View active scripts from your physician or upload a new scan to start a fill.
+        </p>
+
+        <a class="rx-view-btn" href="#" onclick="showToast('Loading active scripts…')">
+          <span><i class="fa-solid fa-eye" style="margin-right:8px;color:var(--primary);"></i>View <span id="rxCount">4</span> Active Scripts</span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </a>
+
+        <div class="upload-zone" id="uploadZone"
+             ondragover="dragOver(event)"
+             ondragleave="dragLeave(event)"
+             ondrop="dropFile(event)"
+             onclick="document.getElementById('rxFileInput').click()">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          <p style="font-weight:600;margin-top:4px;">Drag &amp; drop new prescription</p>
+          <p style="margin-top:3px;font-size:0.72rem;">or click to browse — PDF, JPG, PNG</p>
+          <input type="file" id="rxFileInput" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFILL REMINDERS -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-bell" style="color:var(--amber);margin-right:6px;"></i>Refill Reminders</span>
+      </div>
+      <div class="refill-list" id="refillList">
+        <div class="refill-item">
+          <div class="skeleton" style="width:100px;height:14px;"></div>
+          <div class="skeleton" style="width:60px;height:28px;border-radius:6px;"></div>
+        </div>
+        <div class="refill-item">
+          <div class="skeleton" style="width:80px;height:14px;"></div>
+          <div class="skeleton" style="width:80px;height:28px;border-radius:6px;"></div>
+        </div>
+      </div>
+      <div class="refill-footer">
+        <span id="subCount">Total active subscriptions: —</span>
+        <button class="link-btn" onclick="showToast('Managing all subscriptions…')">Manage All</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div>
+    <div class="footer-brand">MedTrust Systems</div>
+    <div class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant Pharmacy Network. All healthcare data is encrypted and secure.</div>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Drug Safety</a>
+    <a href="#">Contact Support</a>
+    <a href="#">Security Certifications</a>
+  </div>
+  <div class="footer-badges">
+    <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i></div>
+    <div class="footer-badge" style="color:var(--green);"><i class="fa-solid fa-circle-check"></i></div>
+  </div>
+</footer>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="orderModalTitle">Order Details</h3>
+      <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="order-detail-grid" id="orderDetailGrid"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('orderModal')">Close</button>
+      <button class="btn btn-primary" onclick="showToast('Tracking page opening…');closeModal('orderModal')">
+        <i class="fa-solid fa-location-dot"></i> Track Live
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PRESCRIPTION MODAL -->
+<div class="modal-overlay" id="rxModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Prescription Request</h3>
+      <button class="modal-close" onclick="closeModal('rxModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Medication Name</label>
+        <input id="rxMedName" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none;" placeholder="e.g. Lisinopril 10mg"/>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Prescribing Doctor</label>
+        <input id="rxDoctor" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none;" placeholder="Dr. Kofi Mensah"/>
+      </div>
+      <div style="margin-bottom:6px;">
+        <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Upload Prescription (optional)</label>
+        <div class="upload-zone" style="padding:16px;" onclick="document.getElementById('rxModalFile').click()">
+          <i class="fa-solid fa-paperclip" style="font-size:1.1rem;"></i>
+          <p style="font-size:0.78rem;margin-top:4px;">Click to attach prescription image or PDF</p>
+          <input type="file" id="rxModalFile" style="display:none;"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('rxModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRx()"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   MOCK DATA — replace each section with:
+   fetch('api/customer/dashboard.php').then(r=>r.json()).then(data => { ... })
+═══════════════════════════════════════════════════ */
+
+const PATIENT = {
+  name: 'Radical',
+  initials: 'R',
+  allergies: ['Penicillin', 'Sulfa Drugs'],
+  conditions: ['Hypertension', 'Type 2 Diabetes'],
+  provider: 'Verified Provider #8821',
+  providerSync: 'Last sync with Central Pharmacy: 2 hours ago',
+};
+
+const ORDERS = [
+  { id:'#MT-9021', prescription:'Lisinopril 10mg (30ct)',   status:'Shipped',   delivery:'Oct 26, 2024', action:'track'  },
+  { id:'#MT-8955', prescription:'Atorvastatin 20mg (90ct)', status:'Pending',   delivery:'Processing',   action:'details'},
+  { id:'#MT-8812', prescription:'Amoxicillin 500mg',        status:'Delivered', delivery:'Oct 12, 2024', action:'reorder'},
+];
+
+const ACTIVITY = [
+  { icon:'fa-box',            iconClass:'act-icon-blue',  title:'Order #MT-9021 shipped',       sub:'Lisinopril 10mg – Estimated delivery Oct 26' },
+  { icon:'fa-file-medical',   iconClass:'act-icon-green', title:'New Prescription Uploaded',    sub:'Metformin HCL – Pending verification' },
+  { icon:'fa-credit-card',    iconClass:'act-icon-gray',  title:'Payment Successful',           sub:'Auto-refill for Atorvastatin processed' },
+];
+
+const REFILLS = [
+  { name:'Metformin HCL',  days:'5 days supply remaining',  urgent: true  },
+  { name:'Vitamin D3',     days:'12 days supply remaining', urgent: false },
+];
+
+/* TODO: fetch('api/customer/dashboard.php').then(r=>r.json()).then(loadDashboard) */
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function loadAll(){
+  setDate();
+  await delay(600);  loadProfile();
+  await delay(300);  loadOrders();
+  await delay(200);  loadActivity();
+  await delay(100);  loadRefills();
+}
+
+function setDate(){
+  const d = new Date();
+  document.getElementById('todayDate').textContent =
+    d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('welcomeTitle').textContent = `Welcome back, ${PATIENT.name}`;
+  document.getElementById('userAvatar').textContent = PATIENT.initials;
+}
+
+function loadProfile(){
+  document.getElementById('allergyTags').innerHTML =
+    PATIENT.allergies.map(a=>`<span class="tag tag-red">${a}</span>`).join('');
+  document.getElementById('conditionTags').innerHTML =
+    PATIENT.conditions.map(c=>`<span class="tag tag-blue">${c}</span>`).join('');
+  document.getElementById('verifiedBox').innerHTML = `
+    <i class="fa-solid fa-circle-check"></i>
+    <div>
+      <div class="vb-title">${PATIENT.provider}</div>
+      <div class="vb-sub">${PATIENT.providerSync}</div>
+    </div>`;
+}
+
+function loadOrders(){
+  const statusMap = {
+    Shipped:   { pill:'pill-shipped',   dot:'dot-shipped'   },
+    Pending:   { pill:'pill-pending',   dot:'dot-pending'   },
+    Delivered: { pill:'pill-delivered', dot:'dot-delivered' },
+    Cancelled: { pill:'pill-cancelled', dot:'dot-cancelled' },
+  };
+  const actionMap = {
+    track:   `<button class="link-btn" onclick="openOrder(this)">Track</button>`,
+    details: `<button class="link-btn" onclick="openOrder(this)">Details</button>`,
+    reorder: `<button class="link-btn" onclick="showToast('Adding to cart…')">Reorder</button>`,
+  };
+  document.getElementById('ordersBody').innerHTML = ORDERS.map(o => {
+    const s = statusMap[o.status] || statusMap.Pending;
+    return `<tr data-id="${o.id}" data-rx="${o.prescription}" data-status="${o.status}" data-delivery="${o.delivery}">
+      <td style="font-weight:700;font-size:0.8rem;">${o.id}</td>
+      <td>${o.prescription}</td>
+      <td>
+        <span class="status-pill ${s.pill}">
+          <span class="status-dot ${s.dot}"></span>${o.status}
+        </span>
+      </td>
+      <td style="font-size:0.78rem;color:var(--muted);">${o.delivery}</td>
+      <td>${actionMap[o.action]}</td>
+    </tr>`;
+  }).join('');
+}
+
+function loadActivity(){
+  document.getElementById('activityList').innerHTML = ACTIVITY.map(a=>`
+    <div class="activity-item">
+      <div class="act-icon ${a.iconClass}"><i class="fa-solid ${a.icon}"></i></div>
+      <div>
+        <div class="act-title">${a.title}</div>
+        <div class="act-sub">${a.sub}</div>
+      </div>
+    </div>`).join('');
+}
+
+function loadRefills(){
+  document.getElementById('refillList').innerHTML = REFILLS.map(r=>`
+    <div class="refill-item">
+      <div>
+        <div class="refill-name">${r.name}</div>
+        <div class="refill-days">${r.days}</div>
+      </div>
+      ${r.urgent
+        ? `<button class="refill-btn-fill" onclick="showToast('Ordering refill for ${r.name}…')">Refill</button>`
+        : `<button class="refill-btn-auto" onclick="showToast('Auto-refill toggled for ${r.name}')">Auto-refill On</button>`
+      }
+    </div>`).join('');
+  document.getElementById('subCount').textContent = `Total active subscriptions: ${REFILLS.length}`;
+  document.getElementById('rxCount').textContent = ORDERS.length + 1;
+}
+
+/* ── SEARCH ── */
+function searchOrders(q){
+  /* TODO: fetch('api/customer/orders.php?q='+q) */
+  const rows = document.querySelectorAll('#ordersBody tr');
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+/* ── UPLOAD ZONE ── */
+function dragOver(e){ e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+function dragLeave(){ document.getElementById('uploadZone').classList.remove('dragover'); }
+function dropFile(e){
+  e.preventDefault();
+  dragLeave();
+  const f = e.dataTransfer.files[0];
+  if(f) processFile(f);
+}
+function handleFile(input){ if(input.files[0]) processFile(input.files[0]); }
+function processFile(f){
+  /* TODO: FormData upload to api/customer/upload-rx.php */
+  showToast(`Prescription "${f.name}" uploaded — pending verification`);
+  document.getElementById('uploadZone').innerHTML = `
+    <i class="fa-solid fa-file-circle-check" style="color:var(--green);"></i>
+    <p style="font-weight:600;color:var(--green);margin-top:6px;">${f.name}</p>
+    <p style="margin-top:3px;font-size:0.72rem;">Uploading for verification…</p>`;
+}
+
+/* ── ORDER MODAL ── */
+function openOrder(btn){
+  const row = btn.closest('tr');
+  document.getElementById('orderModalTitle').textContent = row.dataset.id;
+  document.getElementById('orderDetailGrid').innerHTML = `
+    <div><div class="detail-label">Order ID</div>${row.dataset.id}</div>
+    <div><div class="detail-label">Status</div>
+      <span class="status-pill pill-${row.dataset.status.toLowerCase()}">
+        <span class="status-dot dot-${row.dataset.status.toLowerCase()}"></span>${row.dataset.status}
+      </span>
+    </div>
+    <div><div class="detail-label">Prescription</div>${row.dataset.rx}</div>
+    <div><div class="detail-label">Estimated Delivery</div>${row.dataset.delivery}</div>
+    <div><div class="detail-label">Pharmacy</div>City Health Pharma</div>
+    <div><div class="detail-label">Payment</div>Mobile Money – GH₵ 128.00</div>
+  `;
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function openNewRx(){ document.getElementById('rxModal').classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ── SUBMIT RX ── */
+function submitRx(){
+  const med = document.getElementById('rxMedName').value.trim();
+  if(!med){ showToast('Please enter a medication name','warn'); return; }
+  /* TODO: fetch('api/customer/new-rx.php',{method:'POST', body:...}) */
+  closeModal('rxModal');
+  showToast(`Request for "${med}" submitted successfully`);
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success'){
+  clearTimeout(toastTimer);
+  const t=document.getElementById('toast');
+  const icon=document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent=msg;
+  icon.style.color = type==='warn' ? '#fbbf24' : '#4ade80';
+  t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+loadAll();
+</script>
+</body>
+</html>

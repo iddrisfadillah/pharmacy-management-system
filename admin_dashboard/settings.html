@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings – PharmaAdmin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin-shared.css"/>
+  <style>
+    .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+    .settings-nav { display: flex; flex-direction: column; gap: 2px; }
+    .settings-tab {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 0.83rem; font-weight: 500; cursor: pointer;
+      color: var(--text-muted); background: transparent; border: none;
+      transition: background 0.15s, color 0.15s; text-align: left;
+    }
+    .settings-tab:hover { background: var(--primary-light); color: var(--primary); }
+    .settings-tab.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .settings-tab i { width: 18px; text-align: center; }
+    .settings-panel { display: none; }
+    .settings-panel.active { display: block; }
+    .section-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .section-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+    .setting-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label { font-size: 0.83rem; font-weight: 600; margin-bottom: 2px; }
+    .setting-desc { font-size: 0.75rem; color: var(--text-muted); max-width: 360px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .avatar-upload { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .avatar-large { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; }
+    .upload-btn { font-size: 0.8rem; color: var(--primary); cursor: pointer; border: 1px dashed var(--primary); padding: 6px 12px; border-radius: 8px; background: var(--primary-light); }
+    .danger-zone { background: #fff5f5; border: 1px solid #fecaca; border-radius: var(--radius); padding: 20px; }
+    .danger-zone h4 { color: var(--accent-red); margin-bottom: 8px; font-size: 0.9rem; }
+    .danger-zone p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<div class="main">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="content">
+    <div class="settings-layout">
+
+      <!-- LEFT NAV -->
+      <div class="card" style="padding:12px;height:fit-content;">
+        <div class="settings-nav">
+          <button class="settings-tab active" onclick="switchTab('profile',this)"><i class="fa-solid fa-user"></i> Profile</button>
+          <button class="settings-tab" onclick="switchTab('platform',this)"><i class="fa-solid fa-globe"></i> Platform</button>
+          <button class="settings-tab" onclick="switchTab('notifications',this)"><i class="fa-solid fa-bell"></i> Notifications</button>
+          <button class="settings-tab" onclick="switchTab('security',this)"><i class="fa-solid fa-shield"></i> Security</button>
+          <button class="settings-tab" onclick="switchTab('payments',this)"><i class="fa-solid fa-credit-card"></i> Payments</button>
+          <button class="settings-tab" onclick="switchTab('delivery',this)"><i class="fa-solid fa-truck"></i> Delivery</button>
+          <button class="settings-tab" onclick="switchTab('roles',this)"><i class="fa-solid fa-user-gear"></i> Roles & Permissions</button>
+        </div>
+      </div>
+
+      <!-- RIGHT PANELS -->
+      <div>
+
+        <!-- PROFILE -->
+        <div class="card settings-panel active" id="panel-profile" style="padding:24px;">
+          <div class="section-title">Admin Profile</div>
+          <div class="section-sub">Update your personal information and profile photo.</div>
+
+          <div class="avatar-upload">
+            <div class="avatar-large" id="profileInitial">A</div>
+            <div>
+              <div class="upload-btn" onclick="showToast('Photo upload coming with backend')"><i class="fa-solid fa-camera"></i> Change Photo</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">JPG or PNG, max 2MB</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="pFirstName" value="Admin"/></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="pLastName" value="User"/></div>
+            <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" id="pEmail" value="admin@pharmaadmin.gh" type="email"/></div>
+            <div class="form-group"><label class="form-label">Phone Number</label><input class="form-control" id="pPhone" value="+233 20 000 0001"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Role / Title</label><input class="form-control" value="Platform Owner" disabled/></div>
+
+          <button class="btn btn-primary" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Save Changes</button>
+        </div>
+
+        <!-- PLATFORM -->
+        <div class="card settings-panel" id="panel-platform" style="padding:24px;">
+          <div class="section-title">Platform Settings</div>
+          <div class="section-sub">Configure global marketplace behaviour and policies.</div>
+
+          <div class="form-group"><label class="form-label">Platform Name</label><input class="form-control" value="PharmaAdmin Marketplace"/></div>
+          <div class="form-group"><label class="form-label">Platform URL</label><input class="form-control" value="https://pharmaadmin.gh"/></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Default Currency</label>
+              <select class="form-control"><option selected>GHS – Ghanaian Cedi</option><option>USD – US Dollar</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Commission Rate (%)</label>
+              <input class="form-control" type="number" value="5" min="0" max="30"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vendor Auto-Approval</label>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="autoApprove"/><span class="toggle-slider"></span></label>
+              <span style="font-size:0.82rem;color:var(--text-muted);">Disabled — all vendors require manual review</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maintenance Mode</label>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="maintMode"/><span class="toggle-slider"></span></label>
+              <span style="font-size:0.82rem;color:var(--text-muted);">Platform is live</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="showToast('Platform settings saved')"><i class="fa-solid fa-save"></i> Save Settings</button>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="card settings-panel" id="panel-notifications" style="padding:24px;">
+          <div class="section-title">Notification Preferences</div>
+          <div class="section-sub">Choose what alerts you receive and how.</div>
+
+          <div class="setting-row">
+            <div><div class="setting-label">New Vendor Application</div><div class="setting-desc">Get notified when a new vendor submits an application.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Security Alerts</div><div class="setting-desc">Failed logins, unusual IP access, and permission changes.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Daily Sales Report</div><div class="setting-desc">Receive a summary of marketplace sales every morning.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Order Disputes</div><div class="setting-desc">Alerts when a customer opens a dispute or requests a refund.</div></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">System Health Warnings</div><div class="setting-desc">Downtime, high latency, or database connection issues.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+
+          <hr class="divider"/>
+          <div class="form-group"><label class="form-label">Notification Email</label><input class="form-control" value="admin@pharmaadmin.gh" type="email"/></div>
+          <button class="btn btn-primary" onclick="showToast('Notification preferences saved')"><i class="fa-solid fa-save"></i> Save Preferences</button>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="card settings-panel" id="panel-security" style="padding:24px;">
+          <div class="section-title">Security Settings</div>
+          <div class="section-sub">Manage your password and authentication options.</div>
+
+          <div class="form-group"><label class="form-label">Current Password</label><input class="form-control" type="password" placeholder="Enter current password"/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">New Password</label><input class="form-control" type="password" placeholder="Min. 8 characters"/></div>
+            <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-control" type="password" placeholder="Repeat new password"/></div>
+          </div>
+          <button class="btn btn-primary" style="margin-bottom:24px;" onclick="showToast('Password updated successfully')"><i class="fa-solid fa-key"></i> Update Password</button>
+
+          <hr class="divider"/>
+          <div class="section-title" style="font-size:0.88rem;">Two-Factor Authentication</div>
+          <div class="section-sub">Add an extra layer of security to your account.</div>
+          <div class="setting-row">
+            <div><div class="setting-label">Enable 2FA via Authenticator App</div><div class="setting-desc">Use Google Authenticator or Authy each time you log in.</div></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">SMS Verification</div><div class="setting-desc">Receive a 6-digit code to +233 20 000 0001 on each login.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+
+          <hr class="divider"/>
+          <div class="danger-zone">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
+            <p>These actions are irreversible. Proceed with extreme caution.</p>
+            <button class="btn btn-danger" onclick="showToast('All sessions revoked','warn')"><i class="fa-solid fa-right-from-bracket"></i> Revoke All Sessions</button>
+          </div>
+        </div>
+
+        <!-- PAYMENTS -->
+        <div class="card settings-panel" id="panel-payments" style="padding:24px;">
+          <div class="section-title">Payment Configuration</div>
+          <div class="section-sub">Manage accepted payment methods and gateway settings.</div>
+
+          <div class="setting-row">
+            <div><div class="setting-label">Mobile Money (MTN, Vodafone, AirtelTigo)</div><div class="setting-desc">Accept MoMo payments from customers in Ghana.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Credit / Debit Card</div><div class="setting-desc">Accept Visa and Mastercard via payment gateway.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Cash on Delivery</div><div class="setting-desc">Allow customers to pay upon receiving their order.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Bank Transfer</div><div class="setting-desc">Manual bank transfer for large orders.</div></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Insurance Payments</div><div class="setting-desc">Accept NHIS and private health insurance.</div></div>
+            <label class="toggle"><input type="checkbox"/><span class="toggle-slider"></span></label>
+          </div>
+
+          <hr class="divider"/>
+          <div class="form-group"><label class="form-label">Payment Gateway API Key</label><input class="form-control" type="password" value="sk_live_xxxxxxxxxxxx" placeholder="API key"/></div>
+          <div class="form-group"><label class="form-label">Paystack Public Key</label><input class="form-control" placeholder="pk_live_…"/></div>
+          <button class="btn btn-primary" onclick="showToast('Payment settings saved')"><i class="fa-solid fa-save"></i> Save Payment Settings</button>
+        </div>
+
+        <!-- DELIVERY -->
+        <div class="card settings-panel" id="panel-delivery" style="padding:24px;">
+          <div class="section-title">Delivery Settings</div>
+          <div class="section-sub">Set delivery zones, fees, and lead times for the marketplace.</div>
+
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Standard Delivery Fee (GH₵)</label><input class="form-control" type="number" value="15" min="0"/></div>
+            <div class="form-group"><label class="form-label">Express Delivery Fee (GH₵)</label><input class="form-control" type="number" value="30" min="0"/></div>
+            <div class="form-group"><label class="form-label">Free Delivery Threshold (GH₵)</label><input class="form-control" type="number" value="200" min="0"/></div>
+            <div class="form-group"><label class="form-label">Standard Lead Time (days)</label><input class="form-control" type="number" value="3" min="1"/></div>
+          </div>
+
+          <div class="setting-row">
+            <div><div class="setting-label">SMS Order Updates</div><div class="setting-desc">Send SMS notifications to customers at each delivery stage.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Email Order Confirmations</div><div class="setting-desc">Automatically email customers when an order is placed or updated.</div></div>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+
+          <hr class="divider"/>
+          <div class="section-title" style="font-size:0.88rem;">Delivery Zones</div>
+          <div class="section-sub">Active delivery zones in the marketplace.</div>
+          <div id="zoneList"></div>
+          <button class="btn btn-outline" style="margin-top:10px;" onclick="addZone()"><i class="fa-solid fa-plus"></i> Add Zone</button>
+          <hr class="divider"/>
+          <button class="btn btn-primary" onclick="showToast('Delivery settings saved')"><i class="fa-solid fa-save"></i> Save Delivery Settings</button>
+        </div>
+
+        <!-- ROLES -->
+        <div class="card settings-panel" id="panel-roles" style="padding:24px;">
+          <div class="section-title">Roles & Permissions</div>
+          <div class="section-sub">Define what each role can access across the platform.</div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <th style="text-align:center;">Admin</th>
+                <th style="text-align:center;">Pharmacist</th>
+                <th style="text-align:center;">Vendor</th>
+                <th style="text-align:center;">Customer</th>
+              </tr>
+            </thead>
+            <tbody id="rolesBody"></tbody>
+          </table>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="showToast('Role permissions saved')"><i class="fa-solid fa-save"></i> Save Permissions</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+
+<script src="admin-layout.js"></script>
+<script>
+renderAdminLayout({ activePage: 'settings', pageTitle: 'Settings' });
+
+/* ── TAB SWITCHING ── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.settings-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+/* ── PROFILE SAVE ── */
+function saveProfile(){
+  const fn=document.getElementById('pFirstName').value;
+  const ln=document.getElementById('pLastName').value;
+  if(!fn||!ln){showToast('Name fields are required','warn');return;}
+  document.getElementById('profileInitial').textContent=(fn[0]+ln[0]).toUpperCase();
+  /* TODO: fetch('api/admin/save-profile.php',{method:'POST',body:JSON.stringify({fn,ln,...})}) */
+  showToast('Profile updated successfully');
+}
+
+/* ── ZONES ── */
+const ZONES = ['Greater Accra','Ashanti','Western','Eastern','Central'];
+function renderZones(){
+  document.getElementById('zoneList').innerHTML=ZONES.map((z,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:0.83rem;">${z}</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+        <button class="btn btn-ghost" onclick="removeZone(${i})" style="padding:4px 8px;"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+function addZone(){
+  const z=prompt('Enter zone name:');
+  if(z){ZONES.push(z);renderZones();}
+}
+function removeZone(i){ZONES.splice(i,1);renderZones();}
+renderZones();
+
+/* ── ROLES TABLE ── */
+const PERMISSIONS = [
+  { label:'View Dashboard',           admin:true,  pharmacist:true,  vendor:true,  customer:false },
+  { label:'Approve Vendors',          admin:true,  pharmacist:false, vendor:false, customer:false },
+  { label:'Manage Users',             admin:true,  pharmacist:false, vendor:false, customer:false },
+  { label:'View Sales Reports',       admin:true,  pharmacist:false, vendor:true,  customer:false },
+  { label:'Process Prescriptions',    admin:true,  pharmacist:true,  vendor:false, customer:false },
+  { label:'Manage Own Inventory',     admin:true,  pharmacist:true,  vendor:true,  customer:false },
+  { label:'Place Orders',             admin:true,  pharmacist:false, vendor:false, customer:true  },
+  { label:'Upload Prescriptions',     admin:true,  pharmacist:false, vendor:false, customer:true  },
+  { label:'View Audit Logs',          admin:true,  pharmacist:false, vendor:false, customer:false },
+  { label:'Manage Platform Settings', admin:true,  pharmacist:false, vendor:false, customer:false },
+];
+
+function renderRoles(){
+  document.getElementById('rolesBody').innerHTML=PERMISSIONS.map((p,i)=>`
+    <tr>
+      <td style="font-size:0.82rem;">${p.label}</td>
+      ${['admin','pharmacist','vendor','customer'].map(r=>`
+        <td style="text-align:center;">
+          <label class="toggle" style="margin:0 auto;">
+            <input type="checkbox" ${p[r]?'checked':''} onchange="togglePerm(${i},'${r}',this.checked)"/>
+            <span class="toggle-slider"></span>
+          </label>
+        </td>
+      `).join('')}
+    </tr>
+  `).join('');
+}
+
+function togglePerm(i,role,val){
+  PERMISSIONS[i][role]=val;
+  /* TODO: fetch('api/admin/update-permissions.php',{method:'POST',body:JSON.stringify(PERMISSIONS)}) */
+}
+
+renderRoles();
+</script>
+</body>
+</html>
