@@ -642,7 +642,8 @@
     <a href="#" class="nav-item" style="padding:8px 4px;">
       <i class="fa-solid fa-circle-question"></i> Support
     </a>
-    <a href="#" class="nav-item" style="padding:8px 4px; color:var(--accent-red);">
+    <!-- FIXED: Using onclick with event to prevent default behavior -->
+    <a href="javascript:void(0)" class="nav-item" style="padding:8px 4px; color:var(--accent-red);" onclick="event.preventDefault(); logout();">
       <i class="fa-solid fa-right-from-bracket"></i> Logout
     </a>
   </div>
@@ -680,12 +681,14 @@
           <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
           <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
           <hr/>
-          <a href="login.html" class="danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+          <!-- FIXED: Same fix for dropdown logout -->
+          <a href="javascript:void(0)" class="danger" onclick="event.preventDefault(); logout();">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
         </div>
       </div>
     </div>
   </header>
-
   <!-- CONTENT -->
   <div class="content">
 
@@ -864,7 +867,12 @@
   <i class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
   <span id="toastMsg"></span>
 </div>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/logout.js"></script>
 
+<script>
+checkAuth("admin");
+</script>
 <script>
 /*
  * ═══════════════════════════════════════════════════════════
@@ -1137,6 +1145,12 @@ function loadAdminInfo() {
   loadActivity();
 })();
 </script>
+<script src="../assets/js/auth.js"></script>
+
+<script>
+checkAuth("admin");
+</script>
+
 
 </body>
 </html>

@@ -36,7 +36,7 @@ function renderPharmacistLayout({ activePage = 'dashboard', pageTitle = 'Dashboa
         <i class="fa-solid fa-plus"></i> New Prescription
       </button>
       <a class="nav-item" href="#" style="padding:7px 4px;font-size:0.8rem;"><i class="fa-solid fa-circle-question"></i> Support</a>
-      <a class="nav-item" href="login.html" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+      <a class="nav-item" href="../login/sign_in/login.html" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </div>
   `;
 

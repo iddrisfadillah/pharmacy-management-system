@@ -1,4 +1,3 @@
-
 function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' } = {}) {
   const pages = [
     { id: 'dashboard',         label: 'Dashboard',         icon: 'fa-gauge-high',   href: 'admin.html' },
@@ -29,7 +28,8 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
       <a href="#" class="nav-item" style="padding:8px 4px;">
         <i class="fa-solid fa-circle-question"></i> Support
       </a>
-      <a href="login.html" class="nav-item" style="padding:8px 4px;color:var(--accent-red);">
+      <!-- Exact full path to login.html -->
+      <a href="/pharmacy/login/sign_in/login.html" class="nav-item" style="padding:8px 4px;color:var(--accent-red);" onclick="handleAdminLogout(event)">
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </a>
     </div>
@@ -62,7 +62,10 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
           <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
           <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
           <hr/>
-          <a href="login.html" class="danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+          <!-- Exact full path to login.html -->
+          <a href="/pharmacy/login/sign_in/login.html" class="danger" onclick="handleAdminLogout(event)">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
         </div>
       </div>
     </div>
@@ -76,25 +79,8 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
   });
 }
 
-function toggleDropdown() {
-  document.getElementById('userDropdown').classList.toggle('open');
-}
-
-let toastTimer;
-function showToast(msg, type = 'success') {
-  clearTimeout(toastTimer);
-  const t = document.getElementById('toast');
-  const icon = document.getElementById('toastIcon');
-  document.getElementById('toastMsg').textContent = msg;
-  icon.className = type === 'error'
-    ? 'fa-solid fa-circle-xmark' : type === 'warn'
-    ? 'fa-solid fa-triangle-exclamation'
-    : 'fa-solid fa-circle-check';
-  icon.style.color = type === 'error' ? '#f87171' : type === 'warn' ? '#fbbf24' : '#4ade80';
-  t.classList.add('show');
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-function generateReport() {
-  showToast('Generating report… (will download as PDF)');
+function handleAdminLogout(event) {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+  sessionStorage.clear();
 }

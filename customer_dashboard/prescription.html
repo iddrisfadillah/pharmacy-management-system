@@ -1,505 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Prescriptions – MedTrust Systems</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --bg:#F5F5F5;--card:#fff;--primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
-      --green:#16a34a;--green-light:#dcfce7;--amber:#d97706;--amber-light:#fef9c3;
-      --red:#dc2626;--red-light:#fee2e2;--text:#111827;--muted:#6B7280;--light:#9CA3AF;
-      --border:#E5E7EB;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
-    }
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-
-    /* TOPNAV */
-    .topnav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;height:54px;gap:28px;position:sticky;top:0;z-index:100;}
-    .nav-brand{font-size:1rem;font-weight:800;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:7px;}
-    .nav-links{display:flex;align-items:center;gap:2px;}
-    .nav-link{padding:6px 14px;border-radius:8px;font-size:0.83rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;}
-    .nav-link:hover{background:var(--primary-light);color:var(--primary);}
-    .nav-link.active{color:var(--primary);font-weight:700;border-bottom:2px solid var(--primary);border-radius:0;padding-bottom:4px;}
-    .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
-    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px 6px;}
-    .notif-dot{width:7px;height:7px;background:var(--red);border-radius:50%;position:absolute;top:2px;right:4px;}
-    .user-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;cursor:pointer;}
-
-    /* LAYOUT */
-    .layout{display:flex;flex:1;}
-
-    /* SIDEBAR */
-    .sidebar{width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;flex-shrink:0;}
-    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:8px;}
-    .sidebar-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;}
-    .sidebar-user-name{font-size:0.82rem;font-weight:700;}
-    .sidebar-user-role{font-size:0.7rem;color:var(--muted);}
-    .sidebar-upload{margin:0 12px 12px;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;transition:background .2s;}
-    .sidebar-upload:hover{background:var(--primary-dark);}
-    .sidebar-section{padding:6px 16px 4px;font-size:0.65rem;font-weight:700;letter-spacing:.1em;color:var(--light);text-transform:uppercase;}
-    .sidebar-nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;border-left:3px solid transparent;}
-    .sidebar-nav-item:hover{background:var(--primary-light);color:var(--primary);}
-    .sidebar-nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600;border-left-color:var(--primary);}
-    .sidebar-nav-item i{width:16px;text-align:center;font-size:0.85rem;}
-
-    /* MAIN */
-    .main{flex:1;padding:24px;overflow-x:hidden;}
-    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
-    .page-title{font-size:1.3rem;font-weight:800;}
-    .page-sub{font-size:0.82rem;color:var(--muted);margin-top:3px;}
-
-    /* STATS */
-    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
-    .stat-card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border:1px solid var(--border);}
-    .stat-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
-    .stat-value{font-size:1.4rem;font-weight:800;}
-    .stat-sub{font-size:0.72rem;color:var(--muted);margin-top:3px;}
-
-    /* CARD */
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
-    .card-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
-    .card-title{font-size:0.9rem;font-weight:700;}
-
-    /* TABS */
-    .rx-tabs{display:flex;gap:4px;background:#F3F4F6;border-radius:10px;padding:4px;margin-bottom:20px;}
-    .rx-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:7px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit;}
-    .rx-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
-
-    /* FILTER ROW */
-    .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .filter-row select,.filter-row input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);font-size:0.82rem;font-family:inherit;color:var(--text);background:#fff;outline:none;}
-    .filter-row select:focus,.filter-row input:focus{border-color:var(--primary);}
-
-    /* RX CARDS GRID */
-    .rx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-    .rx-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;cursor:pointer;}
-    .rx-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-2px);}
-    .rx-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
-    .rx-icon{width:40px;height:40px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
-    .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:0.7rem;font-weight:600;}
-    .badge-green{background:var(--green-light);color:var(--green);}
-    .badge-amber{background:var(--amber-light);color:var(--amber);}
-    .badge-red{background:var(--red-light);color:var(--red);}
-    .badge-blue{background:var(--primary-light);color:var(--primary);}
-    .badge-gray{background:#F3F4F6;color:var(--muted);}
-    .rx-name{font-size:0.92rem;font-weight:700;margin-bottom:4px;}
-    .rx-detail{font-size:0.78rem;color:var(--muted);margin-bottom:2px;}
-    .rx-divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
-    .rx-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-    .rx-meta-label{font-size:0.65rem;color:var(--light);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
-    .rx-meta-val{font-size:0.78rem;font-weight:600;}
-    .rx-actions{display:flex;gap:8px;margin-top:14px;}
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
-    .btn-primary{background:var(--primary);color:#fff;}
-    .btn-primary:hover{background:var(--primary-dark);}
-    .btn-outline{background:transparent;color:var(--primary);border:1px solid var(--primary);}
-    .btn-outline:hover{background:var(--primary-light);}
-    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
-    .btn-ghost:hover{background:var(--bg);}
-    .btn-danger{background:var(--red);color:#fff;}
-
-    /* UPLOAD ZONE */
-    .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
-    .upload-zone:hover{border-color:var(--primary);background:var(--primary-light);}
-    .upload-zone i{font-size:2rem;color:var(--muted);margin-bottom:10px;}
-    .upload-zone h4{font-size:0.9rem;font-weight:700;margin-bottom:4px;}
-    .upload-zone p{font-size:0.78rem;color:var(--muted);}
-
-    /* MODAL */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
-    .modal-overlay.open{display:flex;}
-    .modal{background:#fff;border-radius:var(--radius);padding:28px;width:480px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.15);}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-    .modal-header h3{font-size:1rem;font-weight:700;}
-    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;}
-    .modal-body{margin-bottom:20px;}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
-    .form-group{margin-bottom:16px;}
-    .form-label{display:block;font-size:0.78rem;font-weight:600;margin-bottom:6px;}
-    .form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s;}
-    .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
-
-    /* TOAST */
-    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
-    .toast.show{display:flex;animation:slideUp .3s ease;}
-    @keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
-    /* PROGRESS BAR */
-    .refill-bar-wrap{height:6px;background:var(--border);border-radius:3px;margin-top:6px;}
-    .refill-bar{height:100%;border-radius:3px;transition:width .5s;}
-
-    @media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr;}.sidebar{display:none;}.rx-grid{grid-template-columns:1fr;}}
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Prescriptions – MedTrust Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="assets/css/customer.css"/>
+    <link rel="stylesheet" href="assets/css/prescriptions.css"/>
 </head>
 <body>
 
-<!-- TOPNAV -->
-<nav class="topnav">
-  <a class="nav-brand" href="marketplace.html"><i class="fa-solid fa-pills"></i> MedTrust Systems</a>
-  <div class="nav-links">
-    <a class="nav-link" href="marketplace.html">Marketplace</a>
-    <a class="nav-link" href="#">Categories</a>
-    <a class="nav-link active">Prescriptions</a>
-    <a class="nav-link" href="#">Help</a>
-  </div>
-  <div class="nav-right">
-    <button class="icon-btn" onclick="showToast('Cart')"><i class="fa-solid fa-cart-shopping"></i></button>
-    <button class="icon-btn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
-    <div class="user-avatar">R</div>
-  </div>
-</nav>
-
-<div class="layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar">R</div>
-      <div><div class="sidebar-user-name">Patient Portal</div><div class="sidebar-user-role">Radical – Active Account</div></div>
-    </div>
-    <button class="sidebar-upload" onclick="openNewRx()"><i class="fa-solid fa-arrow-up-from-bracket"></i> Upload Prescription</button>
-    <div class="sidebar-section">Navigation</div>
-    <a class="sidebar-nav-item" href="marketplace.html"><i class="fa-solid fa-store"></i> Marketplace</a>
-    <a class="sidebar-nav-item" href="customer.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-    <a class="sidebar-nav-item active" href="prescription.html"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a>
-    <a class="sidebar-nav-item" href="order_history.html"><i class="fa-solid fa-clock-rotate-left"></i> Order History</a>
-    <a class="sidebar-nav-item" href="settings.html"><i class="fa-solid fa-gear"></i> Account Settings</a>
-    <div style="flex:1;"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:16px;">
-      <a href="login.html" class="sidebar-nav-item" style="color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
-    </div>
-  </aside>
-
-  <main class="main">
-    <!-- HEADER -->
-    <div class="page-header">
-      <div>
-        <div class="page-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary);margin-right:8px;"></i>My Prescriptions</div>
-        <div class="page-sub">Manage your active scripts, refills, and prescription history.</div>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-ghost" onclick="showToast('Downloading prescription history…')"><i class="fa-solid fa-download"></i> Export</button>
-        <button class="btn btn-primary" onclick="openNewRx()"><i class="fa-solid fa-plus"></i> New Prescription</button>
-      </div>
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h2>
+            <i class="fa-solid fa-pills"></i>
+            MedTrust
+        </h2>
+        <span>Patient Portal</span>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Active Scripts</div>
-        <div class="stat-value" style="color:var(--primary);">4</div>
-        <div class="stat-sub">Currently active</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Pending Verification</div>
-        <div class="stat-value" style="color:var(--amber);">1</div>
-        <div class="stat-sub">Awaiting pharmacist</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Due for Refill</div>
-        <div class="stat-value" style="color:var(--red);">2</div>
-        <div class="stat-sub">Within 7 days</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Expired</div>
-        <div class="stat-value" style="color:var(--muted);">1</div>
-        <div class="stat-sub">Needs renewal</div>
-      </div>
-    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Main</div>
+        <a href="customer.html" class="nav-item">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="prescription.html" class="nav-item active">
+            <i class="fa-solid fa-prescription-bottle"></i> Prescriptions
+            <span class="badge" id="rxBadge">4</span>
+        </a>
+        <a href="order_history.html" class="nav-item">
+            <i class="fa-solid fa-clock-rotate-left"></i> Order History
+        </a>
+        <a href="#" class="nav-item" onclick="openNewRx()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Prescription
+        </a>
 
-    <!-- TABS -->
-    <div class="rx-tabs">
-      <button class="rx-tab active" onclick="switchTab(this,'active')">Active Scripts</button>
-      <button class="rx-tab" onclick="switchTab(this,'pending')">Pending</button>
-      <button class="rx-tab" onclick="switchTab(this,'history')">History</button>
-      <button class="rx-tab" onclick="switchTab(this,'upload')">Upload New</button>
-    </div>
+        <div class="nav-section-title">Marketplace</div>
+        <a href="marketplace.html" class="nav-item">
+            <i class="fa-solid fa-store"></i> Marketplace
+        </a>
+        <a href="cart.html" class="nav-item">
+            <i class="fa-solid fa-cart-shopping"></i> Cart
+            <span class="badge" id="cartBadge">2</span>
+        </a>
 
-    <!-- ACTIVE PANEL -->
-    <div id="panel-active">
-      <div class="card" style="margin-bottom:20px;">
-        <div class="card-header">
-          <span class="card-title">Active Prescriptions</span>
-          <div class="filter-row">
-            <select onchange="filterRx(this.value)">
-              <option value="">All Conditions</option>
-              <option>Hypertension</option>
-              <option>Diabetes</option>
-              <option>General</option>
-            </select>
-            <input type="text" placeholder="Search medication…" oninput="searchRx(this.value)"/>
-          </div>
+        <div class="nav-section-title">Account</div>
+        <a href="settings.html" class="nav-item">
+            <i class="fa-solid fa-user"></i> Account Settings
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-bell"></i> Notifications
+            <span class="badge" id="notifBadge">3</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar" id="sidebarAvatar">R</div>
+            <div class="user-info">
+                <div class="name" id="sidebarName">Radical</div>
+                <div class="role">Patient • Verified</div>
+            </div>
+            <i class="fa-solid fa-check-circle" style="color: var(--green);"></i>
         </div>
-        <div style="padding:20px;">
-          <div class="rx-grid" id="rxGrid"></div>
+        <button class="btn-logout" onclick="handleLogout(event)">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+    </div>
+</aside>
+
+<!-- ─── MAIN ─── -->
+<div class="main">
+
+    <!-- TOPBAR -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+                <h1 class="welcome-title">My Prescriptions</h1>
+                <p class="welcome-sub">Manage your active scripts, refills, and prescription history</p>
+            </div>
         </div>
-      </div>
-    </div>
-
-    <!-- PENDING PANEL -->
-    <div id="panel-pending" style="display:none;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Pending Verification</span></div>
-        <div style="padding:20px;">
-          <div class="rx-card" style="max-width:400px;">
-            <div class="rx-card-top">
-              <div class="rx-icon"><i class="fa-solid fa-hourglass-half"></i></div>
-              <span class="badge badge-amber">Pending</span>
+        <div class="topbar-right">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search medications…" id="searchRx" oninput="searchPrescriptions(this.value)"/>
             </div>
-            <div class="rx-name">Metformin HCL 500mg</div>
-            <div class="rx-detail">Uploaded Nov 15, 2024 · Awaiting pharmacist review</div>
-            <hr class="rx-divider"/>
-            <div style="background:#fef9c3;border-radius:8px;padding:10px 12px;font-size:0.78rem;color:#854d0e;">
-              <i class="fa-solid fa-clock"></i> Estimated review time: 2–4 hours. You'll receive an SMS confirmation.
-            </div>
-            <div class="rx-actions">
-              <button class="btn btn-ghost" onclick="showToast('Prescription withdrawn')"><i class="fa-solid fa-xmark"></i> Withdraw</button>
-            </div>
-          </div>
+            <button class="icon-btn" onclick="showToast('Cart: 2 items')">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </button>
+            <button class="icon-btn" onclick="showToast('3 new notifications')">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notif-dot"></span>
+            </button>
+            <div class="avatar" id="topbarAvatar">R</div>
         </div>
-      </div>
-    </div>
+    </nav>
 
-    <!-- HISTORY PANEL -->
-    <div id="panel-history" style="display:none;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Prescription History</span></div>
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr style="background:#fafafa;border-bottom:1px solid var(--border);">
-            <th style="padding:10px 20px;font-size:0.7rem;color:var(--muted);text-align:left;font-weight:700;text-transform:uppercase;">Medication</th>
-            <th style="padding:10px 20px;font-size:0.7rem;color:var(--muted);text-align:left;font-weight:700;text-transform:uppercase;">Doctor</th>
-            <th style="padding:10px 20px;font-size:0.7rem;color:var(--muted);text-align:left;font-weight:700;text-transform:uppercase;">Issued</th>
-            <th style="padding:10px 20px;font-size:0.7rem;color:var(--muted);text-align:left;font-weight:700;text-transform:uppercase;">Status</th>
-            <th style="padding:10px 20px;font-size:0.7rem;color:var(--muted);text-align:left;font-weight:700;text-transform:uppercase;">Action</th>
-          </tr></thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-      </div>
-    </div>
+    <!-- ─── PAGE ─── -->
+    <div class="page">
 
-    <!-- UPLOAD PANEL -->
-    <div id="panel-upload" style="display:none;">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Upload New Prescription</span></div>
-        <div style="padding:24px;max-width:560px;">
-          <div class="upload-zone" onclick="document.getElementById('fileUpload').click()">
-            <i class="fa-solid fa-arrow-up-from-bracket"></i>
-            <h4>Drag & drop your prescription here</h4>
-            <p>Supports PDF, JPG, PNG — max 10MB</p>
-            <input type="file" id="fileUpload" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this)"/>
-          </div>
-          <div id="uploadedFile" style="display:none;margin-top:14px;background:var(--green-light);border-radius:8px;padding:12px 16px;display:none;align-items:center;gap:10px;">
-            <i class="fa-solid fa-file-circle-check" style="color:var(--green);"></i>
-            <span id="uploadedFileName" style="font-size:0.83rem;font-weight:600;"></span>
-          </div>
-          <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;"/>
-          <div class="form-group">
-            <label class="form-label">Medication Name</label>
-            <input class="form-control" id="upMedName" placeholder="e.g. Lisinopril 10mg"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-            <div class="form-group">
-              <label class="form-label">Prescribing Doctor</label>
-              <input class="form-control" id="upDoctor" placeholder="Dr. Kofi Mensah"/>
+        <!-- PAGE HEADER ACTIONS -->
+        <div class="page-header" style="justify-content: flex-end;">
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-ghost" onclick="showToast('Downloading prescription history…')">
+                    <i class="fa-solid fa-download"></i> Export
+                </button>
+                <button class="btn btn-primary" onclick="openNewRx()">
+                    <i class="fa-solid fa-plus"></i> New Prescription
+                </button>
             </div>
-            <div class="form-group">
-              <label class="form-label">Issue Date</label>
-              <input class="form-control" type="date" id="upDate"/>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Additional Notes</label>
-            <textarea class="form-control" rows="3" placeholder="Any instructions from your doctor…"></textarea>
-          </div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="submitUpload()">
-            <i class="fa-solid fa-paper-plane"></i> Submit for Verification
-          </button>
         </div>
-      </div>
+
+        <!-- STATS ROW -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Active Scripts</div>
+                <div class="stat-value" style="color:var(--primary);">4</div>
+                <div class="stat-sub">Currently active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pending Verification</div>
+                <div class="stat-value" style="color:var(--amber);">1</div>
+                <div class="stat-sub">Awaiting pharmacist</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Due for Refill</div>
+                <div class="stat-value" style="color:var(--red);">2</div>
+                <div class="stat-sub">Within 7 days</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Expired</div>
+                <div class="stat-value" style="color:var(--muted);">1</div>
+                <div class="stat-sub">Needs renewal</div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="rx-tabs">
+            <button class="rx-tab active" onclick="switchTab(this, 'active')">Active Scripts</button>
+            <button class="rx-tab" onclick="switchTab(this, 'pending')">Pending</button>
+            <button class="rx-tab" onclick="switchTab(this, 'history')">History</button>
+            <button class="rx-tab" onclick="switchTab(this, 'upload')">Upload New</button>
+        </div>
+
+        <!-- ACTIVE PANEL -->
+        <div id="panel-active">
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header">
+                    <span class="card-title">Active Prescriptions</span>
+                    <div class="filter-row">
+                        <select id="filterCondition" onchange="filterPrescriptions(this.value)">
+                            <option value="">All Conditions</option>
+                            <option>Hypertension</option>
+                            <option>Diabetes</option>
+                            <option>General</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="padding:20px;">
+                    <div class="rx-grid" id="rxGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PENDING PANEL -->
+        <div id="panel-pending" style="display:none;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">Pending Verification</span></div>
+                <div style="padding:20px;">
+                    <div class="rx-grid" id="pendingGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY PANEL -->
+        <div id="panel-history" style="display:none;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">Prescription History</span></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Doctor</th>
+                            <th>Issued</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- UPLOAD PANEL -->
+        <div id="panel-upload" style="display:none;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">Upload New Prescription</span></div>
+                <div style="padding:24px;max-width:560px;">
+                    <div class="upload-zone" id="uploadZone"
+                         ondragover="dragOver(event)"
+                         ondragleave="dragLeave(event)"
+                         ondrop="dropFile(event)"
+                         onclick="document.getElementById('fileUpload').click()">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        <h4>Drag &amp; drop your prescription here</h4>
+                        <p>Supports PDF, JPG, PNG — max 10MB</p>
+                        <input type="file" id="fileUpload" style="display:none;" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this)"/>
+                    </div>
+                    <div id="uploadedFile" style="display:none;margin-top:14px;background:var(--green-light);border-radius:8px;padding:12px 16px;align-items:center;gap:10px;">
+                        <i class="fa-solid fa-file-circle-check" style="color:var(--green);"></i>
+                        <span id="uploadedFileName" style="font-size:0.83rem;font-weight:600;"></span>
+                    </div>
+                    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;"/>
+                    <div class="form-group">
+                        <label class="form-label">Medication Name *</label>
+                        <input class="form-control" id="upMedName" placeholder="e.g. Lisinopril 10mg"/>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Prescribing Doctor</label>
+                            <input class="form-control" id="upDoctor" placeholder="Dr. Kofi Mensah"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Issue Date</label>
+                            <input class="form-control" type="date" id="upDate"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Additional Notes</label>
+                        <textarea class="form-control" id="upNotes" rows="3" placeholder="Any instructions from your doctor…"></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="submitUpload()">
+                        <i class="fa-solid fa-paper-plane"></i> Submit for Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-  </main>
+    <!-- ─── FOOTER (Moved inside .main) ─── -->
+    <footer>
+        <div>
+            <div class="footer-brand">MedTrust Systems</div>
+            <div class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant Pharmacy Network. All healthcare data is encrypted and secure.</div>
+        </div>
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Drug Safety</a>
+            <a href="#">Contact Support</a>
+            <a href="#">Security Certifications</a>
+        </div>
+        <div class="footer-badges">
+            <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="footer-badge" style="color:var(--green);"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+    </footer>
+
 </div>
 
-<!-- RX DETAIL MODAL -->
+<!-- ─── RX DETAIL MODAL ─── -->
 <div class="modal-overlay" id="rxModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="rxModalTitle">Prescription Details</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="rxModalTitle">Prescription Details</h3>
+            <button class="modal-close" onclick="closeModal('rxModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="rxModalBody"></div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('rxModal')">Close</button>
+            <button class="btn btn-primary" onclick="showToast('Ordering refill…');closeModal('rxModal')">
+                <i class="fa-solid fa-rotate"></i> Order Refill
+            </button>
+        </div>
     </div>
-    <div class="modal-body" id="rxModalBody"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      <button class="btn btn-primary" onclick="showToast('Ordering refill…');closeModal()"><i class="fa-solid fa-rotate"></i> Order Refill</button>
-    </div>
-  </div>
 </div>
 
-<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast">
+    <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+    <span id="toastMsg"></span>
+</div>
 
-<script>
-/* ── MOCK DATA — replace with fetch('api/customer/prescriptions.php') ── */
-const RX_LIST = [
-  { id:1, name:'Lisinopril 10mg',    condition:'Hypertension', doctor:'Dr. Asante Boateng', issued:'Sep 01, 2024', expires:'Mar 01, 2025', refills:3, refillsLeft:2, daysLeft:45, status:'active',  pharmacy:'City Health Pharma' },
-  { id:2, name:'Atorvastatin 20mg',  condition:'Hypertension', doctor:'Dr. Asante Boateng', issued:'Oct 01, 2024', expires:'Apr 01, 2025', refills:5, refillsLeft:4, daysLeft:5,  status:'active',  pharmacy:'City Health Pharma' },
-  { id:3, name:'Metformin HCL 500mg',condition:'Diabetes',     doctor:'Dr. Ama Frimpong',   issued:'Aug 15, 2024', expires:'Feb 15, 2025', refills:6, refillsLeft:1, daysLeft:7,  status:'active',  pharmacy:'North Star Meds'  },
-  { id:4, name:'Vitamin D3 5000IU',  condition:'General',      doctor:'Dr. Ama Frimpong',   issued:'Jul 10, 2024', expires:'Jan 10, 2025', refills:2, refillsLeft:2, daysLeft:28, status:'active',  pharmacy:'GoldCoast Health' },
-  { id:5, name:'Amoxicillin 500mg',  condition:'General',      doctor:'Dr. Kweku Mensah',   issued:'Jun 01, 2024', expires:'Jun 14, 2024', refills:1, refillsLeft:0, daysLeft:0,  status:'expired', pharmacy:'PharmaLink Ghana' },
-];
+<!-- ─── SCRIPTS ─── -->
+<script src="assets/js/customer.js"></script>
+<script src="assets/js/prescriptions.js"></script>
 
-const HISTORY = [
-  { name:'Metformin 250mg', doctor:'Dr. Ama Frimpong',   issued:'Jan 2024', status:'Completed' },
-  { name:'Paracetamol 500mg',doctor:'Dr. Kweku Mensah',  issued:'Mar 2024', status:'Completed' },
-  { name:'Amoxicillin 250mg',doctor:'Dr. Asante Boateng',issued:'Apr 2024', status:'Expired'   },
-  { name:'Omeprazole 20mg',  doctor:'Dr. Ama Frimpong',  issued:'May 2024', status:'Completed' },
-];
-
-let allRx = [...RX_LIST];
-
-function statusBadge(s, days) {
-  if (s === 'expired') return '<span class="badge badge-gray">Expired</span>';
-  if (days <= 7)       return '<span class="badge badge-red">Refill Soon</span>';
-  if (days <= 14)      return '<span class="badge badge-amber">Low Supply</span>';
-  return '<span class="badge badge-green">Active</span>';
-}
-
-function refillBarColor(days) {
-  if (days <= 7)  return '#dc2626';
-  if (days <= 14) return '#d97706';
-  return '#16a34a';
-}
-
-function renderRxGrid(list) {
-  document.getElementById('rxGrid').innerHTML = list.map(rx => `
-    <div class="rx-card" onclick="openRxDetail(${rx.id})">
-      <div class="rx-card-top">
-        <div class="rx-icon"><i class="fa-solid fa-pills"></i></div>
-        ${statusBadge(rx.status, rx.daysLeft)}
-      </div>
-      <div class="rx-name">${rx.name}</div>
-      <div class="rx-detail"><i class="fa-solid fa-stethoscope" style="margin-right:4px;"></i>${rx.doctor}</div>
-      <div class="rx-detail"><i class="fa-solid fa-hospital" style="margin-right:4px;"></i>${rx.pharmacy}</div>
-      <hr class="rx-divider"/>
-      <div class="rx-meta">
-        <div>
-          <div class="rx-meta-label">Condition</div>
-          <div class="rx-meta-val">${rx.condition}</div>
-        </div>
-        <div>
-          <div class="rx-meta-label">Refills Left</div>
-          <div class="rx-meta-val">${rx.refillsLeft} / ${rx.refills}</div>
-        </div>
-        <div>
-          <div class="rx-meta-label">Expires</div>
-          <div class="rx-meta-val">${rx.expires}</div>
-        </div>
-        <div>
-          <div class="rx-meta-label">Days Supply</div>
-          <div class="rx-meta-val" style="color:${refillBarColor(rx.daysLeft)}">${rx.daysLeft} days</div>
-        </div>
-      </div>
-      <div class="refill-bar-wrap">
-        <div class="refill-bar" style="width:${Math.min((rx.daysLeft/90)*100,100)}%;background:${refillBarColor(rx.daysLeft)};"></div>
-      </div>
-      <div class="rx-actions" onclick="event.stopPropagation()">
-        ${rx.status !== 'expired'
-          ? `<button class="btn btn-primary" onclick="showToast('Ordering refill for ${rx.name}…')"><i class="fa-solid fa-rotate"></i> Refill</button>`
-          : `<button class="btn btn-outline" onclick="showToast('Requesting renewal…')"><i class="fa-solid fa-file-medical"></i> Renew</button>`
-        }
-        <button class="btn btn-ghost" onclick="showToast('Downloading prescription…')"><i class="fa-solid fa-download"></i></button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderHistory() {
-  const statusClass = { Completed:'badge-green', Expired:'badge-gray' };
-  document.getElementById('historyBody').innerHTML = HISTORY.map(h => `
-    <tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:12px 20px;font-size:0.83rem;font-weight:600;">${h.name}</td>
-      <td style="padding:12px 20px;font-size:0.82rem;color:var(--muted);">${h.doctor}</td>
-      <td style="padding:12px 20px;font-size:0.82rem;">${h.issued}</td>
-      <td style="padding:12px 20px;"><span class="badge ${statusClass[h.status]||'badge-gray'}">${h.status}</span></td>
-      <td style="padding:12px 20px;"><button class="btn btn-ghost" onclick="showToast('Requesting re-prescription…')"><i class="fa-solid fa-rotate-left"></i> Re-order</button></td>
-    </tr>
-  `).join('');
-}
-
-function openRxDetail(id) {
-  const rx = RX_LIST.find(r => r.id === id);
-  if (!rx) return;
-  document.getElementById('rxModalTitle').textContent = rx.name;
-  document.getElementById('rxModalBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:0.83rem;">
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Medication</div>${rx.name}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Condition</div>${rx.condition}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Doctor</div>${rx.doctor}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Pharmacy</div>${rx.pharmacy}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Issued</div>${rx.issued}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Expires</div>${rx.expires}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Refills Left</div>${rx.refillsLeft} of ${rx.refills}</div>
-      <div><div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Days Remaining</div><span style="color:${refillBarColor(rx.daysLeft)};font-weight:700;">${rx.daysLeft} days</span></div>
-    </div>
-  `;
-  document.getElementById('rxModal').classList.add('open');
-}
-
-function closeModal() { document.getElementById('rxModal').classList.remove('open'); }
-
-function openNewRx() {
-  switchTab(document.querySelectorAll('.rx-tab')[3], 'upload');
-}
-
-function switchTab(btn, panel) {
-  document.querySelectorAll('.rx-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  ['active','pending','history','upload'].forEach(p => {
-    document.getElementById('panel-' + p).style.display = p === panel ? 'block' : 'none';
-  });
-  if (panel === 'history') renderHistory();
-}
-
-function filterRx(condition) {
-  const list = condition ? RX_LIST.filter(r => r.condition === condition) : RX_LIST;
-  allRx = list;
-  renderRxGrid(list);
-}
-
-function searchRx(q) {
-  const list = q ? allRx.filter(r => r.name.toLowerCase().includes(q.toLowerCase())) : allRx;
-  renderRxGrid(list);
-}
-
-function handleUpload(input) {
-  const f = input.files[0];
-  if (!f) return;
-  const wrap = document.getElementById('uploadedFile');
-  document.getElementById('uploadedFileName').textContent = f.name;
-  wrap.style.display = 'flex';
-}
-
-function submitUpload() {
-  const med = document.getElementById('upMedName').value.trim();
-  if (!med) { showToast('Please enter a medication name', 'warn'); return; }
-  showToast(`"${med}" submitted for verification`);
-  switchTab(document.querySelectorAll('.rx-tab')[1], 'pending');
-}
-
-let _t;
-function showToast(msg, type = 'success') {
-  clearTimeout(_t);
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastIcon').style.color = type === 'warn' ? '#fbbf24' : '#4ade80';
-  t.classList.add('show');
-  _t = setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-renderRxGrid(RX_LIST);
-</script>
 </body>
 </html>

@@ -220,7 +220,7 @@
   </nav>
   <div class="sidebar-footer">
     <a class="nav-item" href="#" style="padding:7px 4px;font-size:0.8rem;"><i class="fa-solid fa-circle-question"></i> Support</a>
-    <a class="nav-item" href="login.html" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-shield-halved"></i> Security Status</a>
+    <a class="nav-item" href="#" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-shield-halved"></i> Security Status</a>
   </div>
 </aside>
 
@@ -407,7 +407,11 @@
 </div>
 
 <div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
+<script src="../assets/js/auth.js"></script>
 
+<script>
+checkAuth("pharmacist");
+</script>
 <script>
 /* ═══════════════════════════════════════
    MOCK DATA — replace with:
@@ -762,5 +766,13 @@ function showToast(msg, type = 'success') {
 renderQueue(QUEUE);
 setTimeout(() => selectRx(QUEUE[0].id), 300);
 </script>
+
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/logout.js"></script>
+
+<script>
+checkAuth("pharmacist");
+</script>
+
 </body>
 </html>

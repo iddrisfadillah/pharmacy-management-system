@@ -12,6 +12,14 @@
     .stock-bar{height:100%;border-radius:3px;transition:width .4s;}
     .expiry-warn{font-size:0.7rem;color:var(--amber);font-weight:600;}
     .expiry-critical{font-size:0.7rem;color:var(--red);font-weight:600;}
+    .btn-danger {
+      background: var(--red, #dc2626);
+      color: #ffffff;
+      border: none;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
   </style>
 </head>
 <body>
@@ -27,7 +35,7 @@
       </div>
       <div style="display:flex;gap:10px;">
         <button class="btn btn-ghost" onclick="showToast('Exporting inventory…')"><i class="fa-solid fa-download"></i> Export</button>
-        <button class="btn btn-primary" onclick="openModal('addStockModal')"><i class="fa-solid fa-plus"></i> Add Stock</button>
+        <button class="btn btn-primary" onclick="openAddStockModal()"><i class="fa-solid fa-plus"></i> Add Stock</button>
       </div>
     </div>
 
@@ -36,25 +44,25 @@
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-blue"><i class="fa-solid fa-pills"></i></div><span class="stat-badge sb-blue">Total</span></div>
         <div class="stat-label">Total Products</div>
-        <div class="stat-value">248</div>
+        <div class="stat-value" id="statTotal">0</div>
         <div class="stat-sub">Across all categories</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-red"><i class="fa-solid fa-triangle-exclamation"></i></div><span class="stat-badge sb-red">Critical</span></div>
         <div class="stat-label">Low Stock</div>
-        <div class="stat-value" style="color:var(--red);">24</div>
+        <div class="stat-value" id="statLowStock" style="color:var(--red);">0</div>
         <div class="stat-sub">Below reorder point</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-amber"><i class="fa-solid fa-clock"></i></div><span class="stat-badge sb-amber">Soon</span></div>
         <div class="stat-label">Expiring (30 days)</div>
-        <div class="stat-value" style="color:var(--amber);">12</div>
+        <div class="stat-value" id="statExpiring" style="color:var(--amber);">0</div>
         <div class="stat-sub">Needs action</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-green"><i class="fa-solid fa-circle-check"></i></div><span class="stat-badge sb-green">Good</span></div>
         <div class="stat-label">Well Stocked</div>
-        <div class="stat-value" style="color:var(--green);">212</div>
+        <div class="stat-value" id="statWellStocked" style="color:var(--green);">0</div>
         <div class="stat-sub">No action needed</div>
       </div>
     </div>
@@ -66,12 +74,6 @@
         <div class="filter-row">
           <select id="filterCat" onchange="filterInventory()">
             <option value="">All Categories</option>
-            <option>Antibiotics</option>
-            <option>Cardiovascular</option>
-            <option>Diabetes</option>
-            <option>Pain Relief</option>
-            <option>Vitamins</option>
-            <option>Respiratory</option>
           </select>
           <select id="filterStatus" onchange="filterInventory()">
             <option value="">All Statuses</option>
@@ -114,7 +116,7 @@
   </footer>
 </div>
 
-<!-- ADD STOCK MODAL -->
+<!-- ADD / EDIT STOCK MODAL -->
 <div class="modal-overlay" id="addStockModal">
   <div class="modal">
     <div class="modal-header">
@@ -122,25 +124,115 @@
       <button class="modal-close" onclick="closeModal('addStockModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Medicine Name</label><input class="form-control" id="sName" placeholder="e.g. Amoxicillin 500mg"/></div>
-        <div class="form-group"><label class="form-label">Category</label>
-          <select class="form-control" id="sCat">
-            <option>Antibiotics</option><option>Cardiovascular</option><option>Diabetes</option>
-            <option>Pain Relief</option><option>Vitamins</option><option>Respiratory</option>
-          </select>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Medicine Name *</label>
+                <input class="form-control" id="sName">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Generic Name</label>
+                <input class="form-control" id="sGeneric">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Brand</label>
+                <input class="form-control" id="sBrand">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select class="form-control" id="sCat"></select>
+            </div>
         </div>
-        <div class="form-group"><label class="form-label">SKU</label><input class="form-control" id="sSKU" placeholder="e.g. AMX-500"/></div>
-        <div class="form-group"><label class="form-label">Quantity</label><input class="form-control" id="sQty" type="number" placeholder="100"/></div>
-        <div class="form-group"><label class="form-label">Reorder Point</label><input class="form-control" id="sReorder" type="number" placeholder="20"/></div>
-        <div class="form-group"><label class="form-label">Unit Price (GH₵)</label><input class="form-control" id="sPrice" type="number" step="0.01" placeholder="12.50"/></div>
-        <div class="form-group"><label class="form-label">Expiry Date</label><input class="form-control" id="sExpiry" type="date"/></div>
-        <div class="form-group"><label class="form-label">Supplier</label><input class="form-control" id="sSupplier" placeholder="Supplier name"/></div>
-      </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Purchase Price</label>
+                <input class="form-control" id="sPurchasePrice" type="number" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Selling Price *</label>
+                <input class="form-control" id="sPrice" type="number" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Stock Quantity *</label>
+                <input class="form-control" id="sQty" type="number">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Minimum Stock</label>
+                <input class="form-control" id="sReorder" type="number">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Dosage</label>
+                <input class="form-control" id="sDosage">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Strength</label>
+                <input class="form-control" id="sStrength">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Form</label>
+                <input class="form-control" id="sForm">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Batch Number</label>
+                <input class="form-control" id="sBatch">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Manufacturer</label>
+                <input class="form-control" id="sManufacturer">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Expiry Date</label>
+                <input class="form-control" id="sExpiry" type="date">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="sDescription"></textarea>
+        </div>
+
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('addStockModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveStock()"><i class="fa-solid fa-save"></i> Save Stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- REORDER STOCK MODAL -->
+<div class="modal-overlay" id="reorderModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>Reorder Stock</h3>
+      <button class="modal-close" onclick="closeModal('reorderModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;margin-bottom:12px;color:var(--muted);" id="reorderMedicineName"></p>
+      <div class="form-group">
+        <label class="form-label">Additional Quantity to Add *</label>
+        <input class="form-control" id="reorderQty" type="number" min="1" value="50">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('reorderModal')">Cancel</button>
+      <button class="btn btn-success" onclick="submitReorder()"><i class="fa-solid fa-rotate"></i> Confirm Reorder</button>
     </div>
   </div>
 </div>
@@ -151,41 +243,155 @@
 <script>
 renderPharmacistLayout({ activePage:'inventory', pageTitle:'Inventory Management' });
 
-/* ── MOCK DATA — replace with fetch('api/pharmacist/inventory.php') ── */
-const INVENTORY = [
-  { id:1,  name:'Amoxicillin 500mg',     cat:'Antibiotics',     sku:'AMX-500',  qty:12,  reorder:30,  expiry:'2024-12-01', price:'GH₵ 8.50',  status:'Critical'    },
-  { id:2,  name:'Lisinopril 10mg',        cat:'Cardiovascular',  sku:'LIS-010',  qty:18,  reorder:25,  expiry:'2025-03-15', price:'GH₵ 12.00', status:'Low Stock'   },
-  { id:3,  name:'Insulin Glargine',       cat:'Diabetes',        sku:'INS-GLR',  qty:0,   reorder:10,  expiry:'2025-01-20', price:'GH₵ 85.00', status:'Out of Stock'},
-  { id:4,  name:'Metformin ER 500mg',     cat:'Diabetes',        sku:'MET-500',  qty:22,  reorder:30,  expiry:'2025-06-10', price:'GH₵ 6.00',  status:'Low Stock'   },
-  { id:5,  name:'Atorvastatin 20mg',      cat:'Cardiovascular',  sku:'ATV-020',  qty:145, reorder:30,  expiry:'2026-02-28', price:'GH₵ 18.00', status:'In Stock'    },
-  { id:6,  name:'Paracetamol 500mg',      cat:'Pain Relief',     sku:'PAR-500',  qty:320, reorder:50,  expiry:'2026-05-01', price:'GH₵ 3.00',  status:'In Stock'    },
-  { id:7,  name:'Vitamin D3 5000IU',      cat:'Vitamins',        sku:'VTD-500',  qty:88,  reorder:20,  expiry:'2026-08-15', price:'GH₵ 22.00', status:'In Stock'    },
-  { id:8,  name:'Ventolin HFA Inhaler',   cat:'Respiratory',     sku:'VEN-HFA',  qty:14,  reorder:20,  expiry:'2025-04-30', price:'GH₵ 45.00', status:'Low Stock'   },
-  { id:9,  name:'Gabapentin 300mg',       cat:'Pain Relief',     sku:'GAB-300',  qty:67,  reorder:25,  expiry:'2025-11-20', price:'GH₵ 14.00', status:'In Stock'    },
-  { id:10, name:'Levothyroxine 50mcg',    cat:'Cardiovascular',  sku:'LEV-050',  qty:200, reorder:40,  expiry:'2026-03-01', price:'GH₵ 9.50',  status:'In Stock'    },
-  { id:11, name:'Omeprazole 20mg',        cat:'Pain Relief',     sku:'OMP-020',  qty:19,  reorder:25,  expiry:'2025-02-10', price:'GH₵ 7.00',  status:'Low Stock'   },
-  { id:12, name:'Cetirizine 10mg',        cat:'Respiratory',     sku:'CET-010',  qty:110, reorder:30,  expiry:'2026-07-20', price:'GH₵ 5.00',  status:'In Stock'    },
-];
+let INVENTORY = [];
+let CATEGORIES = [];
+let filtered = [];
+let page = 1;
+let editId = null;
+let reorderItem = null;
+const PER_PAGE = 8;
 
-const statusClass = { 'In Stock':'badge-green','Low Stock':'badge-amber','Critical':'badge-red','Out of Stock':'badge-gray' };
-const stockColor  = { 'In Stock':'#16a34a','Low Stock':'#d97706','Critical':'#dc2626','Out of Stock':'#9CA3AF' };
+const statusClass = { 'In Stock':'badge-green', 'Low Stock':'badge-amber', 'Critical':'badge-red', 'Out of Stock':'badge-gray' };
+const stockColor  = { 'In Stock':'#16a34a', 'Low Stock':'#d97706', 'Critical':'#dc2626', 'Out of Stock':'#9CA3AF' };
 
-let filtered=[...INVENTORY], page=1, editId=null;
-const PER_PAGE=8;
-
-function stockPct(qty, reorder) { return Math.min(Math.round((qty / (reorder * 3)) * 100), 100); }
+function stockPct(qty, reorder) { 
+  return Math.min(Math.round((qty / (reorder * 3)) * 100), 100); 
+}
 
 function expiryLabel(dateStr) {
-  const diff = Math.ceil((new Date(dateStr) - new Date()) / (1000*60*60*24));
+  if (!dateStr || dateStr.startsWith('0000')) return `<span style="font-size:0.78rem;color:var(--muted);">N/A</span>`;
+  const diff = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
   if (diff <= 0)  return `<span class="expiry-critical">Expired</span>`;
   if (diff <= 30) return `<span class="expiry-critical">${diff}d left</span>`;
   if (diff <= 90) return `<span class="expiry-warn">${diff}d left</span>`;
   return `<span style="font-size:0.78rem;color:var(--muted);">${dateStr}</span>`;
 }
 
+function updateStats() {
+  const total = INVENTORY.length;
+  let lowStockCount = 0;
+  let wellStockedCount = 0;
+  let expiringCount = 0;
+
+  const now = new Date();
+
+  INVENTORY.forEach(item => {
+    if (item.qty <= item.reorder) {
+      lowStockCount++;
+    } else {
+      wellStockedCount++;
+    }
+
+    if (item.expiry && !item.expiry.startsWith('0000')) {
+      const expDate = new Date(item.expiry);
+      const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+      if (diffDays <= 30) {
+        expiringCount++;
+      }
+    }
+  });
+
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statLowStock").textContent = lowStockCount;
+  document.getElementById("statExpiring").textContent = expiringCount;
+  document.getElementById("statWellStocked").textContent = wellStockedCount;
+}
+
+async function loadCategories() {
+  try {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    const response = await fetch("/pharmacy/backend/api/categories/list.php", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const result = await response.json();
+
+    if (!result.success) return;
+
+    CATEGORIES = result.data.categories || [];
+
+    const modalSelect = document.getElementById("sCat");
+    if (modalSelect) {
+      modalSelect.innerHTML = `<option value="">Select Category</option>` + 
+        CATEGORIES.map(cat => 
+          `<option value="${cat.id}">${cat.category_name}</option>`
+        ).join('');
+    }
+
+    const filterSelect = document.getElementById("filterCat");
+    if (filterSelect) {
+      filterSelect.innerHTML = `<option value="">All Categories</option>` + 
+        CATEGORIES.map(cat => 
+          `<option value="${cat.category_name}">${cat.category_name}</option>`
+        ).join('');
+    }
+
+  } catch (error) {
+    console.error("Error loading categories:", error);
+  }
+}
+
+async function loadInventory() {
+  try {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    const response = await fetch("/pharmacy/backend/api/medicines/list.php", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      showToast(result.message, "error");
+      return;
+    }
+
+    INVENTORY = result.data.medicines.map(medicine => {
+      let status = "In Stock";
+      if (medicine.stock_quantity === 0) {
+        status = "Out of Stock";
+      } else if (medicine.stock_quantity <= medicine.minimum_stock) {
+        status = "Low Stock";
+      }
+
+      return {
+        id: medicine.id,
+        category_id: medicine.category_id,
+        name: medicine.medicine_name,
+        generic_name: medicine.generic_name,
+        brand: medicine.brand,
+        dosage: medicine.dosage,
+        form: medicine.form,
+        strength: medicine.strength,
+        batch_number: medicine.batch_number,
+        manufacturer: medicine.manufacturer,
+        purchase_price: medicine.purchase_price,
+        selling_price: medicine.selling_price,
+        qty: medicine.stock_quantity,
+        reorder: medicine.minimum_stock,
+        expiry: medicine.expiry_date,
+        description: medicine.description,
+        cat: medicine.category_name,
+        sku: medicine.batch_number || "N/A",
+        price: `GH₵ ${medicine.selling_price}`,
+        status
+      };
+    });
+
+    filtered = [...INVENTORY];
+    updateStats();
+    renderInventory();
+
+  } catch (error) {
+    console.error(error);
+    showToast("Unable to load inventory", "error");
+  }
+}
+
 function renderInventory() {
-  const start = (page-1)*PER_PAGE;
-  const slice = filtered.slice(start, start+PER_PAGE);
+  const start = (page - 1) * PER_PAGE;
+  const slice = filtered.slice(start, start + PER_PAGE);
   document.getElementById('inventoryBody').innerHTML = slice.map(i => `
     <tr>
       <td>
@@ -204,13 +410,14 @@ function renderInventory() {
       <td><span class="badge ${statusClass[i.status]}">${i.status}</span></td>
       <td>
         <div style="display:flex;gap:5px;">
-          <button class="btn btn-outline btn-sm" onclick="editStock(${i.id})"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-success btn-sm" onclick="reorderStock(${i.id},'${i.name}')"><i class="fa-solid fa-rotate"></i> Reorder</button>
+          <button class="btn btn-outline btn-sm" onclick="editStock(${i.id})" title="Edit Medicine"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-success btn-sm" onclick="reorderStock(${i.id})" title="Reorder"><i class="fa-solid fa-rotate"></i> Reorder</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStock(${i.id},'${i.name.replace(/'/g, "\\'")}')" title="Delete Medicine"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>
     </tr>
   `).join('');
-  document.getElementById('invPageInfo').textContent = `Showing ${Math.min(start+PER_PAGE,filtered.length)} of ${filtered.length} items`;
+  document.getElementById('invPageInfo').textContent = `Showing ${Math.min(start + PER_PAGE, filtered.length)} of ${filtered.length} items`;
 }
 
 function filterInventory() {
@@ -222,47 +429,243 @@ function filterInventory() {
     (!status || i.status === status) &&
     (!q      || i.name.toLowerCase().includes(q) || i.sku.toLowerCase().includes(q))
   );
-  page=1; renderInventory();
+  page = 1; 
+  renderInventory();
 }
 
-function changePage(d) { page = Math.max(1,page+d); renderInventory(); }
+function changePage(d) { 
+  page = Math.max(1, page + d); 
+  renderInventory(); 
+}
 
-function editStock(id) {
-  const i = INVENTORY.find(x=>x.id===id); if(!i) return;
+function resetModalForm() {
+  document.getElementById("sName").value = "";
+  document.getElementById("sGeneric").value = "";
+  document.getElementById("sBrand").value = "";
+  document.getElementById("sCat").value = "";
+  document.getElementById("sPurchasePrice").value = "";
+  document.getElementById("sPrice").value = "";
+  document.getElementById("sQty").value = "";
+  document.getElementById("sReorder").value = "";
+  document.getElementById("sDosage").value = "";
+  document.getElementById("sStrength").value = "";
+  document.getElementById("sForm").value = "";
+  document.getElementById("sBatch").value = "";
+  document.getElementById("sManufacturer").value = "";
+  document.getElementById("sExpiry").value = "";
+  document.getElementById("sDescription").value = "";
+}
+
+function openAddStockModal() {
+  editId = null;
+  document.getElementById("stockModalTitle").textContent = "Add New Stock";
+  resetModalForm();
+  openModal("addStockModal");
+}
+
+async function editStock(id) {
+  if (CATEGORIES.length === 0) {
+    await loadCategories();
+  }
+
+  const i = INVENTORY.find(x => x.id == id);
+  if (!i) return;
+
   editId = id;
-  document.getElementById('stockModalTitle').textContent = 'Edit Stock';
-  document.getElementById('sName').value    = i.name;
-  document.getElementById('sCat').value     = i.cat;
-  document.getElementById('sSKU').value     = i.sku;
-  document.getElementById('sQty').value     = i.qty;
-  document.getElementById('sReorder').value = i.reorder;
-  document.getElementById('sExpiry').value  = i.expiry;
-  document.getElementById('sPrice').value   = parseFloat(i.price.replace(/[^0-9.]/g,''));
-  openModal('addStockModal');
+  document.getElementById("stockModalTitle").textContent = "Edit Medicine";
+
+  document.getElementById("sName").value = i.name || "";
+  document.getElementById("sGeneric").value = i.generic_name || "";
+  document.getElementById("sBrand").value = i.brand || "";
+
+  const catSelect = document.getElementById("sCat");
+  if (catSelect) {
+    let matchedCat = CATEGORIES.find(c => c.id == i.category_id || c.category_name === i.cat);
+    catSelect.value = matchedCat ? String(matchedCat.id) : "";
+  }
+
+  document.getElementById("sQty").value = i.qty ?? "";
+  document.getElementById("sReorder").value = i.reorder ?? "";
+  document.getElementById("sExpiry").value = i.expiry || "";
+  document.getElementById("sDosage").value = i.dosage || "";
+  document.getElementById("sForm").value = i.form || "";
+  document.getElementById("sStrength").value = i.strength || "";
+  document.getElementById("sBatch").value = i.batch_number || "";
+  document.getElementById("sManufacturer").value = i.manufacturer || "";
+  document.getElementById("sPurchasePrice").value = i.purchase_price || "";
+  document.getElementById("sDescription").value = i.description || "";
+
+  const rawPrice = i.selling_price ?? i.price;
+  const cleanPrice = typeof rawPrice === 'string' ? rawPrice.replace(/[^0-9.]/g, '') : rawPrice;
+  document.getElementById("sPrice").value = cleanPrice || "";
+
+  openModal("addStockModal");
 }
 
-function saveStock() {
+async function saveStock() {
   const name = document.getElementById('sName').value.trim();
   const qty  = parseInt(document.getElementById('sQty').value);
-  if (!name || isNaN(qty)) { showToast('Please fill required fields','warn'); return; }
-  /* TODO: fetch('api/pharmacist/save-stock.php',{method:'POST',body:JSON.stringify({...})}) */
-  if (editId) {
-    const i = INVENTORY.find(x=>x.id===editId);
-    if(i){ i.name=name; i.qty=qty; i.cat=document.getElementById('sCat').value; i.reorder=parseInt(document.getElementById('sReorder').value)||i.reorder; }
-    showToast('Stock updated successfully');
-  } else {
-    INVENTORY.push({ id:Date.now(), name, cat:document.getElementById('sCat').value, sku:document.getElementById('sSKU').value, qty, reorder:parseInt(document.getElementById('sReorder').value)||20, expiry:document.getElementById('sExpiry').value, price:'GH₵ '+document.getElementById('sPrice').value, status: qty===0?'Out of Stock':qty<20?'Low Stock':'In Stock' });
-    showToast('Stock added successfully');
+  const price = parseFloat(document.getElementById('sPrice').value);
+  const categoryId = document.getElementById("sCat").value;
+
+  if (!name || isNaN(qty) || isNaN(price) || !categoryId) { 
+    showToast('Please fill required fields (Name, Category, Price, Quantity)', 'warn'); 
+    return; 
   }
-  editId=null;
-  document.getElementById('stockModalTitle').textContent='Add New Stock';
-  closeModal('addStockModal');
-  filtered=[...INVENTORY]; renderInventory();
+
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const payload = {
+    category_id: Number(categoryId),
+    medicine_name: name,
+    generic_name: document.getElementById("sGeneric").value,
+    brand: document.getElementById("sBrand").value,
+    dosage: document.getElementById("sDosage").value,
+    form: document.getElementById("sForm").value,
+    strength: document.getElementById("sStrength").value,
+    batch_number: document.getElementById("sBatch").value,
+    manufacturer: document.getElementById("sManufacturer").value,
+    expiry_date: document.getElementById("sExpiry").value,
+    purchase_price: parseFloat(document.getElementById("sPurchasePrice").value) || 0,
+    selling_price: price,
+    stock_quantity: qty,
+    minimum_stock: parseInt(document.getElementById("sReorder").value) || 10,
+    description: document.getElementById("sDescription").value
+  };
+
+  let url = "/pharmacy/backend/api/medicines/create.php";
+  let method = "POST";
+
+  if (editId) {
+    url = "/pharmacy/backend/api/medicines/update.php";
+    method = "PUT";
+    payload.id = editId;
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      showToast(result.message, "error");
+      return;
+    }
+
+    showToast(editId ? "Medicine updated successfully" : "Medicine added successfully");
+    closeModal("addStockModal");
+    editId = null;
+    await loadInventory();
+  } catch (error) {
+    console.error("Save error:", error);
+    showToast("Error saving stock item", "error");
+  }
 }
 
-function reorderStock(id, name) {
-  showToast(`Reorder placed for "${name}"`);
-  /* TODO: fetch('api/pharmacist/reorder.php',{method:'POST',body:JSON.stringify({id})}) */
+function reorderStock(id) {
+  const item = INVENTORY.find(x => x.id == id);
+  if (!item) return;
+
+  reorderItem = item;
+  document.getElementById("reorderMedicineName").textContent = `Restocking: ${item.name} (Current: ${item.qty} units)`;
+  document.getElementById("reorderQty").value = item.reorder || 50;
+  openModal("reorderModal");
+}
+
+async function submitReorder() {
+  if (!reorderItem) return;
+
+  const addQty = parseInt(document.getElementById("reorderQty").value);
+  if (isNaN(addQty) || addQty <= 0) {
+    showToast("Please enter a valid quantity", "warn");
+    return;
+  }
+
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const newQty = reorderItem.qty + addQty;
+
+  const payload = {
+    id: reorderItem.id,
+    category_id: reorderItem.category_id,
+    medicine_name: reorderItem.name,
+    generic_name: reorderItem.generic_name,
+    brand: reorderItem.brand,
+    dosage: reorderItem.dosage,
+    form: reorderItem.form,
+    strength: reorderItem.strength,
+    batch_number: reorderItem.batch_number,
+    manufacturer: reorderItem.manufacturer,
+    expiry_date: reorderItem.expiry,
+    purchase_price: reorderItem.purchase_price,
+    selling_price: typeof reorderItem.selling_price === 'number' ? reorderItem.selling_price : parseFloat(reorderItem.selling_price || 0),
+    stock_quantity: newQty,
+    minimum_stock: reorderItem.reorder,
+    description: reorderItem.description
+  };
+
+  try {
+    const response = await fetch("/pharmacy/backend/api/medicines/update.php", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      showToast(result.message || "Failed to restock item", "error");
+      return;
+    }
+
+    showToast(`Added ${addQty} units to "${reorderItem.name}"`);
+    closeModal("reorderModal");
+    reorderItem = null;
+    await loadInventory();
+  } catch (error) {
+    console.error("Reorder error:", error);
+    showToast("Error updating stock quantity", "error");
+  }
+}
+
+async function deleteStock(id, name) {
+  if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+    return;
+  }
+
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  try {
+    const response = await fetch("/pharmacy/backend/api/medicines/delete.php", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ id: id })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      showToast(result.message || "Failed to delete item", "error");
+      return;
+    }
+
+    showToast(`"${name}" deleted successfully`);
+    await loadInventory();
+  } catch (error) {
+    console.error("Delete error:", error);
+    showToast("Error deleting stock item", "error");
+  }
 }
 
 function handleGlobalSearch(q) {
@@ -270,7 +673,11 @@ function handleGlobalSearch(q) {
   filterInventory();
 }
 
-renderInventory();
+// Initial Loading Execution
+(async () => {
+  await loadCategories();
+  await loadInventory();
+})();
 </script>
 </body>
 </html>

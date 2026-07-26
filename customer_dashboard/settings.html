@@ -1,855 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Account Settings – MedTrust Systems</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --bg:#F5F5F5;--card:#fff;--primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
-      --green:#16a34a;--green-light:#dcfce7;--amber:#d97706;--amber-light:#fef9c3;
-      --red:#dc2626;--red-light:#fee2e2;--text:#111827;--muted:#6B7280;--light:#9CA3AF;
-      --border:#E5E7EB;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
-    }
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-
-    /* TOPNAV */
-    .topnav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;height:54px;gap:28px;position:sticky;top:0;z-index:100;}
-    .nav-brand{font-size:1rem;font-weight:800;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:7px;}
-    .nav-links{display:flex;align-items:center;gap:2px;}
-    .nav-link{padding:6px 14px;border-radius:8px;font-size:0.83rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;}
-    .nav-link:hover{background:var(--primary-light);color:var(--primary);}
-    .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
-    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px 6px;}
-    .notif-dot{width:7px;height:7px;background:var(--red);border-radius:50%;position:absolute;top:2px;right:4px;}
-    .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;cursor:pointer;}
-
-    /* LAYOUT */
-    .layout{display:flex;flex:1;}
-
-    /* SIDEBAR */
-    .sidebar{width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;flex-shrink:0;}
-    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:8px;}
-    .sidebar-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;}
-    .sidebar-user-name{font-size:0.82rem;font-weight:700;}
-    .sidebar-user-role{font-size:0.7rem;color:var(--muted);}
-    .sidebar-upload{margin:0 12px 12px;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;transition:background .2s;}
-    .sidebar-upload:hover{background:var(--primary-dark);}
-    .sidebar-section{padding:6px 16px 4px;font-size:0.65rem;font-weight:700;letter-spacing:.1em;color:var(--light);text-transform:uppercase;}
-    .sidebar-nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;border-left:3px solid transparent;}
-    .sidebar-nav-item:hover{background:var(--primary-light);color:var(--primary);}
-    .sidebar-nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600;border-left-color:var(--primary);}
-    .sidebar-nav-item i{width:16px;text-align:center;font-size:0.85rem;}
-
-    /* MAIN */
-    .main{flex:1;padding:24px;overflow-x:hidden;max-width:960px;}
-    .page-title{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
-    .page-sub{font-size:0.82rem;color:var(--muted);margin-bottom:24px;}
-
-    /* SETTINGS TABS */
-    .settings-nav{display:flex;gap:2px;background:#F3F4F6;border-radius:12px;padding:4px;margin-bottom:28px;flex-wrap:wrap;}
-    .settings-tab{padding:9px 18px;border:none;background:transparent;border-radius:9px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit;display:flex;align-items:center;gap:7px;}
-    .settings-tab:hover{color:var(--primary);}
-    .settings-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
-
-    /* CARD */
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
-    .card-header{padding:20px 24px;border-bottom:1px solid var(--border);}
-    .card-header h3{font-size:0.95rem;font-weight:700;margin-bottom:3px;}
-    .card-header p{font-size:0.78rem;color:var(--muted);}
-    .card-body{padding:24px;}
-    .card-footer{padding:16px 24px;border-top:1px solid var(--border);background:#fafafa;display:flex;justify-content:flex-end;gap:10px;}
-
-    /* FORM */
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-    .form-group{margin-bottom:18px;}
-    .form-label{display:block;font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:7px;}
-    .form-sublabel{font-size:0.72rem;color:var(--muted);margin-top:-4px;margin-bottom:7px;}
-    .form-control{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:0.85rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s,box-shadow .15s;background:#fff;}
-    .form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
-    .form-control:disabled{background:#f9fafb;color:var(--muted);cursor:not-allowed;}
-    select.form-control{cursor:pointer;}
-    .input-wrap{position:relative;}
-    .input-wrap .input-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--light);font-size:0.85rem;}
-    .input-wrap .form-control{padding-left:36px;}
-    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--light);font-size:0.85rem;}
-    .pw-toggle:hover{color:var(--primary);}
-
-    /* BTNS */
-    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:9px;font-size:0.83rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;}
-    .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
-    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-ghost:hover{background:var(--bg);}
-    .btn-danger{background:var(--red);color:#fff;}.btn-danger:hover{background:#b91c1c;}
-    .btn-success{background:var(--green);color:#fff;}.btn-success:hover{background:#15803d;}
-    .btn-sm{padding:6px 14px;font-size:0.78rem;}
-
-    /* AVATAR SECTION */
-    .avatar-section{display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border);}
-    .profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.8rem;position:relative;flex-shrink:0;}
-    .avatar-edit-btn{position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--primary-dark);border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;color:#fff;}
-    .avatar-info h4{font-size:1rem;font-weight:700;margin-bottom:3px;}
-    .avatar-info p{font-size:0.78rem;color:var(--muted);margin-bottom:10px;}
-
-    /* TOGGLE SWITCH */
-    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);}
-    .toggle-row:last-child{border-bottom:none;}
-    .toggle-label{font-size:0.85rem;font-weight:600;margin-bottom:2px;}
-    .toggle-sub{font-size:0.75rem;color:var(--muted);}
-    .toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
-    .toggle input{opacity:0;width:0;height:0;}
-    .toggle-slider{position:absolute;inset:0;background:#D1D5DB;border-radius:24px;cursor:pointer;transition:background .2s;}
-    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
-    .toggle input:checked+.toggle-slider{background:var(--primary);}
-    .toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
-
-    /* ADDRESS CARDS */
-    .address-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:16px;}
-    .address-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;transition:border-color .15s;}
-    .address-card.default{border-color:var(--primary);background:var(--primary-light);}
-    .address-card-title{font-size:0.82rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:7px;}
-    .address-card-body{font-size:0.78rem;color:var(--muted);line-height:1.6;}
-    .address-actions{display:flex;gap:6px;margin-top:12px;}
-    .default-badge{font-size:0.65rem;font-weight:700;background:var(--primary);color:#fff;padding:2px 7px;border-radius:20px;}
-
-    /* PAYMENT METHODS */
-    .payment-card{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:10px;transition:border-color .15s;}
-    .payment-card.active{border-color:var(--primary);}
-    .payment-icon{width:42px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;}
-    .icon-momo{background:#ffd700;color:#333;}
-    .icon-visa{background:#1a1f71;color:#fff;}
-    .icon-mc{background:#eb001b;color:#fff;}
-    .payment-info .name{font-size:0.83rem;font-weight:600;}
-    .payment-info .detail{font-size:0.72rem;color:var(--muted);}
-
-    /* SECURITY */
-    .security-item{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
-    .security-item:last-child{border-bottom:none;}
-    .security-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
-    .si-green{background:var(--green-light);color:var(--green);}
-    .si-blue{background:var(--primary-light);color:var(--primary);}
-    .si-amber{background:var(--amber-light);color:var(--amber);}
-    .si-red{background:var(--red-light);color:var(--red);}
-    .security-label{font-size:0.85rem;font-weight:600;margin-bottom:2px;}
-    .security-sub{font-size:0.75rem;color:var(--muted);}
-
-    /* DANGER ZONE */
-    .danger-zone{background:#fff5f5;border:1.5px solid #fecaca;border-radius:var(--radius);padding:20px 24px;}
-    .danger-zone h4{font-size:0.9rem;font-weight:700;color:var(--red);margin-bottom:6px;}
-    .danger-zone p{font-size:0.78rem;color:var(--muted);margin-bottom:14px;line-height:1.6;}
-
-    /* PANEL */
-    .panel{display:none;}
-    .panel.active{display:block;}
-
-    /* HEALTH TAGS */
-    .tag-input-row{display:flex;gap:8px;margin-bottom:12px;}
-    .tag-input-row input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none;}
-    .tag-input-row input:focus{border-color:var(--primary);}
-    .tags-wrap{display:flex;flex-wrap:wrap;gap:7px;min-height:32px;}
-    .tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;}
-    .tag-red{background:var(--red-light);color:var(--red);}
-    .tag-blue{background:var(--primary-light);color:var(--primary);}
-    .tag-green{background:var(--green-light);color:var(--green);}
-    .tag-remove{background:none;border:none;cursor:pointer;color:inherit;font-size:0.7rem;padding:0;opacity:.7;}
-    .tag-remove:hover{opacity:1;}
-
-    /* TOAST */
-    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
-    .toast.show{display:flex;animation:slideUp .3s ease;}
-    @keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
-    /* MODAL */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;}
-    .modal-overlay.open{display:flex;}
-    .modal{background:#fff;border-radius:var(--radius);padding:28px;width:440px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.18);}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-    .modal-header h3{font-size:1rem;font-weight:700;}
-    .modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;}
-    .modal-body{margin-bottom:20px;font-size:0.85rem;color:var(--muted);line-height:1.6;}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
-
-    /* STRENGTH */
-    .strength-bars{display:flex;gap:4px;margin-top:6px;}
-    .strength-bar{flex:1;height:3px;border-radius:2px;background:var(--border);}
-
-    @media(max-width:900px){.sidebar{display:none;}.form-row{grid-template-columns:1fr;}.settings-nav{gap:2px;}.settings-tab{padding:7px 12px;font-size:0.76rem;}}
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Account Settings – MedTrust Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="assets/css/customer.css"/>
+    <link rel="stylesheet" href="assets/css/settings.css"/>
 </head>
 <body>
 
-<!-- TOPNAV -->
-<nav class="topnav">
-  <a class="nav-brand" href="marketplace.html"><i class="fa-solid fa-pills"></i> MedTrust Systems</a>
-  <div class="nav-links">
-    <a class="nav-link" href="marketplace.html">Marketplace</a>
-    <a class="nav-link" href="#">Categories</a>
-    <a class="nav-link" href="prescription.html">Prescriptions</a>
-    <a class="nav-link" href="#">Help</a>
-  </div>
-  <div class="nav-right">
-    <button class="icon-btn"><i class="fa-solid fa-cart-shopping"></i></button>
-    <button class="icon-btn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
-    <div class="user-avatar-sm">R</div>
-  </div>
-</nav>
-
-<div class="layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar">R</div>
-      <div><div class="sidebar-user-name">Patient Portal</div><div class="sidebar-user-role">Radical – Active Account</div></div>
-    </div>
-    <button class="sidebar-upload" onclick="showToast('Opening upload…')">
-      <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload Prescription
-    </button>
-    <div class="sidebar-section">Navigation</div>
-    <a class="sidebar-nav-item" href="marketplace.html"><i class="fa-solid fa-store"></i> Marketplace</a>
-    <a class="sidebar-nav-item" href="customer.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-    <a class="sidebar-nav-item" href="prescription.html"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a>
-    <a class="sidebar-nav-item" href="order_history.html"><i class="fa-solid fa-clock-rotate-left"></i> Order History</a>
-    <a class="sidebar-nav-item active" href="settings.html"><i class="fa-solid fa-gear"></i> Account Settings</a>
-    <div style="flex:1;"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);margin-top:16px;">
-      <a href="../login\sign_in/login.html" class="sidebar-nav-item" style="color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-    <div class="page-title">Account Settings</div>
-    <div class="page-sub">Manage your profile, health info, notifications, and security preferences.</div>
-
-    <!-- SETTINGS TABS -->
-    <div class="settings-nav">
-      <button class="settings-tab active" onclick="switchTab(this,'profile')"><i class="fa-solid fa-user"></i> Profile</button>
-      <button class="settings-tab" onclick="switchTab(this,'health')"><i class="fa-solid fa-heart-pulse"></i> Health Info</button>
-      <button class="settings-tab" onclick="switchTab(this,'addresses')"><i class="fa-solid fa-location-dot"></i> Addresses</button>
-      <button class="settings-tab" onclick="switchTab(this,'payments')"><i class="fa-solid fa-credit-card"></i> Payment Methods</button>
-      <button class="settings-tab" onclick="switchTab(this,'notifications')"><i class="fa-solid fa-bell"></i> Notifications</button>
-      <button class="settings-tab" onclick="switchTab(this,'security')"><i class="fa-solid fa-shield-halved"></i> Security</button>
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h2>
+            <i class="fa-solid fa-pills"></i>
+            MedTrust
+        </h2>
+        <span>Patient Portal</span>
     </div>
 
-    <!-- ── PROFILE PANEL ── -->
-    <div class="panel active" id="panel-profile">
-      <div class="card">
-        <div class="card-header">
-          <h3>Personal Information</h3>
-          <p>Update your name, contact details, and profile photo.</p>
-        </div>
-        <div class="card-body">
-          <!-- Avatar -->
-          <div class="avatar-section">
-            <div class="profile-avatar" id="profileAvatar">
-              R
-              <div class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">
-                <i class="fa-solid fa-camera"></i>
-              </div>
-              <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="handleAvatarChange(this)"/>
-            </div>
-            <div class="avatar-info">
-              <h4 id="avatarName">Radical Me</h4>
-              <p>Patient ID: #PAT-2024-0042 · Member since Jan 2023</p>
-              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('avatarInput').click()">
-                <i class="fa-solid fa-camera"></i> Change Photo
-              </button>
-            </div>
-          </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Main</div>
+        <a href="customer.html" class="nav-item">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="prescription.html" class="nav-item">
+            <i class="fa-solid fa-prescription-bottle"></i> Prescriptions
+            <span class="badge" id="rxBadge">4</span>
+        </a>
+        <a href="order_history.html" class="nav-item">
+            <i class="fa-solid fa-clock-rotate-left"></i> Order History
+        </a>
+        <a href="#" class="nav-item" onclick="openNewRx()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Prescription
+        </a>
 
-          <!-- Form -->
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">First Name</label>
-              <input class="form-control" id="fFirstName" value="Radical"/>
+        <div class="nav-section-title">Marketplace</div>
+        <a href="marketplace.html" class="nav-item">
+            <i class="fa-solid fa-store"></i> Marketplace
+        </a>
+        <a href="cart.html" class="nav-item">
+            <i class="fa-solid fa-cart-shopping"></i> Cart
+            <span class="badge" id="cartBadge">2</span>
+        </a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="settings.html" class="nav-item active">
+            <i class="fa-solid fa-user"></i> Account Settings
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-bell"></i> Notifications
+            <span class="badge" id="notifBadge">3</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar" id="sidebarAvatar">R</div>
+            <div class="user-info">
+                <div class="name" id="sidebarName">Radical</div>
+                <div class="role">Patient • Verified</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Last Name</label>
-              <input class="form-control" id="fLastName" value="Me"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input class="form-control" id="fEmail" type="email" value="radical@gmail.com"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number</label>
-              <input class="form-control" id="fPhone" value="+233 24 567 8901"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date of Birth</label>
-              <input class="form-control" type="date" id="fDOB" value="1990-06-15"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Gender</label>
-              <select class="form-control" id="fGender">
-                <option selected>Male</option>
-                <option>Female</option>
-                <option>Prefer not to say</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Preferred Language</label>
-            <select class="form-control" style="max-width:260px;">
-              <option selected>English</option>
-              <option>Twi</option>
-              <option>Ga</option>
-              <option>Hausa</option>
-              <option>French</option>
-            </select>
-          </div>
+            <i class="fa-solid fa-check-circle" style="color: var(--green);"></i>
         </div>
-        <div class="card-footer">
-          <button class="btn btn-ghost" onclick="resetProfile()">Cancel</button>
-          <button class="btn btn-primary" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Save Changes</button>
+        <button class="btn-logout" onclick="handleLogout(event)">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+    </div>
+</aside>
+
+<!-- ─── MAIN ─── -->
+<div class="main">
+
+    <!-- TOPBAR -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+                <h1 class="welcome-title">Account Settings</h1>
+                <p class="welcome-sub">Manage your profile, health info, and security preferences</p>
+            </div>
         </div>
-      </div>
+        <div class="topbar-right">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search settings…"/>
+            </div>
+            <button class="icon-btn" onclick="showToast('Cart: 2 items')">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </button>
+            <button class="icon-btn" onclick="showToast('3 new notifications')">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notif-dot"></span>
+            </button>
+            <div class="avatar" id="topbarAvatar">R</div>
+        </div>
+    </nav>
+
+    <!-- ─── PAGE ─── -->
+    <div class="page" style="max-width:960px;">
+
+        <!-- SETTINGS TABS -->
+        <div class="settings-nav">
+            <button class="settings-tab active" onclick="switchTab(this, 'profile')">
+                <i class="fa-solid fa-user"></i> Profile
+            </button>
+            <button class="settings-tab" onclick="switchTab(this, 'health')">
+                <i class="fa-solid fa-heart-pulse"></i> Health Info
+            </button>
+            <button class="settings-tab" onclick="switchTab(this, 'addresses')">
+                <i class="fa-solid fa-location-dot"></i> Addresses
+            </button>
+            <button class="settings-tab" onclick="switchTab(this, 'payments')">
+                <i class="fa-solid fa-credit-card"></i> Payment Methods
+            </button>
+            <button class="settings-tab" onclick="switchTab(this, 'notifications')">
+                <i class="fa-solid fa-bell"></i> Notifications
+            </button>
+            <button class="settings-tab" onclick="switchTab(this, 'security')">
+                <i class="fa-solid fa-shield-halved"></i> Security
+            </button>
+        </div>
+
+        <!-- ── PROFILE PANEL ── -->
+        <div class="panel active" id="panel-profile">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Personal Information</h3>
+                    <p>Update your name, contact details, and profile photo.</p>
+                </div>
+                <div class="card-body">
+                    <!-- Avatar -->
+                    <div class="avatar-section">
+                        <div class="profile-avatar" id="profileAvatar">
+                            R
+                            <div class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="handleAvatarChange(this)"/>
+                        </div>
+                        <div class="avatar-info">
+                            <h4 id="avatarName">Radical Mensah</h4>
+                            <p>Patient ID: #PAT-2024-0042 · Member since Jan 2023</p>
+                            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('avatarInput').click()">
+                                <i class="fa-solid fa-camera"></i> Change Photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input class="form-control" id="fFirstName" value="Radical"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input class="form-control" id="fLastName" value="Mensah"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input class="form-control" id="fEmail" type="email" value="radical@gmail.com"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input class="form-control" id="fPhone" value="+233 24 567 8901"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth</label>
+                            <input class="form-control" type="date" id="fDOB" value="1990-06-15"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select class="form-control" id="fGender">
+                                <option selected>Male</option>
+                                <option>Female</option>
+                                <option>Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred Language</label>
+                        <select class="form-control" style="max-width:260px;">
+                            <option selected>English</option>
+                            <option>Twi</option>
+                            <option>Ga</option>
+                            <option>Hausa</option>
+                            <option>French</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-ghost" onclick="resetProfile()">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveProfile()">
+                        <i class="fa-solid fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── HEALTH INFO PANEL ── -->
+        <div class="panel" id="panel-health">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Health Profile</h3>
+                    <p>This information helps pharmacists provide safer medication advice.</p>
+                </div>
+                <div class="card-body">
+                    <!-- Allergies -->
+                    <div class="form-group">
+                        <label class="form-label">Known Allergies</label>
+                        <p class="form-sublabel">Add medications, foods, or substances you are allergic to.</p>
+                        <div class="tag-input-row">
+                            <input id="allergyInput" placeholder="e.g. Penicillin, Sulfa…" onkeydown="if(event.key==='Enter')addTag('allergy')"/>
+                            <button class="btn btn-primary btn-sm" onclick="addTag('allergy')">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+                        <div class="tags-wrap" id="allergyTags"></div>
+                    </div>
+
+                    <!-- Conditions -->
+                    <div class="form-group" style="margin-top:20px;">
+                        <label class="form-label">Chronic Conditions</label>
+                        <p class="form-sublabel">List any ongoing medical conditions for your profile.</p>
+                        <div class="tag-input-row">
+                            <input id="conditionInput" placeholder="e.g. Hypertension, Diabetes…" onkeydown="if(event.key==='Enter')addTag('condition')"/>
+                            <button class="btn btn-primary btn-sm" onclick="addTag('condition')">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+                        <div class="tags-wrap" id="conditionTags"></div>
+                    </div>
+
+                    <!-- Current Medications -->
+                    <div class="form-group" style="margin-top:20px;">
+                        <label class="form-label">Current Medications</label>
+                        <p class="form-sublabel">Helps prevent dangerous drug interactions.</p>
+                        <div class="tag-input-row">
+                            <input id="medInput" placeholder="e.g. Lisinopril, Metformin…" onkeydown="if(event.key==='Enter')addTag('med')"/>
+                            <button class="btn btn-primary btn-sm" onclick="addTag('med')">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+                        <div class="tags-wrap" id="medTags"></div>
+                    </div>
+
+                    <!-- Blood Type etc -->
+                    <div class="form-row" style="margin-top:20px;">
+                        <div class="form-group">
+                            <label class="form-label">Blood Type</label>
+                            <select class="form-control">
+                                <option>A+</option><option>A-</option><option selected>B+</option>
+                                <option>B-</option><option>O+</option><option>O-</option>
+                                <option>AB+</option><option>AB-</option><option>Unknown</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weight (kg)</label>
+                            <input class="form-control" type="number" value="74" min="1"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Height (cm)</label>
+                            <input class="form-control" type="number" value="178" min="1"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Primary Doctor</label>
+                            <input class="form-control" value="Dr. Asante Boateng"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-ghost">Cancel</button>
+                    <button class="btn btn-primary" onclick="saveHealth()">
+                        <i class="fa-solid fa-save"></i> Save Health Info
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ADDRESSES PANEL ── -->
+        <div class="panel" id="panel-addresses">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Delivery Addresses</h3>
+                    <p>Manage saved addresses for faster checkout.</p>
+                </div>
+                <div class="card-body">
+                    <div class="address-grid" id="addressGrid"></div>
+                    <button class="btn btn-outline" onclick="openAddAddress()">
+                        <i class="fa-solid fa-plus"></i> Add New Address
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── PAYMENTS PANEL ── -->
+        <div class="panel" id="panel-payments">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Payment Methods</h3>
+                    <p>Manage your saved cards and mobile money accounts.</p>
+                </div>
+                <div class="card-body" id="paymentsList"></div>
+                <div class="card-footer" style="justify-content:flex-start;">
+                    <button class="btn btn-outline" onclick="showToast('Opening add payment method…')">
+                        <i class="fa-solid fa-plus"></i> Add Payment Method
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── NOTIFICATIONS PANEL ── -->
+        <div class="panel" id="panel-notifications">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Notification Preferences</h3>
+                    <p>Choose how and when you receive updates about your orders and health.</p>
+                </div>
+                <div class="card-body" id="notifToggles"></div>
+                <div class="card-footer">
+                    <button class="btn btn-ghost">Reset to Defaults</button>
+                    <button class="btn btn-primary" onclick="saveNotifications()">
+                        <i class="fa-solid fa-save"></i> Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECURITY PANEL ── -->
+        <div class="panel" id="panel-security">
+
+            <!-- Change Password -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Change Password</h3>
+                    <p>Use a strong password of at least 8 characters.</p>
+                </div>
+                <div class="card-body" style="max-width:480px;">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <div class="input-wrap">
+                            <i class="input-icon fa-solid fa-lock"></i>
+                            <input class="form-control" type="password" id="curPw" placeholder="Enter current password"/>
+                            <button class="pw-toggle" onclick="togglePasswordVisibility('curPw', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <div class="input-wrap">
+                            <i class="input-icon fa-solid fa-lock"></i>
+                            <input class="form-control" type="password" id="newPw" placeholder="Min. 8 characters" oninput="checkPasswordStrength(this.value)"/>
+                            <button class="pw-toggle" onclick="togglePasswordVisibility('newPw', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="strength-bars">
+                            <div class="strength-bar" id="sb1"></div>
+                            <div class="strength-bar" id="sb2"></div>
+                            <div class="strength-bar" id="sb3"></div>
+                            <div class="strength-bar" id="sb4"></div>
+                        </div>
+                        <div style="font-size:0.68rem;color:var(--muted);margin-top:3px;" id="strengthLabel"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <div class="input-wrap">
+                            <i class="input-icon fa-solid fa-lock"></i>
+                            <input class="form-control" type="password" id="confPw" placeholder="Repeat new password"/>
+                            <button class="pw-toggle" onclick="togglePasswordVisibility('confPw', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="changePassword()">
+                        <i class="fa-solid fa-key"></i> Update Password
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Options -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Security Options</h3>
+                    <p>Enhance your account protection.</p>
+                </div>
+                <div class="card-body" id="securityItems"></div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <h4><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
+                <p>These actions are permanent and cannot be undone. Please proceed with caution.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-ghost" onclick="openDeactivate()">
+                        <i class="fa-solid fa-user-slash"></i> Deactivate Account
+                    </button>
+                    <button class="btn btn-danger" onclick="openDelete()">
+                        <i class="fa-solid fa-trash"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- ── HEALTH INFO PANEL ── -->
-    <div class="panel" id="panel-health">
-      <div class="card">
-        <div class="card-header">
-          <h3>Health Profile</h3>
-          <p>This information helps pharmacists provide safer medication advice.</p>
-        </div>
-        <div class="card-body">
-          <!-- Allergies -->
-          <div class="form-group">
-            <label class="form-label">Known Allergies</label>
-            <p class="form-sublabel">Add medications, foods, or substances you are allergic to.</p>
-            <div class="tag-input-row">
-              <input id="allergyInput" placeholder="e.g. Penicillin, Sulfa…" onkeydown="if(event.key==='Enter')addTag('allergy')"/>
-              <button class="btn btn-primary btn-sm" onclick="addTag('allergy')"><i class="fa-solid fa-plus"></i> Add</button>
-            </div>
-            <div class="tags-wrap" id="allergyTags"></div>
-          </div>
-
-          <!-- Conditions -->
-          <div class="form-group" style="margin-top:20px;">
-            <label class="form-label">Chronic Conditions</label>
-            <p class="form-sublabel">List any ongoing medical conditions for your profile.</p>
-            <div class="tag-input-row">
-              <input id="conditionInput" placeholder="e.g. Hypertension, Diabetes…" onkeydown="if(event.key==='Enter')addTag('condition')"/>
-              <button class="btn btn-primary btn-sm" onclick="addTag('condition')"><i class="fa-solid fa-plus"></i> Add</button>
-            </div>
-            <div class="tags-wrap" id="conditionTags"></div>
-          </div>
-
-          <!-- Current Medications -->
-          <div class="form-group" style="margin-top:20px;">
-            <label class="form-label">Current Medications</label>
-            <p class="form-sublabel">Helps prevent dangerous drug interactions.</p>
-            <div class="tag-input-row">
-              <input id="medInput" placeholder="e.g. Lisinopril, Metformin…" onkeydown="if(event.key==='Enter')addTag('med')"/>
-              <button class="btn btn-primary btn-sm" onclick="addTag('med')"><i class="fa-solid fa-plus"></i> Add</button>
-            </div>
-            <div class="tags-wrap" id="medTags"></div>
-          </div>
-
-          <!-- Blood Type -->
-          <div class="form-row" style="margin-top:20px;">
-            <div class="form-group">
-              <label class="form-label">Blood Type</label>
-              <select class="form-control">
-                <option>A+</option><option>A-</option><option selected>B+</option>
-                <option>B-</option><option>O+</option><option>O-</option>
-                <option>AB+</option><option>AB-</option><option>Unknown</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Weight (kg)</label>
-              <input class="form-control" type="number" value="74" min="1"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Height (cm)</label>
-              <input class="form-control" type="number" value="178" min="1"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Primary Doctor</label>
-              <input class="form-control" value="Dr. Asante Boateng"/>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <button class="btn btn-ghost">Cancel</button>
-          <button class="btn btn-primary" onclick="saveHealth()"><i class="fa-solid fa-save"></i> Save Health Info</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── ADDRESSES PANEL ── -->
-    <div class="panel" id="panel-addresses">
-      <div class="card">
-        <div class="card-header">
-          <h3>Delivery Addresses</h3>
-          <p>Manage saved addresses for faster checkout.</p>
-        </div>
-        <div class="card-body">
-          <div class="address-grid" id="addressGrid"></div>
-          <button class="btn btn-outline" onclick="openAddAddress()">
-            <i class="fa-solid fa-plus"></i> Add New Address
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── PAYMENTS PANEL ── -->
-    <div class="panel" id="panel-payments">
-      <div class="card">
-        <div class="card-header">
-          <h3>Payment Methods</h3>
-          <p>Manage your saved cards and mobile money accounts.</p>
-        </div>
-        <div class="card-body" id="paymentsList"></div>
-        <div class="card-footer" style="justify-content:flex-start;">
-          <button class="btn btn-outline" onclick="showToast('Opening add payment method…')">
-            <i class="fa-solid fa-plus"></i> Add Payment Method
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── NOTIFICATIONS PANEL ── -->
-    <div class="panel" id="panel-notifications">
-      <div class="card">
-        <div class="card-header">
-          <h3>Notification Preferences</h3>
-          <p>Choose how and when you receive updates about your orders and health.</p>
-        </div>
-        <div class="card-body">
-          <div id="notifToggles"></div>
-        </div>
-        <div class="card-footer">
-          <button class="btn btn-ghost">Reset to Defaults</button>
-          <button class="btn btn-primary" onclick="showToast('Notification preferences saved')">
-            <i class="fa-solid fa-save"></i> Save Preferences
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── SECURITY PANEL ── -->
-    <div class="panel" id="panel-security">
-
-      <!-- Change Password -->
-      <div class="card">
-        <div class="card-header">
-          <h3>Change Password</h3>
-          <p>Use a strong password of at least 8 characters.</p>
-        </div>
-        <div class="card-body" style="max-width:480px;">
-          <div class="form-group">
-            <label class="form-label">Current Password</label>
-            <div class="input-wrap">
-              <i class="input-icon fa-solid fa-lock"></i>
-              <input class="form-control" type="password" id="curPw" placeholder="Enter current password"/>
-              <button class="pw-toggle" onclick="togglePw('curPw',this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">New Password</label>
-            <div class="input-wrap">
-              <i class="input-icon fa-solid fa-lock"></i>
-              <input class="form-control" type="password" id="newPw" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"/>
-              <button class="pw-toggle" onclick="togglePw('newPw',this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-            <div class="strength-bars">
-              <div class="strength-bar" id="sb1"></div>
-              <div class="strength-bar" id="sb2"></div>
-              <div class="strength-bar" id="sb3"></div>
-              <div class="strength-bar" id="sb4"></div>
-            </div>
-            <div style="font-size:0.68rem;color:var(--muted);margin-top:3px;" id="strengthLabel"></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Confirm New Password</label>
-            <div class="input-wrap">
-              <i class="input-icon fa-solid fa-lock"></i>
-              <input class="form-control" type="password" id="confPw" placeholder="Repeat new password"/>
-              <button class="pw-toggle" onclick="togglePw('confPw',this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="changePassword()"><i class="fa-solid fa-key"></i> Update Password</button>
-        </div>
-      </div>
-
-      <!-- Security Options -->
-      <div class="card">
-        <div class="card-header">
-          <h3>Security Options</h3>
-          <p>Enhance your account protection.</p>
-        </div>
-        <div class="card-body">
-          <div id="securityItems"></div>
-        </div>
-      </div>
-
-      <!-- Danger Zone -->
-      <div class="danger-zone">
-        <h4><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h4>
-        <p>These actions are permanent and cannot be undone. Please proceed with caution.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-ghost" onclick="openDeactivate()"><i class="fa-solid fa-user-slash"></i> Deactivate Account</button>
-          <button class="btn btn-danger" onclick="openDelete()"><i class="fa-solid fa-trash"></i> Delete Account</button>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ADD ADDRESS MODAL -->
-<div class="modal-overlay" id="addressModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Add New Address</h3>
-      <button class="modal-close" onclick="closeModal('addressModal')"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group"><label class="form-label">Label</label><input class="form-control" id="aLabel" placeholder="e.g. Home, Work"/></div>
-        <div class="form-group"><label class="form-label">Recipient Name</label><input class="form-control" id="aName" placeholder="Full name"/></div>
-        <div class="form-group" style="grid-column:span 2;"><label class="form-label">Street Address</label><input class="form-control" id="aStreet" placeholder="House no., street name"/></div>
-        <div class="form-group"><label class="form-label">City</label><input class="form-control" id="aCity" placeholder="e.g. Accra"/></div>
-        <div class="form-group"><label class="form-label">Region</label>
-          <select class="form-control" id="aRegion">
-            <option>Greater Accra</option><option>Ashanti</option><option>Western</option>
-            <option>Eastern</option><option>Central</option><option>Northern</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="aPhone" placeholder="+233 …"/></div>
-        <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
-          <input type="checkbox" id="aDefault" style="accent-color:var(--primary);width:15px;height:15px;"/>
-          <label for="aDefault" style="font-size:0.82rem;font-weight:500;cursor:pointer;">Set as default address</label>
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('addressModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveAddress()"><i class="fa-solid fa-save"></i> Save Address</button>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRM MODAL -->
-<div class="modal-overlay" id="confirmModal">
-  <div class="modal" style="width:400px;">
-    <div class="modal-header">
-      <h3 id="confirmTitle">Confirm Action</h3>
-      <button class="modal-close" onclick="closeModal('confirmModal')"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body" id="confirmBody"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
-      <button class="btn btn-danger" id="confirmBtn">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
-
-<script>
-/* ── MOCK DATA — replace with fetch('api/customer/profile.php') ── */
-const PROFILE = { firstName:'Radical', lastName:'Mensah', email:'radical@gmail.com', phone:'+233 24 567 8901' };
-
-const ALLERGIES   = ['Penicillin', 'Sulfa Drugs'];
-const CONDITIONS  = ['Hypertension', 'Type 2 Diabetes'];
-const MEDICATIONS = ['Lisinopril 10mg', 'Atorvastatin 20mg'];
-
-const ADDRESSES = [
-  { id:1, label:'Home',  name:'Radical Mensah', street:'12 Accra Ring Road', city:'Accra',  region:'Greater Accra', phone:'+233 24 567 8901', default:true  },
-  { id:2, label:'Work',  name:'Radical Mensah', street:'45 Independence Ave', city:'Accra', region:'Greater Accra', phone:'+233 24 567 8901', default:false },
-];
-
-const PAYMENTS = [
-  { id:1, type:'momo', label:'MTN Mobile Money', detail:'**** **** 8901', icon:'fa-mobile', iconClass:'icon-momo', active:true  },
-  { id:2, type:'visa', label:'Visa Card',         detail:'**** **** **** 4242', icon:'fa-cc-visa', iconClass:'icon-visa', active:false },
-];
-
-const NOTIFS = [
-  { label:'Order Confirmations',     sub:'Get notified when an order is placed or updated.',   checked:true  },
-  { label:'Prescription Reminders',  sub:'Alerts when a prescription is due for refill.',       checked:true  },
-  { label:'Delivery Updates',        sub:'Real-time SMS when your order ships or arrives.',     checked:true  },
-  { label:'Promotions & Offers',     sub:'Discounts and deals from pharmacy partners.',         checked:false },
-  { label:'Health Tips',             sub:'Weekly health articles and medication advice.',        checked:false },
-  { label:'Security Alerts',         sub:'Login attempts and account changes.',                 checked:true  },
-];
-
-const SECURITY_ITEMS = [
-  { icon:'fa-shield-halved', cls:'si-green', label:'Two-Factor Authentication', sub:'Adds an extra verification step on login.', checked:false },
-  { icon:'fa-mobile-screen', cls:'si-blue',  label:'SMS Verification',          sub:'Receive a code on +233 24 567 8901 each login.', checked:true  },
-  { icon:'fa-fingerprint',   cls:'si-amber', label:'Biometric Login',           sub:'Use fingerprint or face ID on supported devices.', checked:false },
-];
-
-/* ── TABS ── */
-function switchTab(btn, id) {
-  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-' + id).classList.add('active');
-}
-
-/* ── PROFILE ── */
-function saveProfile() {
-  const fn = document.getElementById('fFirstName').value.trim();
-  const ln = document.getElementById('fLastName').value.trim();
-  if (!fn || !ln) { showToast('Name fields are required', 'warn'); return; }
-  document.getElementById('avatarName').textContent = fn + ' ' + ln;
-  document.getElementById('profileAvatar').childNodes[0].textContent = fn[0];
-  /* TODO: fetch('api/customer/update-profile.php',{method:'POST',body:JSON.stringify({fn,ln,...})}) */
-  showToast('Profile updated successfully');
-}
-
-function resetProfile() {
-  document.getElementById('fFirstName').value = PROFILE.firstName;
-  document.getElementById('fLastName').value  = PROFILE.lastName;
-  document.getElementById('fEmail').value     = PROFILE.email;
-  document.getElementById('fPhone').value     = PROFILE.phone;
-}
-
-function handleAvatarChange(input) {
-  if (!input.files[0]) return;
-  showToast('Profile photo updated');
-  /* TODO: FormData upload to api/customer/avatar.php */
-}
-
-/* ── HEALTH TAGS ── */
-function renderTags(type) {
-  const map = { allergy:{ list:ALLERGIES, cls:'tag-red', el:'allergyTags' }, condition:{ list:CONDITIONS, cls:'tag-blue', el:'conditionTags' }, med:{ list:MEDICATIONS, cls:'tag-green', el:'medTags' } };
-  const { list, cls, el } = map[type];
-  document.getElementById(el).innerHTML = list.map((t,i) => `
-    <span class="tag ${cls}">${t}
-      <button class="tag-remove" onclick="removeTag('${type}',${i})"><i class="fa-solid fa-xmark"></i></button>
-    </span>`).join('');
-}
-
-function addTag(type) {
-  const inputs = { allergy:'allergyInput', condition:'conditionInput', med:'medInput' };
-  const lists  = { allergy:ALLERGIES, condition:CONDITIONS, med:MEDICATIONS };
-  const input  = document.getElementById(inputs[type]);
-  const val    = input.value.trim();
-  if (!val) return;
-  lists[type].push(val);
-  input.value = '';
-  renderTags(type);
-}
-
-function removeTag(type, i) {
-  const lists = { allergy:ALLERGIES, condition:CONDITIONS, med:MEDICATIONS };
-  lists[type].splice(i, 1);
-  renderTags(type);
-}
-
-function saveHealth() {
-  /* TODO: fetch('api/customer/update-health.php',{method:'POST',body:JSON.stringify({allergies:ALLERGIES, conditions:CONDITIONS, medications:MEDICATIONS})}) */
-  showToast('Health information saved');
-}
-
-/* ── ADDRESSES ── */
-function renderAddresses() {
-  document.getElementById('addressGrid').innerHTML = ADDRESSES.map(a => `
-    <div class="address-card ${a.default ? 'default' : ''}">
-      <div class="address-card-title">
-        <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i>
-        ${a.label}
-        ${a.default ? '<span class="default-badge">Default</span>' : ''}
-      </div>
-      <div class="address-card-body">
-        <strong>${a.name}</strong><br/>
-        ${a.street}<br/>
-        ${a.city}, ${a.region}<br/>
-        ${a.phone}
-      </div>
-      <div class="address-actions">
-        ${!a.default ? `<button class="btn btn-ghost btn-sm" onclick="setDefault(${a.id})">Set Default</button>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="showToast('Edit address…')"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="removeAddress(${a.id})"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>
-  `).join('') + `
-    <div class="address-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;min-height:140px;" onclick="openAddAddress()">
-      <i class="fa-solid fa-plus" style="font-size:1.5rem;color:var(--light);margin-bottom:8px;"></i>
-      <span style="font-size:0.78rem;color:var(--muted);font-weight:500;">Add New Address</span>
-    </div>
-  `;
-}
-
-function setDefault(id) {
-  ADDRESSES.forEach(a => a.default = a.id === id);
-  renderAddresses();
-  showToast('Default address updated');
-}
-
-function removeAddress(id) {
-  const idx = ADDRESSES.findIndex(a => a.id === id);
-  if (idx > -1) ADDRESSES.splice(idx, 1);
-  renderAddresses();
-  showToast('Address removed', 'warn');
-}
-
-function openAddAddress() { document.getElementById('addressModal').classList.add('open'); }
-
-function saveAddress() {
-  const label  = document.getElementById('aLabel').value.trim();
-  const name   = document.getElementById('aName').value.trim();
-  const street = document.getElementById('aStreet').value.trim();
-  const city   = document.getElementById('aCity').value.trim();
-  if (!label || !street || !city) { showToast('Please fill required fields', 'warn'); return; }
-  const isDefault = document.getElementById('aDefault').checked;
-  if (isDefault) ADDRESSES.forEach(a => a.default = false);
-  ADDRESSES.push({ id: Date.now(), label, name, street, city, region: document.getElementById('aRegion').value, phone: document.getElementById('aPhone').value, default: isDefault });
-  /* TODO: fetch('api/customer/add-address.php',{method:'POST',body:JSON.stringify({...})}) */
-  closeModal('addressModal');
-  renderAddresses();
-  showToast('Address saved successfully');
-}
-
-/* ── PAYMENTS ── */
-function renderPayments() {
-  document.getElementById('paymentsList').innerHTML = PAYMENTS.map(p => `
-    <div class="payment-card ${p.active ? 'active' : ''}">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="payment-icon ${p.iconClass}"><i class="fa-brands ${p.icon}"></i></div>
-        <div class="payment-info">
-          <div class="name">${p.label}</div>
-          <div class="detail">${p.detail}</div>
-        </div>
-        ${p.active ? '<span style="font-size:0.65rem;font-weight:700;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:20px;margin-left:8px;">Default</span>' : ''}
-      </div>
-      <div style="display:flex;gap:6px;">
-        ${!p.active ? `<button class="btn btn-ghost btn-sm" onclick="setDefaultPayment(${p.id})">Set Default</button>` : ''}
-        <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="removePayment(${p.id})"><i class="fa-solid fa-trash"></i></button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function setDefaultPayment(id) {
-  PAYMENTS.forEach(p => p.active = p.id === id);
-  renderPayments();
-  showToast('Default payment method updated');
-}
-
-function removePayment(id) {
-  const idx = PAYMENTS.findIndex(p => p.id === id);
-  if (idx > -1) PAYMENTS.splice(idx, 1);
-  renderPayments();
-  showToast('Payment method removed', 'warn');
-}
-
-/* ── NOTIFICATIONS ── */
-function renderNotifs() {
-  document.getElementById('notifToggles').innerHTML = NOTIFS.map((n, i) => `
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">${n.label}</div>
-        <div class="toggle-sub">${n.sub}</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" ${n.checked ? 'checked' : ''} onchange="NOTIFS[${i}].checked=this.checked"/>
-        <span class="toggle-slider"></span>
-      </label>
-    </div>`).join('');
-}
-
-/* ── SECURITY ── */
-function renderSecurity() {
-  document.getElementById('securityItems').innerHTML = SECURITY_ITEMS.map((s, i) => `
-    <div class="security-item">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="security-icon ${s.cls}"><i class="fa-solid ${s.icon}"></i></div>
+    <!-- ─── FOOTER (Moved inside .main) ─── -->
+    <footer>
         <div>
-          <div class="security-label">${s.label}</div>
-          <div class="security-sub">${s.sub}</div>
+            <div class="footer-brand">MedTrust Systems</div>
+            <div class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant Pharmacy Network. All healthcare data is encrypted and secure.</div>
         </div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="SECURITY_ITEMS[${i}].checked=this.checked;showToast('${s.label} ' + (this.checked?'enabled':'disabled'))"/>
-        <span class="toggle-slider"></span>
-      </label>
-    </div>`).join('');
-}
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Drug Safety</a>
+            <a href="#">Contact Support</a>
+            <a href="#">Security Certifications</a>
+        </div>
+        <div class="footer-badges">
+            <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="footer-badge" style="color:var(--green);"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+    </footer>
 
-/* ── PASSWORD ── */
-function togglePw(id, btn) {
-  const input = document.getElementById(id);
-  const icon  = btn.querySelector('i');
-  const hide  = input.type === 'password';
-  input.type  = hide ? 'text' : 'password';
-  icon.className = hide ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-}
+</div>
 
-function checkStrength(val) {
-  let score = 0;
-  if (val.length >= 8)          score++;
-  if (/[A-Z]/.test(val))        score++;
-  if (/[0-9]/.test(val))        score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  const colors = ['','#dc2626','#d97706','#16a34a','#16a34a'];
-  const labels = ['','Weak','Fair','Strong','Very Strong'];
-  for (let i = 1; i <= 4; i++) {
-    document.getElementById('sb'+i).style.background = i <= score ? colors[score] : 'var(--border)';
-  }
-  document.getElementById('strengthLabel').textContent = val.length ? labels[score] : '';
-  document.getElementById('strengthLabel').style.color = colors[score];
-}
+<!-- ─── ADD ADDRESS MODAL ─── -->
+<div class="modal-overlay" id="addressModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Add New Address</h3>
+            <button class="modal-close" onclick="closeModal('addressModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Label</label>
+                    <input class="form-control" id="aLabel" placeholder="e.g. Home, Work"/>
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Recipient Name</label>
+                    <input class="form-control" id="aName" placeholder="Full name"/>
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Street Address</label>
+                    <input class="form-control" id="aStreet" placeholder="House no., street name"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input class="form-control" id="aCity" placeholder="e.g. Accra"/>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Region</label>
+                    <select class="form-control" id="aRegion">
+                        <option>Greater Accra</option>
+                        <option>Ashanti</option>
+                        <option>Western</option>
+                        <option>Eastern</option>
+                        <option>Central</option>
+                        <option>Northern</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Phone</label>
+                    <input class="form-control" id="aPhone" placeholder="+233 …"/>
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:4px;">
+                    <input type="checkbox" id="aDefault" style="accent-color:var(--primary);width:15px;height:15px;cursor:pointer;"/>
+                    <label for="aDefault" style="font-size:0.82rem;font-weight:500;cursor:pointer;">Set as default address</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('addressModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveAddress()">
+                <i class="fa-solid fa-save"></i> Save Address
+            </button>
+        </div>
+    </div>
+</div>
 
-function changePassword() {
-  const cur  = document.getElementById('curPw').value;
-  const nw   = document.getElementById('newPw').value;
-  const conf = document.getElementById('confPw').value;
-  if (!cur || !nw || !conf) { showToast('Please fill all password fields', 'warn'); return; }
-  if (nw.length < 8)        { showToast('New password must be at least 8 characters', 'warn'); return; }
-  if (nw !== conf)           { showToast('Passwords do not match', 'warn'); return; }
-  /* TODO: fetch('api/customer/change-password.php',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})}) */
-  document.getElementById('curPw').value  = '';
-  document.getElementById('newPw').value  = '';
-  document.getElementById('confPw').value = '';
-  showToast('Password updated successfully');
-}
+<!-- ─── CONFIRM MODAL ─── -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal" style="width:400px;">
+        <div class="modal-header">
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <button class="modal-close" onclick="closeModal('confirmModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="confirmBody"></div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+            <button class="btn btn-danger" id="confirmBtn">Confirm</button>
+        </div>
+    </div>
+</div>
 
-/* ── DANGER ZONE ── */
-function openDeactivate() {
-  document.getElementById('confirmTitle').textContent = 'Deactivate Account';
-  document.getElementById('confirmBody').textContent  = 'Your account will be temporarily disabled. You can reactivate it at any time by logging back in.';
-  document.getElementById('confirmBtn').textContent   = 'Deactivate';
-  document.getElementById('confirmBtn').onclick = () => { closeModal('confirmModal'); showToast('Account deactivated', 'warn'); };
-  document.getElementById('confirmModal').classList.add('open');
-}
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast">
+    <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+    <span id="toastMsg"></span>
+</div>
 
-function openDelete() {
-  document.getElementById('confirmTitle').textContent = 'Delete Account';
-  document.getElementById('confirmBody').textContent  = 'This will permanently delete your account, orders, prescriptions, and all associated data. This cannot be undone.';
-  document.getElementById('confirmBtn').textContent   = 'Yes, Delete Forever';
-  document.getElementById('confirmBtn').onclick = () => { closeModal('confirmModal'); window.location = 'login.html'; };
-  document.getElementById('confirmModal').classList.add('open');
-}
+<!-- ─── SCRIPTS ─── -->
+<script src="assets/js/customer.js"></script>
+<script src="assets/js/settings.js"></script>
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-/* ── TOAST ── */
-let _t;
-function showToast(msg, type = 'success') {
-  clearTimeout(_t);
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastIcon').style.color = type === 'warn' ? '#fbbf24' : type === 'error' ? '#f87171' : '#4ade80';
-  t.classList.add('show');
-  _t = setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-/* ── INIT ── */
-(function init() {
-  ['allergy','condition','med'].forEach(renderTags);
-  renderAddresses();
-  renderPayments();
-  renderNotifs();
-  renderSecurity();
-})();
-</script>
 </body>
 </html>

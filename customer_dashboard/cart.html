@@ -1,267 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Shopping Cart – MedTrust Systems</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --bg:#F5F5F5;--card:#fff;
-      --primary:#1a6fc4;--primary-light:#e8f1fb;--primary-dark:#155ba0;
-      --green:#16a34a;--green-light:#dcfce7;
-      --amber:#d97706;--amber-light:#fef9c3;
-      --red:#dc2626;--red-light:#fee2e2;
-      --text:#111827;--muted:#6B7280;--light:#9CA3AF;
-      --border:#E5E7EB;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
-    }
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Your Shopping Cart – MedTrust Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="assets/css/customer.css"/>
+    <style>
+        /* ── CART PAGE SPECIFIC STYLES ── */
+        .cart-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: flex-start; }
 
-    /* ── TOPNAV ── */
-    .topnav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;height:54px;gap:24px;position:sticky;top:0;z-index:100;}
-    .nav-brand{font-size:1rem;font-weight:800;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:7px;}
-    .nav-links{display:flex;align-items:center;gap:2px;}
-    .nav-link{padding:5px 12px;border-radius:8px;font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;}
-    .nav-link:hover{background:var(--primary-light);color:var(--primary);}
-    .nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
-    .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;position:relative;padding:4px;}
-    .cart-count{position:absolute;top:-2px;right:-4px;background:var(--primary);color:#fff;font-size:0.58rem;font-weight:700;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center;}
-    .btn-signin{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
-    .btn-signin:hover{background:var(--primary-dark);}
+        /* CART ITEM */
+        .cart-item { display: flex; align-items: flex-start; gap: 16px; padding: 20px; border-bottom: 1px solid var(--border); transition: background .15s; }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item:hover { background: #fafafa; }
+        .item-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #f3f4f6; flex-shrink: 0; }
+        .item-body { flex: 1; }
+        .item-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+        .item-name { font-size: 0.92rem; font-weight: 700; }
+        .rx-badge { background: var(--red); color: #fff; font-size: 0.58rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; letter-spacing: .05em; flex-shrink: 0; }
+        .medical-badge { background: var(--primary-light); color: var(--primary); font-size: 0.58rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; letter-spacing: .05em; flex-shrink: 0; }
+        .otc-badge { background: var(--green-light); color: var(--green); font-size: 0.58rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+        .item-sub { font-size: 0.75rem; color: var(--muted); margin-bottom: 10px; }
 
-    /* ── PAGE ── */
-    .page{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:32px 24px;}
-    .page-title{font-size:1.6rem;font-weight:800;margin-bottom:6px;}
-    .page-sub{font-size:0.82rem;color:var(--muted);margin-bottom:28px;}
+        /* QTY CONTROL */
+        .qty-row { display: flex; align-items: center; gap: 12px; }
+        .qty-ctrl { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .qty-btn { width: 30px; height: 30px; border: none; background: #fff; cursor: pointer; font-size: 0.9rem; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: background .15s; }
+        .qty-btn:hover { background: var(--primary-light); color: var(--primary); }
+        .qty-val { width: 36px; text-align: center; font-size: 0.85rem; font-weight: 700; border: none; outline: none; font-family: inherit; border-left: 1.5px solid var(--border); border-right: 1.5px solid var(--border); }
+        .remove-btn { background: none; border: none; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 4px; font-family: inherit; padding: 0; transition: color .15s; }
+        .remove-btn:hover { color: var(--red); }
+        .item-price { font-size: 1rem; font-weight: 800; color: var(--primary); flex-shrink: 0; white-space: nowrap; }
 
-    /* ── LAYOUT ── */
-    .cart-layout{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:flex-start;}
+        /* RX NOTICE */
+        .rx-notice { background: var(--primary-light); border-radius: 8px; padding: 9px 12px; display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; }
+        .rx-notice i { color: var(--primary); margin-top: 1px; flex-shrink: 0; font-size: 0.82rem; }
+        .rx-notice p { font-size: 0.73rem; color: var(--primary); line-height: 1.5; }
 
-    /* ── CARD ── */
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:0;}
+        /* CART ACTIONS */
+        .cart-actions { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid var(--border); background: #fafafa; }
+        .btn-continue { background: none; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 6px; font-family: inherit; padding: 0; }
+        .btn-continue:hover { text-decoration: underline; }
+        .btn-clear { background: none; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--muted); font-family: inherit; padding: 0; }
+        .btn-clear:hover { color: var(--red); }
 
-    /* ── CART ITEM ── */
-    .cart-item{display:flex;align-items:flex-start;gap:16px;padding:20px;border-bottom:1px solid var(--border);transition:background .15s;}
-    .cart-item:last-child{border-bottom:none;}
-    .cart-item:hover{background:#fafafa;}
-    .item-img{width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f3f4f6;flex-shrink:0;}
-    .item-body{flex:1;}
-    .item-name-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
-    .item-name{font-size:0.92rem;font-weight:700;}
-    .rx-badge{background:var(--red);color:#fff;font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em;flex-shrink:0;}
-    .medical-badge{background:var(--primary-light);color:var(--primary);font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em;flex-shrink:0;}
-    .otc-badge{background:var(--green-light);color:var(--green);font-size:0.58rem;font-weight:800;padding:2px 6px;border-radius:4px;flex-shrink:0;}
-    .item-sub{font-size:0.75rem;color:var(--muted);margin-bottom:10px;}
+        /* ORDER SUMMARY */
+        .summary-title { font-size: 1rem; font-weight: 800; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+        .summary-body { padding: 18px 20px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.83rem; }
+        .summary-row.total-row { margin-top: 4px; padding-top: 12px; border-top: 2px solid var(--border); }
+        .total-label { font-size: 0.85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+        .total-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+        .free-tag { color: var(--green); font-weight: 700; }
+        .btn-checkout { width: 100%; background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 13px; font-size: 0.92rem; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; transition: background .2s; }
+        .btn-checkout:hover { background: var(--primary-dark); }
+        .secure-note { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.72rem; color: var(--muted); margin-top: 8px; }
+        .secure-note i { color: var(--green); }
 
-    /* QTY CONTROL */
-    .qty-row{display:flex;align-items:center;gap:12px;}
-    .qty-ctrl{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
-    .qty-btn{width:30px;height:30px;border:none;background:#fff;cursor:pointer;font-size:0.9rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .15s;}
-    .qty-btn:hover{background:var(--primary-light);color:var(--primary);}
-    .qty-val{width:36px;text-align:center;font-size:0.85rem;font-weight:700;border:none;outline:none;font-family:inherit;border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);}
-    .remove-btn{background:none;border:none;cursor:pointer;font-size:0.78rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px;font-family:inherit;padding:0;transition:color .15s;}
-    .remove-btn:hover{color:var(--red);}
-    .item-price{font-size:1rem;font-weight:800;color:var(--primary);flex-shrink:0;white-space:nowrap;}
+        /* PROMO CODE */
+        .promo-wrap { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .promo-input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.82rem; font-family: inherit; color: var(--text); outline: none; transition: border .15s; }
+        .promo-input:focus { border-color: var(--primary); }
+        .promo-btn { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .2s; }
+        .promo-btn:hover { background: var(--primary-dark); }
 
-    /* RX NOTICE */
-    .rx-notice{background:var(--primary-light);border-radius:8px;padding:9px 12px;display:flex;align-items:flex-start;gap:8px;margin-top:10px;}
-    .rx-notice i{color:var(--primary);margin-top:1px;flex-shrink:0;font-size:0.82rem;}
-    .rx-notice p{font-size:0.73rem;color:var(--primary);line-height:1.5;}
+        /* TRUST BADGES */
+        .trust-badges { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .trust-badge { display: flex; align-items: center; gap: 7px; padding: 8px 10px; background: #fafafa; border-radius: 8px; border: 1px solid var(--border); }
+        .trust-badge i { font-size: 0.9rem; color: var(--primary); }
+        .trust-badge-txt { font-size: 0.68rem; font-weight: 600; color: var(--muted); }
 
-    /* CART ACTIONS */
-    .cart-actions{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-top:1px solid var(--border);background:#fafafa;}
-    .btn-continue{background:none;border:none;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px;font-family:inherit;padding:0;}
-    .btn-continue:hover{text-decoration:underline;}
-    .btn-clear{background:none;border:none;cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--muted);font-family:inherit;padding:0;}
-    .btn-clear:hover{color:var(--red);}
+        /* FREQUENTLY BOUGHT TOGETHER */
+        .section-eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--primary); margin-bottom: 6px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 1.1rem; font-weight: 800; }
+        .view-all-link { font-size: 0.8rem; font-weight: 600; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+        .view-all-link:hover { text-decoration: underline; }
+        .fbt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .fbt-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: transform .2s, box-shadow .2s; }
+        .fbt-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0, 0, 0, .1); }
+        .fbt-img { width: 100%; height: 120px; object-fit: cover; background: #f3f4f6; }
+        .fbt-body { padding: 10px 12px; }
+        .fbt-name { font-size: 0.8rem; font-weight: 700; margin-bottom: 2px; }
+        .fbt-sub { font-size: 0.68rem; color: var(--muted); margin-bottom: 8px; }
+        .fbt-footer { display: flex; justify-content: space-between; align-items: center; }
+        .fbt-price { font-size: 0.88rem; font-weight: 800; color: var(--text); }
+        .fbt-add-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; transition: background .2s; }
+        .fbt-add-btn:hover { background: var(--primary-dark); }
 
-    /* ── ORDER SUMMARY ── */
-    .summary-title{font-size:1rem;font-weight:800;padding:18px 20px;border-bottom:1px solid var(--border);}
-    .summary-body{padding:18px 20px;}
-    .summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.83rem;}
-    .summary-row.total-row{margin-top:4px;padding-top:12px;border-top:2px solid var(--border);}
-    .total-label{font-size:0.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
-    .total-val{font-size:1.4rem;font-weight:800;color:var(--primary);}
-    .free-tag{color:var(--green);font-weight:700;}
-    .btn-checkout{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;transition:background .2s;}
-    .btn-checkout:hover{background:var(--primary-dark);}
-    .secure-note{display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.72rem;color:var(--muted);margin-top:8px;}
-    .secure-note i{color:var(--green);}
+        /* EMPTY STATE */
+        .empty-cart { text-align: center; padding: 60px 20px; }
+        .empty-cart i { font-size: 3rem; color: var(--light); margin-bottom: 16px; opacity: .5; }
+        .empty-cart h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+        .empty-cart p { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
 
-    /* PROMO CODE */
-    .promo-wrap{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
-    .promo-input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.82rem;font-family:inherit;color:var(--text);outline:none;transition:border .15s;}
-    .promo-input:focus{border-color:var(--primary);}
-    .promo-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;}
-    .promo-btn:hover{background:var(--primary-dark);}
-
-    /* TRUST BADGES */
-    .trust-badges{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
-    .trust-badge{display:flex;align-items:center;gap:7px;padding:8px 10px;background:#fafafa;border-radius:8px;border:1px solid var(--border);}
-    .trust-badge i{font-size:0.9rem;color:var(--primary);}
-    .trust-badge-txt{font-size:0.68rem;font-weight:600;color:var(--muted);}
-
-    /* ── FREQUENTLY BOUGHT TOGETHER ── */
-    .section-eyebrow{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:6px;}
-    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-    .section-title{font-size:1.1rem;font-weight:800;}
-    .view-all-link{font-size:0.8rem;font-weight:600;color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px;}
-    .view-all-link:hover{text-decoration:underline;}
-    .fbt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-    .fbt-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;}
-    .fbt-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
-    .fbt-img{width:100%;height:120px;object-fit:cover;background:#f3f4f6;}
-    .fbt-body{padding:10px 12px;}
-    .fbt-name{font-size:0.8rem;font-weight:700;margin-bottom:2px;}
-    .fbt-sub{font-size:0.68rem;color:var(--muted);margin-bottom:8px;}
-    .fbt-footer{display:flex;justify-content:space-between;align-items:center;}
-    .fbt-price{font-size:0.88rem;font-weight:800;color:var(--text);}
-    .fbt-add-btn{width:28px;height:28px;border-radius:50%;background:var(--primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;transition:background .2s;}
-    .fbt-add-btn:hover{background:var(--primary-dark);}
-
-    /* EMPTY STATE */
-    .empty-cart{text-align:center;padding:60px 20px;}
-    .empty-cart i{font-size:3rem;color:var(--light);margin-bottom:16px;opacity:.5;}
-    .empty-cart h3{font-size:1.1rem;font-weight:700;margin-bottom:6px;}
-    .empty-cart p{font-size:0.82rem;color:var(--muted);margin-bottom:20px;}
-
-    /* TOAST */
-    .toast{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;display:none;align-items:center;gap:10px;}
-    .toast.show{display:flex;animation:su .3s ease;}
-    @keyframes su{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
-    /* FOOTER */
-    footer{background:#fff;border-top:1px solid var(--border);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:auto;}
-    .footer-brand{font-size:0.85rem;font-weight:700;margin-bottom:2px;}
-    .footer-copy{font-size:0.7rem;color:var(--muted);}
-    .footer-links{display:flex;gap:18px;}
-    .footer-links a{font-size:0.72rem;color:var(--muted);text-decoration:none;}
-    .footer-links a:hover{color:var(--primary);}
-
-    /* STRIKETHROUGH */
-    .strike{text-decoration:line-through;color:var(--muted);font-size:0.78rem;margin-right:4px;}
-
-    @media(max-width:900px){.cart-layout{grid-template-columns:1fr;}.fbt-grid{grid-template-columns:1fr 1fr;}}
-    @media(max-width:600px){.fbt-grid{grid-template-columns:1fr 1fr;}.cart-item{flex-wrap:wrap;}}
-  </style>
+        @media(max-width:900px){ .cart-layout{ grid-template-columns: 1fr; } .fbt-grid{ grid-template-columns: 1fr 1fr; } }
+        @media(max-width:600px){ .cart-item{ flex-wrap: wrap; } }
+    </style>
 </head>
 <body>
 
-<!-- TOPNAV -->
-<nav class="topnav">
-  <a class="nav-brand" href="marketplace.html"><i class="fa-solid fa-pills"></i> MedTrust Systems</a>
-  <div class="nav-links">
-    <a class="nav-link" href="marketplace.html">Marketplace</a>
-    <a class="nav-link" href="prescription.html">Prescriptions</a>
-    <a class="nav-link" href="#">Pharmacies</a>
-    <a class="nav-link" href="#">Insurance</a>
-  </div>
-  <div class="nav-right">
-    <button class="icon-btn" onclick="showToast('Notifications')">
-      <i class="fa-solid fa-bell"></i>
-    </button>
-    <button class="icon-btn" onclick="showToast('Cart has ' + CART.length + ' items')">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span class="cart-count" id="cartCountBadge">3</span>
-    </button>
-    <button class="btn-signin" onclick="window.location='login.html'">Sign In</button>
-  </div>
-</nav>
-
-<!-- PAGE -->
-<div class="page">
-  <div class="page-title">Your Shopping Cart</div>
-  <div class="page-sub">Review your medical supplies and prescriptions before proceeding.</div>
-
-  <div class="cart-layout">
-
-    <!-- LEFT: CART ITEMS -->
-    <div>
-      <div class="card" id="cartCard">
-        <div id="cartItems"></div>
-        <div class="cart-actions">
-          <button class="btn-continue" onclick="window.location='marketplace-landing.html'">
-            <i class="fa-solid fa-arrow-left"></i> Continue Shopping
-          </button>
-          <button class="btn-clear" onclick="clearCart()">Clear All Cart</button>
-        </div>
-      </div>
-
-      <!-- FREQUENTLY BOUGHT TOGETHER -->
-      <div style="margin-top:32px;">
-        <div class="section-eyebrow">ENHANCE YOUR CARE</div>
-        <div class="section-header">
-          <div class="section-title">Frequently Bought Together</div>
-          <a class="view-all-link" href="marketplace-landing.html">View Marketplace <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
-        </div>
-        <div class="fbt-grid" id="fbtGrid"></div>
-      </div>
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h2>
+            <i class="fa-solid fa-pills"></i>
+            MedTrust
+        </h2>
+        <span>Patient Portal</span>
     </div>
 
-    <!-- RIGHT: ORDER SUMMARY -->
-    <div>
-      <div class="card" style="position:sticky;top:70px;">
-        <div class="summary-title">Order Summary</div>
-        <div class="summary-body">
-          <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
-          <div class="summary-row"><span>Shipping</span><span class="free-tag">Free</span></div>
-          <div class="summary-row"><span>Estimated Tax</span><span id="taxAmt">$0.00</span></div>
-          <div class="summary-row" id="discountRow" style="display:none;">
-            <span style="color:var(--green);">Promo Discount</span>
-            <span style="color:var(--green);" id="discountAmt">-$0.00</span>
-          </div>
-          <div class="summary-row total-row">
-            <div>
-              <div class="total-label">Total Amount</div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Main</div>
+        <a href="customer.html" class="nav-item">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="prescription.html" class="nav-item">
+            <i class="fa-solid fa-prescription-bottle"></i> Prescriptions
+            <span class="badge" id="rxBadge">4</span>
+        </a>
+        <a href="order_history.html" class="nav-item">
+            <i class="fa-solid fa-clock-rotate-left"></i> Order History
+        </a>
+        <a href="#" class="nav-item" onclick="openNewRx()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Prescription
+        </a>
+
+        <div class="nav-section-title">Marketplace</div>
+        <a href="marketplace.html" class="nav-item">
+            <i class="fa-solid fa-store"></i> Marketplace
+        </a>
+        <a href="cart.html" class="nav-item active">
+            <i class="fa-solid fa-cart-shopping"></i> Cart
+            <span class="badge" id="cartBadge">3</span>
+        </a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="settings.html" class="nav-item">
+            <i class="fa-solid fa-user"></i> Account Settings
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-bell"></i> Notifications
+            <span class="badge" id="notifBadge">3</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar" id="sidebarAvatar">R</div>
+            <div class="user-info">
+                <div class="name" id="sidebarName">Radical</div>
+                <div class="role">Patient • Verified</div>
             </div>
-            <div class="total-val" id="totalAmt">$0.00</div>
-          </div>
-
-          <button class="btn-checkout" onclick="window.location='payment-checkout.html'">
-            Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
-          </button>
-          <div class="secure-note"><i class="fa-solid fa-lock"></i> Secure HIPAA Compliant Checkout</div>
-
-          <!-- PROMO CODE -->
-          <div class="promo-wrap">
-            <input class="promo-input" id="promoInput" placeholder="Enter code" onkeydown="if(event.key==='Enter')applyPromo()"/>
-            <button class="promo-btn" onclick="applyPromo()">Apply</button>
-          </div>
-
-          <!-- TRUST BADGES -->
-          <div class="trust-badges">
-            <div class="trust-badge"><i class="fa-solid fa-pills"></i><div class="trust-badge-txt">Authentic<br/>Meds Only</div></div>
-            <div class="trust-badge"><i class="fa-solid fa-truck"></i><div class="trust-badge-txt">Express<br/>Delivery</div></div>
-          </div>
+            <i class="fa-solid fa-check-circle" style="color: var(--green);"></i>
         </div>
-      </div>
+        <button class="btn-logout" onclick="handleLogout(event)">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
+    </div>
+</aside>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div class="main">
+
+    <!-- TOPBAR -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+                <h1 class="welcome-title">Your Shopping Cart</h1>
+                <p class="welcome-sub">Review your medical supplies and prescriptions before proceeding</p>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search products…"/>
+            </div>
+            <button class="icon-btn" onclick="showToast('Cart: ' + CART.length + ' items')">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </button>
+            <button class="icon-btn" onclick="showToast('3 new notifications')">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notif-dot"></span>
+            </button>
+            <div class="avatar" id="topbarAvatar">R</div>
+        </div>
+    </nav>
+
+    <!-- PAGE -->
+    <div class="page">
+        <div class="cart-layout">
+
+            <!-- LEFT: CART ITEMS -->
+            <div>
+                <div class="card" id="cartCard">
+                    <div id="cartItems"></div>
+                    <div class="cart-actions">
+                        <button class="btn-continue" onclick="window.location='marketplace.html'">
+                            <i class="fa-solid fa-arrow-left"></i> Continue Shopping
+                        </button>
+                        <button class="btn-clear" onclick="clearCart()">Clear All Cart</button>
+                    </div>
+                </div>
+
+                <!-- FREQUENTLY BOUGHT TOGETHER -->
+                <div style="margin-top:32px;">
+                    <div class="section-eyebrow">ENHANCE YOUR CARE</div>
+                    <div class="section-header">
+                        <div class="section-title">Frequently Bought Together</div>
+                        <a class="view-all-link" href="marketplace.html">View Marketplace <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i></a>
+                    </div>
+                    <div class="fbt-grid" id="fbtGrid"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: ORDER SUMMARY -->
+            <div>
+                <div class="card" style="position:sticky;top:80px;">
+                    <div class="summary-title">Order Summary</div>
+                    <div class="summary-body">
+                        <div class="summary-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+                        <div class="summary-row"><span>Shipping</span><span class="free-tag">Free</span></div>
+                        <div class="summary-row"><span>Estimated Tax</span><span id="taxAmt">$0.00</span></div>
+                        <div class="summary-row" id="discountRow" style="display:none;">
+                            <span style="color:var(--green);">Promo Discount</span>
+                            <span style="color:var(--green);" id="discountAmt">-$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <div>
+                                <div class="total-label">Total Amount</div>
+                            </div>
+                            <div class="total-val" id="totalAmt">$0.00</div>
+                        </div>
+
+                        <button class="btn-checkout" onclick="window.location='payment-checkout.html'">
+                            Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <div class="secure-note"><i class="fa-solid fa-lock"></i> Secure HIPAA Compliant Checkout</div>
+
+                        <!-- PROMO CODE -->
+                        <div class="promo-wrap">
+                            <input class="promo-input" id="promoInput" placeholder="Enter code" onkeydown="if(event.key==='Enter')applyPromo()"/>
+                            <button class="promo-btn" onclick="applyPromo()">Apply</button>
+                        </div>
+
+                        <!-- TRUST BADGES -->
+                        <div class="trust-badges">
+                            <div class="trust-badge"><i class="fa-solid fa-pills"></i><div class="trust-badge-txt">Authentic<br/>Meds Only</div></div>
+                            <div class="trust-badge"><i class="fa-solid fa-truck"></i><div class="trust-badge-txt">Express<br/>Delivery</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-  </div>
+    <!-- ─── FOOTER ─── -->
+    <footer>
+        <div>
+            <div class="footer-brand">MedTrust Systems</div>
+            <div class="footer-copy">© 2026 MedTrust Systems. HIPAA Compliant Pharmacy Network. All healthcare data is encrypted and secure.</div>
+        </div>
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Drug Safety</a>
+            <a href="#">Contact Support</a>
+        </div>
+    </footer>
+
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <div>
-    <div class="footer-brand">MedTrust Systems</div>
-    <div class="footer-copy">© 2024 MedTrust Systems. HIPAA Compliant &amp; Secure.</div>
-  </div>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms of Service</a>
-    <a href="#">FDA Notices</a>
-    <a href="#">Contact Support</a>
-  </div>
-</footer>
+<!-- TOAST CONTAINER -->
+<div class="toast" id="toast">
+    <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+    <span id="toastMsg"></span>
+</div>
 
-<div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
-
+<!-- SCRIPTS -->
+<script src="assets/js/customer.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════
-   MOCK DATA — replace with fetch('api/cart.php')
-═══════════════════════════════════════════════════ */
 const CART = [
   {
     id: 1,
@@ -315,7 +340,7 @@ function renderCart() {
         <i class="fa-solid fa-cart-shopping"></i>
         <h3>Your cart is empty</h3>
         <p>Add medications and health products to get started.</p>
-        <button class="btn-checkout" style="width:auto;padding:11px 28px;" onclick="window.location='marketplace-landing.html'">
+        <button class="btn-checkout" style="width:auto;padding:11px 28px;" onclick="window.location='marketplace.html'">
           <i class="fa-solid fa-store"></i> Browse Marketplace
         </button>
       </div>`;
@@ -361,7 +386,9 @@ function renderCart() {
   }).join('');
 
   updateSummary();
-  document.getElementById('cartCountBadge').textContent = CART.reduce((a,i)=>a+i.qty,0);
+  const totalCount = CART.reduce((a,i)=>a+i.qty,0);
+  const cartBadge = document.getElementById('cartBadge');
+  if (cartBadge) cartBadge.textContent = totalCount;
 }
 
 /* ── SUMMARY ── */
@@ -390,7 +417,6 @@ function changeQty(id, delta) {
   if (!item) return;
   item.qty = Math.max(1, item.qty + delta);
   renderCart();
-  /* TODO: fetch('api/cart/update.php',{method:'POST',body:JSON.stringify({id,qty:item.qty})}) */
 }
 
 function setQty(id, val) {
@@ -409,7 +435,6 @@ function removeItem(id) {
     CART.splice(idx, 1);
     renderCart();
     showToast(`"${name}" removed from cart`, 'warn');
-    /* TODO: fetch('api/cart/remove.php',{method:'POST',body:JSON.stringify({id})}) */
   }
 }
 
@@ -434,7 +459,6 @@ function applyPromo() {
   } else {
     showToast('Invalid promo code', 'warn');
   }
-  /* TODO: fetch('api/cart/promo.php',{method:'POST',body:JSON.stringify({code})}) */
 }
 
 /* ── FBT GRID ── */
@@ -462,23 +486,13 @@ function addFBT(name, price, btn) {
   const priceNum = parseFloat(price.replace('$',''));
   CART.push({ id: Date.now(), name, sub: 'Add-on item', price: priceNum, qty: 1, img:'', badge:'otc', rxNotice:false });
   setTimeout(() => renderCart(), 500);
-  /* TODO: fetch('api/cart/add.php',{method:'POST',body:JSON.stringify({name,price:priceNum})}) */
-}
-
-/* ── TOAST ── */
-let _t;
-function showToast(msg, type = 'success') {
-  clearTimeout(_t);
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
-  document.getElementById('toastIcon').style.color = type === 'warn' ? '#fbbf24' : type === 'error' ? '#f87171' : '#4ade80';
-  t.classList.add('show');
-  _t = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
 /* ── INIT ── */
-renderCart();
-renderFBT();
+document.addEventListener('DOMContentLoaded', () => {
+    renderCart();
+    renderFBT();
+});
 </script>
 </body>
 </html>
