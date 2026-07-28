@@ -240,6 +240,7 @@
 <div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
 
 <script src="pharmacist-layout.js"></script>
+<script src="pharmacist-layout.js"></script>
 <script>
 renderPharmacistLayout({ activePage:'inventory', pageTitle:'Inventory Management' });
 
@@ -255,7 +256,7 @@ const statusClass = { 'In Stock':'badge-green', 'Low Stock':'badge-amber', 'Crit
 const stockColor  = { 'In Stock':'#16a34a', 'Low Stock':'#d97706', 'Critical':'#dc2626', 'Out of Stock':'#9CA3AF' };
 
 function stockPct(qty, reorder) { 
-  return Math.min(Math.round((qty / (reorder * 3)) * 100), 100); 
+  return Math.min(Math.round((qty / ((reorder || 1) * 3)) * 100), 100); 
 }
 
 function expiryLabel(dateStr) {
@@ -291,10 +292,15 @@ function updateStats() {
     }
   });
 
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statLowStock").textContent = lowStockCount;
-  document.getElementById("statExpiring").textContent = expiringCount;
-  document.getElementById("statWellStocked").textContent = wellStockedCount;
+  const totalEl = document.getElementById("statTotal");
+  const lowEl = document.getElementById("statLowStock");
+  const expEl = document.getElementById("statExpiring");
+  const wellEl = document.getElementById("statWellStocked");
+
+  if (totalEl) totalEl.textContent = total;
+  if (lowEl) lowEl.textContent = lowStockCount;
+  if (expEl) expEl.textContent = expiringCount;
+  if (wellEl) wellEl.textContent = wellStockedCount;
 }
 
 async function loadCategories() {
@@ -305,17 +311,22 @@ async function loadCategories() {
       headers: { Authorization: `Bearer ${token}` }
     });
 
+    if (!response.ok) {
+      console.warn("Categories API returned status:", response.status);
+      return;
+    }
+
     const result = await response.json();
 
     if (!result.success) return;
 
-    CATEGORIES = result.data.categories || [];
+    CATEGORIES = result.data?.categories || result.data || [];
 
     const modalSelect = document.getElementById("sCat");
     if (modalSelect) {
       modalSelect.innerHTML = `<option value="">Select Category</option>` + 
         CATEGORIES.map(cat => 
-          `<option value="${cat.id}">${cat.category_name}</option>`
+          `<option value="${cat.id}">${cat.category_name || cat.name}</option>`
         ).join('');
     }
 
@@ -323,7 +334,7 @@ async function loadCategories() {
     if (filterSelect) {
       filterSelect.innerHTML = `<option value="">All Categories</option>` + 
         CATEGORIES.map(cat => 
-          `<option value="${cat.category_name}">${cat.category_name}</option>`
+          `<option value="${cat.category_name || cat.name}">${cat.category_name || cat.name}</option>`
         ).join('');
     }
 
@@ -340,41 +351,55 @@ async function loadInventory() {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    const result = await response.json();
-
-    if (!result.success) {
-      showToast(result.message, "error");
+    if (!response.ok) {
+      console.error("Medicines API request failed with status:", response.status);
+      if (typeof showToast === 'function') showToast(`Failed to load inventory (HTTP ${response.status})`, "error");
       return;
     }
 
-    INVENTORY = result.data.medicines.map(medicine => {
+    const result = await response.json();
+
+    if (!result.success) {
+      if (typeof showToast === 'function') showToast(result.message || "Failed to load inventory", "error");
+      return;
+    }
+
+    // Handles both result.data.medicines array and direct result.data array
+    const rawMedicines = Array.isArray(result.data) 
+      ? result.data 
+      : (result.data?.medicines || []);
+
+    INVENTORY = rawMedicines.map(medicine => {
+      const qty = parseInt(medicine.stock_quantity ?? medicine.qty ?? 0);
+      const reorder = parseInt(medicine.minimum_stock ?? medicine.reorder ?? 10);
+
       let status = "In Stock";
-      if (medicine.stock_quantity === 0) {
+      if (qty === 0) {
         status = "Out of Stock";
-      } else if (medicine.stock_quantity <= medicine.minimum_stock) {
+      } else if (qty <= reorder) {
         status = "Low Stock";
       }
 
       return {
         id: medicine.id,
         category_id: medicine.category_id,
-        name: medicine.medicine_name,
-        generic_name: medicine.generic_name,
-        brand: medicine.brand,
-        dosage: medicine.dosage,
-        form: medicine.form,
-        strength: medicine.strength,
-        batch_number: medicine.batch_number,
-        manufacturer: medicine.manufacturer,
-        purchase_price: medicine.purchase_price,
-        selling_price: medicine.selling_price,
-        qty: medicine.stock_quantity,
-        reorder: medicine.minimum_stock,
-        expiry: medicine.expiry_date,
-        description: medicine.description,
-        cat: medicine.category_name,
-        sku: medicine.batch_number || "N/A",
-        price: `GH₵ ${medicine.selling_price}`,
+        name: medicine.medicine_name || medicine.name,
+        generic_name: medicine.generic_name || "",
+        brand: medicine.brand || "",
+        dosage: medicine.dosage || "",
+        form: medicine.form || "",
+        strength: medicine.strength || "",
+        batch_number: medicine.batch_number || "",
+        manufacturer: medicine.manufacturer || "",
+        purchase_price: medicine.purchase_price || 0,
+        selling_price: medicine.selling_price || 0,
+        qty: qty,
+        reorder: reorder,
+        expiry: medicine.expiry_date || medicine.expiry,
+        description: medicine.description || "",
+        cat: medicine.category_name || medicine.category || "General",
+        sku: medicine.batch_number || medicine.sku || "N/A",
+        price: `GH₵ ${parseFloat(medicine.selling_price || 0).toFixed(2)}`,
         status
       };
     });
@@ -384,19 +409,28 @@ async function loadInventory() {
     renderInventory();
 
   } catch (error) {
-    console.error(error);
-    showToast("Unable to load inventory", "error");
+    console.error("Error loading inventory:", error);
+    if (typeof showToast === 'function') showToast("Unable to load inventory", "error");
   }
 }
 
 function renderInventory() {
+  const body = document.getElementById('inventoryBody');
+  if (!body) return;
+
+  if (filtered.length === 0) {
+    body.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">No medicines found in inventory.</td></tr>`;
+    document.getElementById('invPageInfo').textContent = `Showing 0 of 0 items`;
+    return;
+  }
+
   const start = (page - 1) * PER_PAGE;
   const slice = filtered.slice(start, start + PER_PAGE);
-  document.getElementById('inventoryBody').innerHTML = slice.map(i => `
+  body.innerHTML = slice.map(i => `
     <tr>
       <td>
         <div style="font-weight:600;font-size:0.83rem;">${i.name}</div>
-        <div style="font-size:0.7rem;color:var(--muted);">Supplier: ${i.sku}</div>
+        <div style="font-size:0.7rem;color:var(--muted);">Supplier/Batch: ${i.sku}</div>
       </td>
       <td><span class="badge badge-blue" style="font-size:0.65rem;">${i.cat}</span></td>
       <td style="font-family:monospace;font-size:0.78rem;">${i.sku}</td>
@@ -411,19 +445,24 @@ function renderInventory() {
       <td>
         <div style="display:flex;gap:5px;">
           <button class="btn btn-outline btn-sm" onclick="editStock(${i.id})" title="Edit Medicine"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-success btn-sm" onclick="reorderStock(${i.id})" title="Reorder"><i class="fa-solid fa-rotate"></i> Reorder</button>
+          <button class="btn btn-success btn-sm" onclick="reorderStock(${i.id})" title="Reorder"><i class="fa-solid fa-rotate"></i> Restock</button>
           <button class="btn btn-danger btn-sm" onclick="deleteStock(${i.id},'${i.name.replace(/'/g, "\\'")}')" title="Delete Medicine"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>
     </tr>
   `).join('');
-  document.getElementById('invPageInfo').textContent = `Showing ${Math.min(start + PER_PAGE, filtered.length)} of ${filtered.length} items`;
+
+  const infoEl = document.getElementById('invPageInfo');
+  if (infoEl) {
+    infoEl.textContent = `Showing ${Math.min(start + PER_PAGE, filtered.length)} of ${filtered.length} items`;
+  }
 }
 
 function filterInventory() {
-  const cat    = document.getElementById('filterCat').value;
-  const status = document.getElementById('filterStatus').value;
-  const q      = document.getElementById('searchStock').value.toLowerCase();
+  const cat    = document.getElementById('filterCat')?.value || "";
+  const status = document.getElementById('filterStatus')?.value || "";
+  const q      = (document.getElementById('searchStock')?.value || "").toLowerCase();
+  
   filtered = INVENTORY.filter(i =>
     (!cat    || i.cat === cat) &&
     (!status || i.status === status) &&
@@ -439,28 +478,17 @@ function changePage(d) {
 }
 
 function resetModalForm() {
-  document.getElementById("sName").value = "";
-  document.getElementById("sGeneric").value = "";
-  document.getElementById("sBrand").value = "";
-  document.getElementById("sCat").value = "";
-  document.getElementById("sPurchasePrice").value = "";
-  document.getElementById("sPrice").value = "";
-  document.getElementById("sQty").value = "";
-  document.getElementById("sReorder").value = "";
-  document.getElementById("sDosage").value = "";
-  document.getElementById("sStrength").value = "";
-  document.getElementById("sForm").value = "";
-  document.getElementById("sBatch").value = "";
-  document.getElementById("sManufacturer").value = "";
-  document.getElementById("sExpiry").value = "";
-  document.getElementById("sDescription").value = "";
+  ["sName", "sGeneric", "sBrand", "sCat", "sPurchasePrice", "sPrice", "sQty", "sReorder", "sDosage", "sStrength", "sForm", "sBatch", "sManufacturer", "sExpiry", "sDescription"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
 }
 
 function openAddStockModal() {
   editId = null;
   document.getElementById("stockModalTitle").textContent = "Add New Stock";
   resetModalForm();
-  openModal("addStockModal");
+  if (typeof openModal === 'function') openModal("addStockModal");
 }
 
 async function editStock(id) {
@@ -499,7 +527,7 @@ async function editStock(id) {
   const cleanPrice = typeof rawPrice === 'string' ? rawPrice.replace(/[^0-9.]/g, '') : rawPrice;
   document.getElementById("sPrice").value = cleanPrice || "";
 
-  openModal("addStockModal");
+  if (typeof openModal === 'function') openModal("addStockModal");
 }
 
 async function saveStock() {
@@ -509,7 +537,7 @@ async function saveStock() {
   const categoryId = document.getElementById("sCat").value;
 
   if (!name || isNaN(qty) || isNaN(price) || !categoryId) { 
-    showToast('Please fill required fields (Name, Category, Price, Quantity)', 'warn'); 
+    if (typeof showToast === 'function') showToast('Please fill required fields (Name, Category, Price, Quantity)', 'warn'); 
     return; 
   }
 
@@ -554,17 +582,17 @@ async function saveStock() {
     const result = await response.json();
 
     if (!result.success) {
-      showToast(result.message, "error");
+      if (typeof showToast === 'function') showToast(result.message, "error");
       return;
     }
 
-    showToast(editId ? "Medicine updated successfully" : "Medicine added successfully");
-    closeModal("addStockModal");
+    if (typeof showToast === 'function') showToast(editId ? "Medicine updated successfully" : "Medicine added successfully");
+    if (typeof closeModal === 'function') closeModal("addStockModal");
     editId = null;
     await loadInventory();
   } catch (error) {
     console.error("Save error:", error);
-    showToast("Error saving stock item", "error");
+    if (typeof showToast === 'function') showToast("Error saving stock item", "error");
   }
 }
 
@@ -575,7 +603,7 @@ function reorderStock(id) {
   reorderItem = item;
   document.getElementById("reorderMedicineName").textContent = `Restocking: ${item.name} (Current: ${item.qty} units)`;
   document.getElementById("reorderQty").value = item.reorder || 50;
-  openModal("reorderModal");
+  if (typeof openModal === 'function') openModal("reorderModal");
 }
 
 async function submitReorder() {
@@ -583,7 +611,7 @@ async function submitReorder() {
 
   const addQty = parseInt(document.getElementById("reorderQty").value);
   if (isNaN(addQty) || addQty <= 0) {
-    showToast("Please enter a valid quantity", "warn");
+    if (typeof showToast === 'function') showToast("Please enter a valid quantity", "warn");
     return;
   }
 
@@ -622,17 +650,17 @@ async function submitReorder() {
     const result = await response.json();
 
     if (!result.success) {
-      showToast(result.message || "Failed to restock item", "error");
+      if (typeof showToast === 'function') showToast(result.message || "Failed to restock item", "error");
       return;
     }
 
-    showToast(`Added ${addQty} units to "${reorderItem.name}"`);
-    closeModal("reorderModal");
+    if (typeof showToast === 'function') showToast(`Added ${addQty} units to "${reorderItem.name}"`);
+    if (typeof closeModal === 'function') closeModal("reorderModal");
     reorderItem = null;
     await loadInventory();
   } catch (error) {
     console.error("Reorder error:", error);
-    showToast("Error updating stock quantity", "error");
+    if (typeof showToast === 'function') showToast("Error updating stock quantity", "error");
   }
 }
 
@@ -656,28 +684,29 @@ async function deleteStock(id, name) {
     const result = await response.json();
 
     if (!result.success) {
-      showToast(result.message || "Failed to delete item", "error");
+      if (typeof showToast === 'function') showToast(result.message || "Failed to delete item", "error");
       return;
     }
 
-    showToast(`"${name}" deleted successfully`);
+    if (typeof showToast === 'function') showToast(`"${name}" deleted successfully`);
     await loadInventory();
   } catch (error) {
     console.error("Delete error:", error);
-    showToast("Error deleting stock item", "error");
+    if (typeof showToast === 'function') showToast("Error deleting stock item", "error");
   }
 }
 
 function handleGlobalSearch(q) {
-  document.getElementById('searchStock').value = q;
+  const searchInput = document.getElementById('searchStock');
+  if (searchInput) searchInput.value = q;
   filterInventory();
 }
 
-// Initial Loading Execution
-(async () => {
+// Initial Loading Execution on DOM Ready
+document.addEventListener("DOMContentLoaded", async function() {
   await loadCategories();
   await loadInventory();
-})();
+});
 </script>
 </body>
 </html>

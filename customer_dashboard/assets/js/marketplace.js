@@ -1,16 +1,17 @@
 // assets/js/marketplace.js - Marketplace specific logic
 
+
 // ─── API ENDPOINTS ──────────────────────────────────────
 // TODO: Replace with your actual API endpoints
+// ─── API ENDPOINTS ──────────────────────────────────────
 const MARKETPLACE_API = {
-    PRODUCTS: '../../backend/api/marketplace/products.php',
-    CATEGORIES: '../../backend/api/marketplace/categories.php',
-    SEARCH: '../../backend/api/marketplace/search.php',
-    CART: '../../backend/api/customer/cart.php',
-    WISHLIST: '../../backend/api/customer/wishlist.php',
-    UPLOAD_PRESCRIPTION: '../../backend/api/customer/upload-prescription.php'
+    PRODUCTS: '/pharmacy/backend/api/products/list.php',
+    CATEGORIES: '/pharmacy/backend/api/categories/list.php',
+    SEARCH: '/pharmacy/backend/api/products/search.php', // we'll create this later if needed
+    CART: '/pharmacy/backend/api/customer/add-to-cart.php',
+    WISHLIST: '/pharmacy/backend/api/customer/wishlist.php',
+    UPLOAD_PRESCRIPTION: '/pharmacy/backend/api/customer/upload-prescription.php'
 };
-
 // ─── STATE ──────────────────────────────────────────────
 let cartCount = 0;
 let activeCategory = 'all';
@@ -37,24 +38,55 @@ document.addEventListener('DOMContentLoaded', function() {
 // ─── LOAD PRODUCTS ──────────────────────────────────────
 async function loadProducts() {
     try {
-        showLoading();
-        
-        // TODO: Replace with actual API call
-        // const data = await apiRequest(MARKETPLACE_API.PRODUCTS);
-        
-        // Mock data - replace with actual API response
-        const data = getMockProducts();
-        allProducts = data;
-        filteredProducts = allProducts;
-        
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
+
+        const response = await fetch(
+            MARKETPLACE_API.PRODUCTS,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message || "Failed to load products", "warn");
+            return;
+        }
+
+        allProducts = result.data.products.map(product => ({
+            id: product.id,
+            name: product.medicine_name,
+            vendor: product.pharmacy_name,
+            price: `GH₵ ${parseFloat(product.selling_price).toFixed(2)}`,
+            rating: 5,
+            reviews: 0,
+            rxRequired: Boolean(product.rx_required),
+            category: product.category_name,
+            image: product.image
+                ? `/pharmacy/uploads/medicines/${product.image}`
+                : "https://via.placeholder.com/300x200?text=Medicine"
+        }));
+
+        filteredProducts = [...allProducts];
+
+        // Render products into the DOM grid
         renderProducts(filteredProducts.slice(0, PER_PAGE));
+
+        // Update product count heading text
         updateProductCount(filteredProducts.length);
-        
-        hideLoading();
-    } catch(error) {
-        console.error('Error loading products:', error);
-        showToast('Failed to load products', 'warn');
-        hideLoading();
+
+    } catch (error) {
+        console.error("Error loading products:", error);
+        showToast("Error loading medications. Please try again.", "warn");
     }
 }
 
@@ -153,9 +185,6 @@ function filterTab(btn, category) {
     // Render filtered products
     renderProducts(filteredProducts.slice(0, PER_PAGE));
     updateProductCount(filteredProducts.length);
-    
-    // TODO: API call
-    // const data = await apiRequest(`${MARKETPLACE_API.PRODUCTS}?category=${category}&page=1`);
 }
 
 // ─── SORT PRODUCTS ──────────────────────────────────────
@@ -181,9 +210,6 @@ function sortProducts(value) {
     
     filteredProducts = sorted;
     renderProducts(filteredProducts.slice(0, PER_PAGE));
-    
-    // TODO: API call
-    // const data = await apiRequest(`${MARKETPLACE_API.PRODUCTS}?sort=${value}`);
 }
 
 // ─── LOAD MORE PRODUCTS ─────────────────────────────────
@@ -194,9 +220,6 @@ function loadMoreProducts() {
     const moreProducts = filteredProducts.slice(start, end);
     
     renderProducts(moreProducts, true);
-    
-    // TODO: API call
-    // const data = await apiRequest(`${MARKETPLACE_API.PRODUCTS}?category=${activeCategory}&page=${currentPage}`);
 }
 
 // ─── SEARCH ─────────────────────────────────────────────
@@ -218,9 +241,6 @@ function handleSearch(query) {
     filteredProducts = results;
     renderProducts(results.slice(0, PER_PAGE));
     updateProductCount(results.length);
-    
-    // TODO: API call
-    // const data = await apiRequest(`${MARKETPLACE_API.SEARCH}?q=${encodeURIComponent(query)}`);
 }
 
 function doSearch() {
@@ -233,22 +253,52 @@ function doSearch() {
 }
 
 // ─── ADD TO CART ────────────────────────────────────────
-function addToCart(productId, productName) {
-    cartCount++;
-    const cartCountEl = document.getElementById('cartCount');
-    if (cartCountEl) {
-        cartCountEl.textContent = cartCount;
-    }
-    
-    showToast(`"${productName}" added to cart`);
-    
-    // TODO: API call
-    // const result = await apiRequest(MARKETPLACE_API.CART, {
-    //     method: 'POST',
-    //     body: JSON.stringify({ product_id: productId, quantity: 1 })
-    // });
-}
+async function addToCart(productId, productName) {
 
+    try {
+
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
+
+        const response = await fetch(
+            MARKETPLACE_API.CART,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    medicine_id: productId,
+                    quantity: 1
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message, "warn");
+            return;
+        }
+
+        cartCount++;
+
+        document.getElementById("cartCount").textContent = cartCount;
+
+        showToast(`"${productName}" added to cart`);
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast("Unable to add to cart", "warn");
+    }
+
+}
 // ─── WISHLIST ──────────────────────────────────────────
 function toggleWishlist(productId, productName) {
     const isWishlisted = wishlisted.has(productId);
@@ -270,28 +320,10 @@ function toggleWishlist(productId, productName) {
             icon.className = `fa-${wishlisted.has(productId) ? 'solid' : 'regular'} fa-heart`;
         }
     }
-    
-    // TODO: API call
-    // const result = await apiRequest(MARKETPLACE_API.WISHLIST, {
-    //     method: 'POST',
-    //     body: JSON.stringify({ product_id: productId, action: isWishlisted ? 'remove' : 'add' })
-    // });
 }
 
 // ─── UPLOAD PRESCRIPTION ──────────────────────────────
 function uploadPrescription() {
-    // TODO: Implement prescription upload
-    // const fileInput = document.getElementById('prescriptionFile');
-    // const formData = new FormData();
-    // formData.append('prescription', fileInput.files[0]);
-    // const result = await fetch(MARKETPLACE_API.UPLOAD_PRESCRIPTION, {
-    //     method: 'POST',
-    //     body: formData,
-    //     headers: {
-    //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-    //     }
-    // });
-    
     showToast('Opening prescription upload...');
 }
 
@@ -304,7 +336,6 @@ function updateProductCount(count) {
 }
 
 function showLoading() {
-    // You can add a loading spinner here
     console.log('Loading products...');
 }
 

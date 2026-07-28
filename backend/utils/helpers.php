@@ -20,3 +20,29 @@ function getAuthenticatedPharmacy(PDO $db, array $currentUser)
 
     return $pharmacy;
 }
+
+function getAuthenticatedCustomer(PDO $db, array $currentUser)
+{
+    // Lazy load Customer model only when this function is called
+    $customerPath = __DIR__ . "/../models/Customer.php";
+    if (file_exists($customerPath)) {
+        require_once $customerPath;
+    } else {
+        jsonResponse(false, "Customer model file missing.", null, 500);
+    }
+
+    $customerModel = new Customer($db);
+
+    $customer = $customerModel->getByUserId($currentUser["id"]);
+
+    if (!$customer) {
+        jsonResponse(
+            false,
+            "Customer not found.",
+            null,
+            404
+        );
+    }
+
+    return $customer;
+}

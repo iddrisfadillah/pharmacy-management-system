@@ -36,7 +36,8 @@ function renderPharmacistLayout({ activePage = 'dashboard', pageTitle = 'Dashboa
         <i class="fa-solid fa-plus"></i> New Prescription
       </button>
       <a class="nav-item" href="#" style="padding:7px 4px;font-size:0.8rem;"><i class="fa-solid fa-circle-question"></i> Support</a>
-      <a class="nav-item" href="../login/sign_in/login.html" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+      <!-- UPDATED LOGOUT BUTTON IN SIDEBAR -->
+      <a class="nav-item" href="javascript:void(0)" onclick="logout()" style="padding:7px 4px;font-size:0.8rem;color:var(--red);"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
     </div>
   `;
 
@@ -58,9 +59,29 @@ function renderPharmacistLayout({ activePage = 'dashboard', pageTitle = 'Dashboa
           <div class="uname">Dr. Sarah Chen</div>
           <div class="urole">Administrator</div>
         </div>
+        <!-- ADDED QUICK LOGOUT BUTTON IN TOPBAR -->
+        <button class="icon-btn" onclick="logout()" title="Log Out" style="margin-left:6px; color:#f87171;">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
       </div>
     </div>
   `;
+}
+
+// Global Logout Handler
+function logout() {
+  // Clear authentication tokens from browser memory
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("user");
+
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Redirect specifically to the relative login URL
+  // Adjust this URL to match your exact login page location:
+  window.location.href = "../login/sign_in/login.html"; 
 }
 
 // Shared toast

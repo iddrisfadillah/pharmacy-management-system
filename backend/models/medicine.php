@@ -250,7 +250,18 @@ public function categoryBelongsToPharmacy($categoryId, $pharmacyId)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+public function getMarketplaceMedicine($id)
+{
+    $sql = "SELECT *
+            FROM medicines
+            WHERE id = ?
+            LIMIT 1";
 
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute([$id]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 
 }
