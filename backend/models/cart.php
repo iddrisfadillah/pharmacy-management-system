@@ -135,15 +135,14 @@ class Cart
 {
     $sql = "
         SELECT
-            ci.id AS cart_item_id,
-            ci.quantity,
-
-            m.id AS medicine_id,
-            m.medicine_name,
-            m.selling_price,
-            m.image,
-
-            p.pharmacy_name
+    ci.id AS cart_item_id,
+    ci.quantity,
+    m.id AS medicine_id,
+    m.medicine_name,
+    m.selling_price,
+    m.image,
+    p.id AS pharmacy_id,
+    p.pharmacy_name
 
         FROM carts c
 
@@ -166,6 +165,41 @@ class Cart
     $stmt->execute([$customerId]);
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+/*
+|--------------------------------------------------------------------------
+| Update Quantity
+|--------------------------------------------------------------------------
+*/
+
+public function updateQuantity($cartItemId, $quantity)
+{
+    $sql = "UPDATE {$this->itemTable}
+            SET quantity = ?
+            WHERE id = ?";
+
+    $stmt = $this->conn->prepare($sql);
+
+    return $stmt->execute([
+        $quantity,
+        $cartItemId
+    ]);
+}
+/*
+|--------------------------------------------------------------------------
+| Remove Item
+|--------------------------------------------------------------------------
+*/
+
+public function removeItem($cartItemId)
+{
+    $sql = "DELETE
+            FROM {$this->itemTable}
+            WHERE id = ?";
+
+    $stmt = $this->conn->prepare($sql);
+
+    return $stmt->execute([$cartItemId]);
 }
     
 }

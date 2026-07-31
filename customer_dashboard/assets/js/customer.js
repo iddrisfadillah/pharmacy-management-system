@@ -56,18 +56,13 @@ function handleLogout(event) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("patientId");
+    localStorage.removeItem("cart");
     sessionStorage.clear();
     
     // Clear cookies
     document.cookie.split(";").forEach(function(c) { 
         document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     });
-    
-    // Call logout API if needed
-    // fetch('../backend/api/auth/logout.php', { method: 'POST' })
-    //     .finally(() => {
-    //         window.location.href = '../login/sign_in/login.html';
-    //     });
     
     // Redirect to login
     setTimeout(function() {
@@ -77,7 +72,8 @@ function handleLogout(event) {
 
 // ─── TOGGLE SIDEBAR (Mobile) ────────────────────────────
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('open');
 }
 
 // ─── TOAST ────────────────────────────────────────────────
@@ -89,10 +85,18 @@ function showToast(msg, type = 'success') {
     const icon = document.getElementById('toastIcon');
     if (!t || !icon) return;
     
-    document.getElementById('toastMsg').textContent = msg;
+    const msgEl = document.getElementById('toastMsg');
+    if (msgEl) msgEl.textContent = msg;
+    
     icon.style.color = type === 'warn' ? '#fbbf24' : '#4ade80';
     t.classList.add('show');
     toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─── SHOW CART TOAST ─────────────────────────────────────
+function showCartToast() {
+    const count = getCartCountFromStorage();
+    showToast(`Cart: ${count} items`);
 }
 
 // ─── MODAL ────────────────────────────────────────────────
@@ -116,6 +120,75 @@ function setDate() {
         year: 'numeric'
     });
     dateEls.forEach(el => el.textContent = dateStr);
+}
+
+// ─── HELPER: GET LOCAL/SESSION CART COUNT ────────────────
+function getCartCountFromStorage() {
+    const keys = ['cart', 'cartItems', 'userCart', 'medTrustCart'];
+    let cartData = null;
+
+    for (let key of keys) {
+        cartData = localStorage.getItem(key) || sessionStorage.getItem(key);
+        if (cartData) break;
+    }
+
+    if (!cartData) return 0;
+
+    try {
+        const parsed = JSON.parse(cartData);
+        if (Array.isArray(parsed)) {
+            return parsed.reduce((sum, item) => sum + (Number(item.quantity || item.qty || item.count) || 1), 0);
+        } else if (typeof parsed === 'object' && parsed !== null) {
+            if (parsed.items && Array.isArray(parsed.items)) {
+                return parsed.items.reduce((sum, item) => sum + (Number(item.quantity || item.qty) || 1), 0);
+            }
+            return Object.values(parsed).reduce((sum, item) => sum + (Number(item?.quantity || item?.qty) || 1), 0);
+        }
+    } catch (e) {
+        console.error('Error parsing cart data:', e);
+    }
+    return 0;
+}
+
+// ─── UPDATE CART BADGE COUNT ─────────────────────────────
+async function updateCartBadge() {
+    let count = getCartCountFromStorage();
+
+    // Update DOM badges immediately
+    const renderCount = (c) => {
+        document.querySelectorAll('.cart-badge, [data-cart-count]').forEach(el => {
+            el.textContent = c;
+        });
+        document.querySelectorAll('a[href*="cart.html"] .badge').forEach(el => {
+            el.textContent = c;
+        });
+    };
+
+    renderCount(count);
+
+    // Fetch live count from backend API if available
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+        try {
+            const res = await fetch('../backend/api/cart/get_cart.php', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && (data.cart || data.items || Array.isArray(data))) {
+                    const items = data.cart || data.items || data;
+                    const apiCount = Array.isArray(items) 
+                        ? items.reduce((s, i) => s + (Number(i.quantity) || 1), 0)
+                        : Object.keys(items).length;
+                    
+                    renderCount(apiCount);
+                    localStorage.setItem('cart', JSON.stringify(items));
+                }
+            }
+        } catch(err) {
+            // Silently fall back to storage count
+        }
+    }
 }
 
 // ─── API HELPER ──────────────────────────────────────────
@@ -168,7 +241,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ─── CLOSE SIDEBAR ON NAV LINK CLICK (Mobile) ───────────
+// ─── DOM CONTENT LOADED ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', function(e) {
@@ -176,17 +249,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const sidebar = document.getElementById('sidebar');
                 if (sidebar) sidebar.classList.remove('open');
             }
-            // Remove active from all
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             this.classList.add('active');
         });
     });
     
-    // Set the date
+    // Set current date
     setDate();
     
-    // Load user info
+    // Load customer account info
     loadUserInfo();
+
+    // Sync cart badge count on page load
+    updateCartBadge();
 });
 
 // ─── LOAD USER INFO ──────────────────────────────────────

@@ -94,4 +94,45 @@ class Order
 
         return $stmt->execute([$id, $pharmacyId]);
     }
+
+public function getAllWithItems($pharmacyId)
+{
+    $sql = "
+        SELECT
+            o.*,
+            oi.quantity,
+            oi.unit_price,
+            m.medicine_name
+        FROM orders o
+        LEFT JOIN order_items oi
+            ON oi.order_id = o.id
+        LEFT JOIN medicines m
+            ON m.id = oi.medicine_id
+        WHERE o.pharmacy_id = ?
+        ORDER BY o.created_at DESC
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute([$pharmacyId]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+public function updateStatus($id, $pharmacyId, $status)
+{
+    $sql = "
+        UPDATE orders
+        SET order_status = :status
+        WHERE id = :id
+        AND pharmacy_id = :pharmacy_id
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+
+    return $stmt->execute([
+        ":status" => $status,
+        ":id" => $id,
+        ":pharmacy_id" => $pharmacyId
+    ]);
+}
+
 }

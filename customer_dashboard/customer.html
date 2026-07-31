@@ -42,7 +42,7 @@
         </a>
         <a href="cart.html" class="nav-item">
             <i class="fa-solid fa-cart-shopping"></i> Cart
-            <span class="badge">2</span>
+            <span class="badge cart-badge">0</span>
         </a>
 
         <div class="nav-section-title">Account</div>
@@ -90,9 +90,10 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search orders…" id="searchOrders" oninput="searchOrders(this.value)"/>
             </div>
-            <button class="icon-btn" onclick="showToast('Cart: 2 items')">
+            <a href="cart.html" class="icon-btn" title="View Cart" style="position: relative; display: inline-flex; align-items: center;">
                 <i class="fa-solid fa-cart-shopping"></i>
-            </button>
+                <span class="badge cart-badge" style="position: absolute; top: -5px; right: -5px;">0</span>
+            </a>
             <button class="icon-btn" onclick="showToast('3 new notifications')">
                 <i class="fa-solid fa-bell"></i>
                 <span class="notif-dot"></span>
@@ -262,7 +263,7 @@
         </div>
     </div>
 
-    <!-- ─── FOOTER (Moved inside .main) ─── -->
+    <!-- ─── FOOTER ─── -->
     <footer>
         <div>
             <div class="footer-brand">MedTrust Systems</div>
@@ -283,58 +284,7 @@
 
 </div>
 
-<!-- ─── ORDER DETAIL MODAL ─── -->
-<div class="modal-overlay" id="orderModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 id="orderModalTitle">Order Details</h3>
-            <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="order-detail-grid" id="orderDetailGrid"></div>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal('orderModal')">Close</button>
-            <button class="btn btn-primary" onclick="showToast('Tracking page opening…');closeModal('orderModal')">
-                <i class="fa-solid fa-location-dot"></i> Track Live
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ─── NEW PRESCRIPTION MODAL ─── -->
-<div class="modal-overlay" id="rxModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h3>New Prescription Request</h3>
-            <button class="modal-close" onclick="closeModal('rxModal')"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body">
-            <div style="margin-bottom:14px;">
-                <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Medication Name *</label>
-                <input id="rxMedName" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none;" placeholder="e.g. Lisinopril 10mg"/>
-            </div>
-            <div style="margin-bottom:14px;">
-                <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Prescribing Doctor</label>
-                <input id="rxDoctor" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none;" placeholder="Dr. Kofi Mensah"/>
-            </div>
-            <div style="margin-bottom:6px;">
-                <label style="font-size:0.78rem;font-weight:600;display:block;margin-bottom:6px;">Upload Prescription (optional)</label>
-                <div class="upload-zone" style="padding:16px;" onclick="document.getElementById('rxModalFile').click()">
-                    <i class="fa-solid fa-paperclip" style="font-size:1.1rem;"></i>
-                    <p style="font-size:0.78rem;margin-top:4px;">Click to attach prescription image or PDF</p>
-                    <input type="file" id="rxModalFile" style="display:none;"/>
-                </div>
-            </div>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal('rxModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="submitRx()"><i class="fa-solid fa-paper-plane"></i> Submit Request</button>
-        </div>
-    </div>
-</div>
-
-<!-- ─── TOAST ─── -->
+<!-- ─── MODALS & TOAST ─── -->
 <div class="toast" id="toast">
     <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
     <span id="toastMsg"></span>

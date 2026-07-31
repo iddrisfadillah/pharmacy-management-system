@@ -200,7 +200,6 @@
   <div class="nav-links">
     <a class="nav-link" href="../customer_dashboard/marketplace.html">Marketplace</a>
     <a class="nav-link" href="../customer_dashboard/prescription.html">Prescriptions</a>
-    <!-- <a class="nav-link" href="../customer_dashboard/marketplace-landing.html">Pharmacies</a> -->
     <a class="nav-link" href="#">Insurance</a>
   </div>
   <div class="nav-right">
@@ -341,7 +340,7 @@
               </div>
             </div>
 
-            <!-- PICKUP FORM (hidden by default) -->
+            <!-- PICKUP FORM -->
             <div id="pickupForm" style="display:none;">
               <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
                 <i class="fa-solid fa-store" style="color:var(--primary);"></i> Select Pickup Pharmacy
@@ -366,7 +365,7 @@
         </div>
 
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back to Cart</button>
+          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back to Prescriptions</button>
           <button class="btn btn-primary" onclick="goStep(3)">Continue to Payment <i class="fa-solid fa-arrow-right"></i></button>
         </div>
       </div>
@@ -432,7 +431,7 @@
               <div class="insurance-coverage">
                 <div>
                   <div class="coverage-label">Estimated Coverage</div>
-                  <div class="coverage-val" id="coverageAmt">GH₵ 0.00</div>
+                  <div class="coverage-val" id="coverageAmt">$0.00</div>
                   <div class="coverage-pct-bar"><div class="coverage-fill" id="coverageFill" style="width:0%;"></div></div>
                 </div>
                 <div style="text-align:right;">
@@ -489,7 +488,7 @@
               <div class="form-group"><label class="form-label">Mobile Money Number</label><input class="form-control" placeholder="+233 24 000 0000"/></div>
               <div class="form-group"><label class="form-label">Account Name</label><input class="form-control" placeholder="Name registered on MoMo"/></div>
               <div style="background:var(--amber-light);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:#854d0e;">
-                <i class="fa-solid fa-circle-info"></i> You will receive a prompt on your phone to confirm the payment of <strong>GH₵ 142.14</strong>.
+                <i class="fa-solid fa-circle-info"></i> You will receive a prompt on your phone to confirm the payment.
               </div>
             </div>
 
@@ -516,7 +515,7 @@
         </div>
 
         <div style="display:flex;gap:10px;">
-          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button class="btn btn-ghost" style="width:auto;" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back to Delivery</button>
           <button class="btn btn-primary" onclick="placeOrder()"><i class="fa-solid fa-lock"></i> Complete Secure Payment — $142.14</button>
         </div>
       </div>
@@ -565,23 +564,23 @@
           <div class="card-header">
             <div>
               <span class="badge badge-blue" style="margin-bottom:6px;display:inline-block;"><i class="fa-solid fa-truck"></i> EXPRESS DELIVERY</span>
-              <div class="card-title">Arriving October 26th</div>
-              <div style="font-size:0.72rem;color:var(--muted);">Est. Delivery: Oct 26, 2024 · 2:00 PM – 6:00 PM</div>
+              <div class="card-title">Arriving Soon</div>
+              <div style="font-size:0.72rem;color:var(--muted);">Est. Delivery: 2–3 Business Days</div>
             </div>
           </div>
           <div class="card-body">
             <div class="tracking-steps">
               <div class="track-item">
                 <div class="track-dot-wrap"><div class="track-dot td-done"><i class="fa-solid fa-check" style="font-size:.6rem;"></i></div><div class="track-line done"></div></div>
-                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Order Confirmed</div><div class="track-sub">Oct 24, 2024 · 10:41 AM</div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Order Confirmed</div><div class="track-sub">Today</div></div>
               </div>
               <div class="track-item">
                 <div class="track-dot-wrap"><div class="track-dot td-done"><i class="fa-solid fa-check" style="font-size:.6rem;"></i></div><div class="track-line done"></div></div>
-                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Pharmacy Processing</div><div class="track-sub">Oct 24, 2024 · 11:30 AM</div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label">Pharmacy Processing</div><div class="track-sub">In Progress</div></div>
               </div>
               <div class="track-item">
                 <div class="track-dot-wrap"><div class="track-dot td-next"><i class="fa-solid fa-truck" style="font-size:.6rem;"></i></div><div class="track-line"></div></div>
-                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label" style="color:var(--primary);">Out for Delivery</div><div class="track-sub">Expected: Oct 26</div></div>
+                <div style="padding-left:12px;padding-bottom:12px;"><div class="track-label" style="color:var(--primary);">Out for Delivery</div><div class="track-sub">Pending dispatch</div></div>
               </div>
               <div class="track-item">
                 <div class="track-dot-wrap"><div class="track-dot td-pending"><i class="fa-solid fa-house" style="font-size:.6rem;"></i></div></div>
@@ -597,7 +596,6 @@
 
         <!-- RIGHT: MAP + ORDER SUMMARY -->
         <div>
-          <!-- MAP placeholder -->
           <div class="card" style="margin-bottom:16px;">
             <div class="map-placeholder">
               <div style="text-align:center;"><i class="fa-solid fa-map-location-dot" style="font-size:2.5rem;margin-bottom:8px;opacity:.4;display:block;"></i>Live delivery map<br/>tracking active</div>
@@ -608,17 +606,17 @@
           <div class="card">
             <div class="card-header"><div class="card-title">Order Summary</div></div>
             <div class="card-body" style="padding:14px 16px;">
-              <div class="summary-row"><span style="font-size:0.78rem;">Lisinopril Vera</span><span>$42.50</span></div>
-              <div class="summary-row"><span style="font-size:0.78rem;">Metformin Extendo</span><span>$11.32</span></div>
+              <div class="summary-row"><span style="font-size:0.78rem;">Amoxicillin 500mg</span><span>$42.80</span></div>
+              <div class="summary-row"><span style="font-size:0.78rem;">Digital Glucose Monitor</span><span>$99.34</span></div>
               <hr class="summary-divider" style="margin:8px 0;"/>
               <div class="summary-row"><span>Subtotal</span><span>$120.14</span></div>
               <div class="summary-row"><span>Shipping</span><span class="free-tag">FREE</span></div>
-              <div class="summary-row"><span>Pharmacy Fee</span><span>$3.18</span></div>
+              <div class="summary-row"><span>Estimated Tax</span><span>$11.14</span></div>
               <hr class="summary-divider" style="margin:8px 0;"/>
-              <div class="summary-row total"><span>Total Paid</span><span>$36.32</span></div>
+              <div class="summary-row total"><span>Total Paid</span><span id="confirmTotalPaid">$142.14</span></div>
               <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
                 <button class="btn btn-outline" style="justify-content:center;" onclick="showToast('Downloading invoice…')"><i class="fa-solid fa-download"></i> Download Invoice</button>
-                <button class="btn btn-ghost" style="justify-content:center;" onclick="window.location='marketplace-landing.html'"><i class="fa-solid fa-store"></i> Back to Storefront</button>
+                <button class="btn btn-ghost" style="justify-content:center;" onclick="window.location='marketplace.html'"><i class="fa-solid fa-store"></i> Back to Storefront</button>
               </div>
             </div>
           </div>
@@ -673,7 +671,7 @@
     </div>
   </div>
 
-</div><!-- end stepsContainer -->
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -686,7 +684,7 @@
 <div class="toast" id="toast"><i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i><span id="toastMsg"></span></div>
 
 <script>
-/* ── STEPS ── */
+/* ── STEPS MANAGEMENT ── */
 const STEPS = [
   { label:'Prescription', icon:'fa-file-prescription' },
   { label:'Delivery',     icon:'fa-truck'             },
@@ -718,7 +716,7 @@ function goStep(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ── DELIVERY ── */
+/* ── DELIVERY OPTION SWITCHING ── */
 let deliveryMode = 'home';
 function selectDelivery(el, mode) {
   deliveryMode = mode;
@@ -730,7 +728,7 @@ function selectDelivery(el, mode) {
   document.getElementById('pickupForm').style.display   = mode === 'pickup' ? 'block' : 'none';
 }
 
-/* ── PAYMENT TABS ── */
+/* ── PAYMENT TAB SWITCHING ── */
 function switchPayTab(btn, id) {
   document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
@@ -738,33 +736,43 @@ function switchPayTab(btn, id) {
   document.getElementById('pay-'+id).classList.add('active');
 }
 
-/* ── MOMO SELECTION ── */
+/* ── MOBILE MONEY SELECTION ── */
 function selectMomo(el) {
-  document.querySelectorAll('.momo-logo').forEach(m => m.style.border='1.5px solid var(--border)');
+  document.querySelectorAll('.momo-logo').forEach(m => {
+    m.style.border='1.5px solid var(--border)';
+    m.style.boxShadow = 'none';
+  });
   el.style.border = '1.5px solid var(--primary)';
   el.style.boxShadow = '0 0 0 3px var(--primary-light)';
 }
 
-/* ── INSURANCE ── */
+/* ── INSURANCE COVERAGE CALCULATION ── */
 function updateCoverage() {
   const val = document.getElementById('insProvider').value;
   const box = document.getElementById('coverageBox');
-  if (!val || val === 'none') { box.style.display='none'; return; }
+  if (!val || val === 'none') { 
+    box.style.display='none'; 
+    document.getElementById('insuranceRow').style.display = 'none';
+    document.getElementById('finalTotal').textContent = '$142.14';
+    return; 
+  }
   box.style.display = 'block';
   const pcts = { nhis:80, enterprise:60, star:50 };
   const pct = pcts[val] || 0;
   const total = 142.14;
   const covered = (total * pct / 100).toFixed(2);
   const youPay = (total - covered).toFixed(2);
+  
   document.getElementById('coverageAmt').textContent = `$${covered}`;
   document.getElementById('youPayAmt').textContent   = `$${youPay}`;
   document.getElementById('coverageFill').style.width = pct + '%';
   document.getElementById('insuranceRow').style.display = 'flex';
   document.getElementById('insuranceDiscount').textContent = `-$${covered}`;
   document.getElementById('finalTotal').textContent = `$${youPay}`;
+  document.getElementById('confirmTotalPaid').textContent = `$${youPay}`;
 }
 
-/* ── CARD FORMAT ── */
+/* ── INPUT FORMATTING ── */
 function formatCard(input) {
   let v = input.value.replace(/\D/g,'').substring(0,16);
   input.value = v.replace(/(.{4})/g,'$1 ').trim();
@@ -775,7 +783,7 @@ function formatExpiry(input) {
   input.value = v;
 }
 
-/* ── UPLOAD ── */
+/* ── FILE UPLOADS ── */
 function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('dragover'); }
 function dragLeave(id)   { document.getElementById(id).classList.remove('dragover'); }
 function dropFile(e, id) {
@@ -792,13 +800,13 @@ function processUpload(f, id) {
   showToast(`"${f.name}" uploaded — under review`);
 }
 
-/* ── PLACE ORDER ── */
+/* ── ORDER SUBMISSION ── */
 function placeOrder() {
   showToast('Processing payment…');
-  setTimeout(() => goStep(4), 1500);
+  setTimeout(() => goStep(4), 1200);
 }
 
-/* ── TOAST ── */
+/* ── TOAST MESSAGES ── */
 let _t;
 function showToast(msg, type='success') {
   clearTimeout(_t);
@@ -809,7 +817,7 @@ function showToast(msg, type='success') {
   _t = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-/* ── INIT ── */
+/* INITIALIZATION */
 renderStepper();
 </script>
 </body>

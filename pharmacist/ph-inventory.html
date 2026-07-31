@@ -208,6 +208,33 @@
             <textarea class="form-control" id="sDescription"></textarea>
         </div>
 
+<div class="form-group">
+    <label class="form-label">Medicine Image</label>
+
+    <input
+        type="file"
+        id="sImage"
+        class="form-control"
+        accept="image/*"
+        onchange="previewMedicineImage(event)"
+    >
+
+    <div style="margin-top:12px;text-align:center;">
+        <img
+            id="imagePreview"
+            src=""
+            style="
+                display:none;
+                width:180px;
+                height:180px;
+                object-fit:cover;
+                border-radius:10px;
+                border:1px solid #ddd;
+            "
+        >
+    </div>
+</div>
+
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('addStockModal')">Cancel</button>
@@ -529,71 +556,82 @@ async function editStock(id) {
 
   if (typeof openModal === 'function') openModal("addStockModal");
 }
-
 async function saveStock() {
-  const name = document.getElementById('sName').value.trim();
-  const qty  = parseInt(document.getElementById('sQty').value);
-  const price = parseFloat(document.getElementById('sPrice').value);
-  const categoryId = document.getElementById("sCat").value;
+    const name = document.getElementById("sName").value.trim();
+    const qty = parseInt(document.getElementById("sQty").value);
+    const price = parseFloat(document.getElementById("sPrice").value);
+    const categoryId = document.getElementById("sCat").value;
+    const image = document.getElementById("sImage").files[0];
 
-  if (!name || isNaN(qty) || isNaN(price) || !categoryId) { 
-    if (typeof showToast === 'function') showToast('Please fill required fields (Name, Category, Price, Quantity)', 'warn'); 
-    return; 
-  }
-
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  const payload = {
-    category_id: Number(categoryId),
-    medicine_name: name,
-    generic_name: document.getElementById("sGeneric").value,
-    brand: document.getElementById("sBrand").value,
-    dosage: document.getElementById("sDosage").value,
-    form: document.getElementById("sForm").value,
-    strength: document.getElementById("sStrength").value,
-    batch_number: document.getElementById("sBatch").value,
-    manufacturer: document.getElementById("sManufacturer").value,
-    expiry_date: document.getElementById("sExpiry").value,
-    purchase_price: parseFloat(document.getElementById("sPurchasePrice").value) || 0,
-    selling_price: price,
-    stock_quantity: qty,
-    minimum_stock: parseInt(document.getElementById("sReorder").value) || 10,
-    description: document.getElementById("sDescription").value
-  };
-
-  let url = "/pharmacy/backend/api/medicines/create.php";
-  let method = "POST";
-
-  if (editId) {
-    url = "/pharmacy/backend/api/medicines/update.php";
-    method = "PUT";
-    payload.id = editId;
-  }
-
-  try {
-    const response = await fetch(url, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      if (typeof showToast === 'function') showToast(result.message, "error");
-      return;
+    if (!name || isNaN(qty) || isNaN(price) || !categoryId) {
+        if (typeof showToast === "function") {
+            showToast(
+                "Please fill required fields (Name, Category, Price, Quantity)",
+                "warn"
+            );
+        }
+        return;
     }
 
-    if (typeof showToast === 'function') showToast(editId ? "Medicine updated successfully" : "Medicine added successfully");
-    if (typeof closeModal === 'function') closeModal("addStockModal");
-    editId = null;
-    await loadInventory();
-  } catch (error) {
-    console.error("Save error:", error);
-    if (typeof showToast === 'function') showToast("Error saving stock item", "error");
-  }
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    
+    // Create FormData instead of JSON
+    const formData = new FormData();
+    formData.append("medicine_name", name);
+    formData.append("stock_quantity", qty);
+    formData.append("selling_price", price);
+    formData.append("category_id", Number(categoryId));
+    formData.append("generic_name", document.getElementById("sGeneric").value || "");
+    formData.append("brand", document.getElementById("sBrand").value || "");
+    formData.append("dosage", document.getElementById("sDosage").value || "");
+    formData.append("form", document.getElementById("sForm").value || "");
+    formData.append("strength", document.getElementById("sStrength").value || "");
+    formData.append("batch_number", document.getElementById("sBatch").value || "");
+    formData.append("manufacturer", document.getElementById("sManufacturer").value || "");
+    formData.append("expiry_date", document.getElementById("sExpiry").value || "");
+    formData.append("purchase_price", parseFloat(document.getElementById("sPurchasePrice").value) || 0);
+    formData.append("minimum_stock", parseInt(document.getElementById("sReorder").value) || 10);
+    formData.append("description", document.getElementById("sDescription").value || "");
+
+    if (image) {
+        formData.append("image", image);
+    }
+
+    let url = "/pharmacy/backend/api/medicines/create.php";
+    let method = "POST";
+
+    if (editId) {
+        url = "/pharmacy/backend/api/medicines/update.php";
+        method = "POST"; // Keep POST for FormData, but add _method parameter
+        formData.append("id", editId);
+        formData.append("_method", "PUT"); // Many PHP backends use this convention
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                Authorization: `Bearer ${token}`
+                // Don't set Content-Type header - browser will set it with boundary
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            if (typeof showToast === 'function') showToast(result.message, "error");
+            return;
+        }
+
+        if (typeof showToast === 'function') showToast(editId ? "Medicine updated successfully" : "Medicine added successfully");
+        if (typeof closeModal === 'function') closeModal("addStockModal");
+        editId = null;
+        await loadInventory();
+    } catch (error) {
+        console.error("Save error:", error);
+        if (typeof showToast === 'function') showToast("Error saving stock item", "error");
+    }
 }
 
 function reorderStock(id) {
@@ -707,6 +745,19 @@ document.addEventListener("DOMContentLoaded", async function() {
   await loadCategories();
   await loadInventory();
 });
+function previewMedicineImage(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const preview = document.getElementById("imagePreview");
+
+    preview.src = URL.createObjectURL(file);
+
+    preview.style.display = "block";
+
+}
 </script>
 </body>
 </html>

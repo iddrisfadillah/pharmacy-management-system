@@ -885,57 +885,72 @@ checkAuth("admin");
  * ═══════════════════════════════════════════════════════════
  */
 
-// ── MOCK DATA (replace with fetch to PHP later) ──────────
-const MOCK = {
-  stats: {
-    totalGMV: "$4,280,940",
-    gmvChange: "+12.5%",
-    gmvTrend: [40, 55, 45, 65, 70, 58, 80],
+async function loadDashboard() {
 
-    activePharmacies: "1,842",
-    pharmacyChange: "+4.2%",
-    pharmacyTrend: [30, 40, 35, 50, 55, 60, 65],
+    try {
 
-    newSignups: "128",
-    signupChange: "-2.1%",
-    signupTrend: [80, 70, 75, 60, 55, 50, 45],
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
 
-    systemHealth: "99.98%",
-    healthValue: 99.98,
-  },
+        const response = await fetch(
+            "/pharmacy/backend/api/admin/dashboard.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
 
-  vendors: [
-    { id: 1, initials: "CH", color: "av-blue",  name: "City Health Pharma",       location: "Accra, Ghana",   status: "License Verified", statusClass: "status-verified", date: "Oct 24, 2023", action: "approve" },
-    { id: 2, initials: "NS", color: "av-amber", name: "North Star Meds",          location: "Kumasi, Ghana",  status: "Pending Review",   statusClass: "status-pending",  date: "Oct 25, 2023", action: "view" },
-    { id: 3, initials: "EP", color: "av-green", name: "Elite Pharma Solutions",   location: "Takoradi, Ghana",status: "Action Required",  statusClass: "status-action",   date: "Oct 26, 2023", action: "view" },
-  ],
+        const result = await response.json();
 
-  infra: {
-    apiLatency: "24ms",
-    apiStatus: "STABLE",
-    dbStatus: "Active",
-    dbUptime: "99.9% UPTIME",
-    cdnCache: "88.2% Hit",
-    cdnStatus: "OPTIMIZED",
-  },
+        if (!result.success) {
+            showToast(result.message, "warn");
+            return;
+        }
 
-  activity: [
-    { icon: "fa-shop",           iconClass: "ai-blue",  title: "New Vendor Registered",   desc: "City Health Pharma submitted an application for review.", time: "2 minutes ago" },
-    { icon: "fa-triangle-exclamation", iconClass: "ai-red",   title: "Security Alert",          desc: "Multiple failed login attempts detected from IP: 192.168.1.42.", time: "15 minutes ago" },
-    { icon: "fa-tag",            iconClass: "ai-teal",  title: "Global Price Update",      desc: "Admin adjusted tax rates for Tier 1 Insulin medications.", time: "1 hour ago" },
-    { icon: "fa-heart-pulse",    iconClass: "ai-green", title: "System Health Check",      desc: "Automated integrity scan completed with zero errors.", time: "3 hours ago" },
-  ],
-};
+        const d = result.data;
 
-// ══════════════════════════════════════════════════════════
-//  WHEN BACKEND IS READY — replace above with calls like:
-//
-//  async function fetchStats() {
-//    const res = await fetch('api/admin/stats.php');
-//    return res.json();
-//  }
-// ══════════════════════════════════════════════════════════
+        // Dashboard Cards
+        document.getElementById("totalGMV").textContent =
+            "GH₵ " + Number(d.revenue).toFixed(2);
 
+        document.getElementById("activePharmacies").textContent =
+            d.active_pharmacies;
+
+        // Customers + Pharmacists
+        document.getElementById("newSignups").textContent =
+            d.customers + d.pharmacists;
+
+        // System Health
+        document.getElementById("systemHealth").textContent = "100%";
+        document.getElementById("healthBar").style.width = "100%";
+        document.getElementById("healthStatus").textContent = "Optimal";
+        document.getElementById("healthStatusText").textContent =
+            "System operating normally";
+
+        // Badges
+        document.getElementById("gmvChange").textContent =
+            d.orders + " Orders";
+
+        document.getElementById("pharmacyChange").textContent =
+            d.pending + " Pending";
+
+        document.getElementById("signupChange").textContent =
+            d.customers + " Customers";
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast("Unable to load dashboard", "error");
+
+    }
+
+}
+document.addEventListener("DOMContentLoaded", function () {
+    loadDashboard();
+});
 function simulateDelay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
@@ -979,37 +994,240 @@ async function loadStats() {
 
 // ── LOAD VENDOR QUEUE ────────────────────────────────────
 async function loadVendors() {
-  await simulateDelay(900);
 
-  const vendors = MOCK.vendors;
-  // TODO: replace with → const vendors = await fetchVendors();
+    try {
 
-  const pendingCount = vendors.filter(v => v.action === 'approve' || v.statusClass === 'status-pending').length;
-  document.getElementById('badge-pending').textContent = pendingCount;
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
 
-  const tbody = document.getElementById('vendorTableBody');
-  tbody.innerHTML = vendors.map(v => `
-    <tr>
-      <td>
-        <div class="vendor-name-cell">
-          <div class="vendor-avatar ${v.color}">${v.initials}</div>
-          ${v.name}
-        </div>
-      </td>
-      <td>${v.location}</td>
-      <td><span class="status-badge ${v.statusClass}">${v.status}</span></td>
-      <td>${v.date}</td>
-      <td>
-        <div class="action-cell">
-          ${v.action === 'approve'
-            ? `<button class="btn-approve" onclick="openApproveModal(${v.id}, '${v.name}')">Approve</button>`
-            : `<button class="btn-view" onclick="viewVendor(${v.id})">View Details</button>`
-          }
-          <button class="more-btn" onclick="showToast('More options for ${v.name}')"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+        const response = await fetch(
+            "/pharmacy/backend/api/admin/pharmacies.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message, "error");
+            return;
+        }
+
+        const vendors = result.data;
+
+        const pendingCount =
+            vendors.filter(v => v.status === "pending").length;
+
+        document.getElementById("badge-pending").textContent = pendingCount;
+
+        const tbody = document.getElementById("vendorTableBody");
+
+        tbody.innerHTML = vendors.map(v => {
+
+            const initials = v.pharmacy_name
+                .split(" ")
+                .map(x => x[0])
+                .join("")
+                .substring(0,2)
+                .toUpperCase();
+
+            let badgeClass = "status-active";
+
+            if(v.status === "pending")
+                badgeClass = "status-pending";
+
+            if(v.status === "suspended")
+                badgeClass = "status-blocked";
+
+            return `
+            <tr>
+
+                <td>
+
+                    <div class="vendor-name-cell">
+
+                        <div class="vendor-avatar">
+                            ${initials}
+                        </div>
+
+                        ${v.pharmacy_name}
+
+                    </div>
+
+                </td>
+
+                <td>${v.pharmacy_address}</td>
+
+                <td>
+
+                    <span class="status-badge ${badgeClass}">
+                        ${v.status}
+                    </span>
+
+                </td>
+
+                <td>
+                    ${new Date(v.created_at).toLocaleDateString()}
+                </td>
+
+                <td>
+
+                    <div class="action-cell">
+
+                        ${
+                            v.status === "pending"
+
+                            ?
+
+                            `<button
+                                class="btn-approve"
+                                onclick="approvePharmacy(${v.id})">
+                                Approve
+                            </button>`
+
+                            :
+
+                            `<button
+                                class="btn-view"
+                                onclick="viewVendor(${v.id})">
+                                View
+                            </button>`
+                        }
+
+                        <button
+                            class="more-btn"
+                            onclick="suspendPharmacy(${v.id})">
+
+                            <i class="fa-solid fa-ban"></i>
+
+                        </button>
+
+                        <button
+                            class="more-btn"
+                            onclick="deletePharmacy(${v.id})">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+            `;
+
+        }).join("");
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        showToast("Unable to load pharmacies","error");
+
+    }
+
+}
+// Approve vendor
+async function approvePharmacy(id){
+
+    if(!confirm("Approve this pharmacy?")) return;
+
+    const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+    const response = await fetch(
+        "/pharmacy/backend/api/admin/approve-pharmacy.php",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                Authorization:`Bearer ${token}`
+            },
+            body:JSON.stringify({
+                id:id
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    showToast(result.message);
+
+    loadVendors();
+    loadDashboard();
+
+}
+// suspend  
+async function suspendPharmacy(id){
+
+    if(!confirm("Suspend this pharmacy?")) return;
+
+    const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+    const response = await fetch(
+        "/pharmacy/backend/api/admin/suspend-pharmacy.php",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                Authorization:`Bearer ${token}`
+            },
+            body:JSON.stringify({
+                id:id
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    showToast(result.message);
+
+    loadVendors();
+    loadDashboard();
+
+}
+
+// delete pharmacy
+async function deletePharmacy(id){
+
+    if(!confirm("Delete this pharmacy permanently?")) return;
+
+    const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+    const response = await fetch(
+        "/pharmacy/backend/api/admin/delete-pharmacy.php",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                Authorization:`Bearer ${token}`
+            },
+            body:JSON.stringify({
+                id:id
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    showToast(result.message);
+
+    loadVendors();
+    loadDashboard();
+
 }
 
 // ── LOAD INFRA ───────────────────────────────────────────

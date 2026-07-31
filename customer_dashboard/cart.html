@@ -134,7 +134,7 @@
         </a>
         <a href="cart.html" class="nav-item active">
             <i class="fa-solid fa-cart-shopping"></i> Cart
-            <span class="badge" id="cartBadge">3</span>
+            <span class="badge cart-badge" id="cartBadge">0</span>
         </a>
 
         <div class="nav-section-title">Account</div>
@@ -182,9 +182,11 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search products…"/>
             </div>
-            <button class="icon-btn" onclick="showToast('Cart: ' + CART.length + ' items')">
+            <!-- FIXED: Added topbar badge element -->
+            <a href="cart.html" class="icon-btn" title="View Cart" style="position: relative; display: inline-flex; align-items: center; text-decoration: none;">
                 <i class="fa-solid fa-cart-shopping"></i>
-            </button>
+                <span class="badge cart-badge" id="topbarCartCount" style="position: absolute; top: -5px; right: -5px;">0</span>
+            </a>
             <button class="icon-btn" onclick="showToast('3 new notifications')">
                 <i class="fa-solid fa-bell"></i>
                 <span class="notif-dot"></span>
@@ -286,213 +288,6 @@
 
 <!-- SCRIPTS -->
 <script src="assets/js/customer.js"></script>
-<script>
-const CART = [
-  {
-    id: 1,
-    name: 'Atorvastatin (20mg)',
-    sub: 'Quantity: 30 Tablets · Refillable: Yes',
-    price: 14.50,
-    qty: 1,
-    img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=160&h=160&fit=crop',
-    badge: 'rx',
-    rxNotice: true,
-  },
-  {
-    id: 2,
-    name: 'Digital Pulse Oximeter',
-    sub: 'Model: Pro-Track V2 · Warranty Included',
-    price: 45.00,
-    qty: 1,
-    img: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=160&h=160&fit=crop',
-    badge: 'medical',
-    rxNotice: false,
-  },
-  {
-    id: 3,
-    name: 'Immune Booster Pack',
-    sub: '30-Day Supply · Vitamin C + Zinc Complex',
-    price: 19.99,
-    qty: 2,
-    img: 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=160&h=160&fit=crop',
-    badge: 'otc',
-    rxNotice: false,
-  },
-];
-
-const FBT = [
-  { name:'7-Day Pill Organizer',    sub:'Large capacity, BPA-free',          price:'$12.99', img:'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&h=240&fit=crop' },
-  { name:'Infrared Thermometer',    sub:'Non-contact, 1s Reading',           price:'$34.99', img:'https://images.unsplash.com/photo-1584515933487-779824d29309?w=300&h=240&fit=crop' },
-  { name:'Nitrile Exam Gloves',     sub:'Box of 100, Latex-Free',            price:'$18.50', img:'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=300&h=240&fit=crop' },
-  { name:'BP Monitor Pro',          sub:'Bluetooth Syncing Enabled',         price:'$59.00', img:'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=300&h=240&fit=crop' },
-];
-
-const TAX_RATE = 0.083;
-let promoApplied = false;
-
-/* ── RENDER CART ── */
-function renderCart() {
-  const container = document.getElementById('cartItems');
-
-  if (CART.length === 0) {
-    container.innerHTML = `
-      <div class="empty-cart">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <h3>Your cart is empty</h3>
-        <p>Add medications and health products to get started.</p>
-        <button class="btn-checkout" style="width:auto;padding:11px 28px;" onclick="window.location='marketplace.html'">
-          <i class="fa-solid fa-store"></i> Browse Marketplace
-        </button>
-      </div>`;
-    updateSummary();
-    return;
-  }
-
-  container.innerHTML = CART.map(item => {
-    const badge =
-      item.badge === 'rx'      ? `<span class="rx-badge">Rx REQUIRED</span>` :
-      item.badge === 'medical' ? `<span class="medical-badge">MEDICAL DEVICE</span>` :
-      item.badge === 'otc'     ? `<span class="otc-badge">OTC</span>` : '';
-
-    const notice = item.rxNotice ? `
-      <div class="rx-notice">
-        <i class="fa-solid fa-circle-info"></i>
-        <p>Prescription Needed: Our pharmacist will contact your physician to verify this order during checkout. Have your insurance details ready.</p>
-      </div>` : '';
-
-    return `
-      <div class="cart-item" id="item-${item.id}">
-        <img class="item-img" src="${item.img}" alt="${item.name}" onerror="this.style.background='#f3f4f6';this.src=''"/>
-        <div class="item-body">
-          <div class="item-name-row">
-            <span class="item-name">${item.name}</span>
-            ${badge}
-          </div>
-          <div class="item-sub">${item.sub}</div>
-          <div class="qty-row">
-            <div class="qty-ctrl">
-              <button class="qty-btn" onclick="changeQty(${item.id},-1)"><i class="fa-solid fa-minus" style="font-size:0.65rem;"></i></button>
-              <input class="qty-val" type="number" value="${item.qty}" min="1" onchange="setQty(${item.id},this.value)" id="qty-${item.id}"/>
-              <button class="qty-btn" onclick="changeQty(${item.id},1)"><i class="fa-solid fa-plus" style="font-size:0.65rem;"></i></button>
-            </div>
-            <button class="remove-btn" onclick="removeItem(${item.id})">
-              <i class="fa-solid fa-trash" style="font-size:0.72rem;"></i> Remove
-            </button>
-          </div>
-          ${notice}
-        </div>
-        <div class="item-price">$${(item.price * item.qty).toFixed(2)}</div>
-      </div>`;
-  }).join('');
-
-  updateSummary();
-  const totalCount = CART.reduce((a,i)=>a+i.qty,0);
-  const cartBadge = document.getElementById('cartBadge');
-  if (cartBadge) cartBadge.textContent = totalCount;
-}
-
-/* ── SUMMARY ── */
-function updateSummary() {
-  const subtotal = CART.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const tax      = subtotal * TAX_RATE;
-  const discount = promoApplied ? subtotal * 0.10 : 0;
-  const total    = subtotal + tax - discount;
-
-  document.getElementById('subtotal').textContent  = `$${subtotal.toFixed(2)}`;
-  document.getElementById('taxAmt').textContent    = `$${tax.toFixed(2)}`;
-  document.getElementById('totalAmt').textContent  = `$${total.toFixed(2)}`;
-
-  const discRow = document.getElementById('discountRow');
-  if (promoApplied) {
-    discRow.style.display = 'flex';
-    document.getElementById('discountAmt').textContent = `-$${discount.toFixed(2)}`;
-  } else {
-    discRow.style.display = 'none';
-  }
-}
-
-/* ── QTY CONTROLS ── */
-function changeQty(id, delta) {
-  const item = CART.find(i => i.id === id);
-  if (!item) return;
-  item.qty = Math.max(1, item.qty + delta);
-  renderCart();
-}
-
-function setQty(id, val) {
-  const item = CART.find(i => i.id === id);
-  if (!item) return;
-  const qty = Math.max(1, parseInt(val) || 1);
-  item.qty = qty;
-  renderCart();
-}
-
-/* ── REMOVE ── */
-function removeItem(id) {
-  const idx = CART.findIndex(i => i.id === id);
-  if (idx > -1) {
-    const name = CART[idx].name;
-    CART.splice(idx, 1);
-    renderCart();
-    showToast(`"${name}" removed from cart`, 'warn');
-  }
-}
-
-/* ── CLEAR ── */
-function clearCart() {
-  if (!confirm('Remove all items from your cart?')) return;
-  CART.length = 0;
-  renderCart();
-  showToast('Cart cleared', 'warn');
-}
-
-/* ── PROMO ── */
-const VALID_CODES = { 'MEDTRUST10':'10% off your order', 'HEALTH10':'10% health discount' };
-function applyPromo() {
-  const code = document.getElementById('promoInput').value.trim().toUpperCase();
-  if (!code) { showToast('Please enter a promo code', 'warn'); return; }
-  if (VALID_CODES[code]) {
-    promoApplied = true;
-    renderCart();
-    showToast(`Promo applied — ${VALID_CODES[code]}`);
-    document.getElementById('promoInput').disabled = true;
-  } else {
-    showToast('Invalid promo code', 'warn');
-  }
-}
-
-/* ── FBT GRID ── */
-function renderFBT() {
-  document.getElementById('fbtGrid').innerHTML = FBT.map(p => `
-    <div class="fbt-card">
-      <img class="fbt-img" src="${p.img}" alt="${p.name}" onerror="this.style.background='#f3f4f6';this.src=''"/>
-      <div class="fbt-body">
-        <div class="fbt-name">${p.name}</div>
-        <div class="fbt-sub">${p.sub}</div>
-        <div class="fbt-footer">
-          <div class="fbt-price">${p.price}</div>
-          <button class="fbt-add-btn" onclick="addFBT('${p.name}','${p.price}',this)">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function addFBT(name, price, btn) {
-  btn.innerHTML = '<i class="fa-solid fa-check"></i>';
-  btn.style.background = 'var(--green)';
-  showToast(`"${name}" added to cart`);
-  const priceNum = parseFloat(price.replace('$',''));
-  CART.push({ id: Date.now(), name, sub: 'Add-on item', price: priceNum, qty: 1, img:'', badge:'otc', rxNotice:false });
-  setTimeout(() => renderCart(), 500);
-}
-
-/* ── INIT ── */
-document.addEventListener('DOMContentLoaded', () => {
-    renderCart();
-    renderFBT();
-});
-</script>
+<script src="assets/js/cart.js"></script>
 </body>
 </html>

@@ -21,12 +21,10 @@ $db = (new Database())->connect();
 $medicine = new Medicine($db);
 
 $pharmacy = getAuthenticatedPharmacy($db, $currentUser);
+$data = $_POST;
 
-$data = json_decode(file_get_contents("php://input"), true);
-
-if (!$data) {
+if (empty($data)) {
     jsonResponse(false, "Invalid request.", null, 400);
-
 }
 $required = [
     "category_id",
@@ -73,7 +71,46 @@ $data += [
     "description" => null,
     "image" => null
 ];
+// Upload medicine image
+if (isset($_FILES["image"]) && $_FILES["image"]["error"] === UPLOAD_ERR_OK) {
 
+    $uploadDir = "../../../uploads/medicines/";
+
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $extension = strtolower(
+        pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
+    );
+
+    $allowed = ["jpg", "jpeg", "png", "webp"];
+
+    if (!in_array($extension, $allowed)) {
+        jsonResponse(false, "Only JPG, PNG and WEBP images are allowed.", null, 400);
+    }
+
+    $filename =
+        uniqid("medicine_", true) .
+        "." .
+        $extension;
+
+    if (
+        move_uploaded_file(
+            $_FILES["image"]["tmp_name"],
+            $uploadDir . $filename
+        )
+    ) {
+
+        $data["image"] = $filename;
+
+    } else {
+
+        jsonResponse(false, "Failed to upload image.", null, 500);
+
+    }
+
+}
 
 if ($medicine->create($data)) {
 

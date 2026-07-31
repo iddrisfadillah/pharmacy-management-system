@@ -10,38 +10,21 @@ authorize(["customer"]);
 
 $db = (new Database())->connect();
 
-$data = json_decode(file_get_contents("php://input"), true);
-
-if (!isset($data["cart_item_id"])) {
-    jsonResponse(
-        false,
-        "Cart item ID is required.",
-        null,
-        400
-    );
-}
-
-$cartItemId = (int)$data["cart_item_id"];
-
 $stmt = $db->prepare("
     DELETE ci
     FROM cart_items ci
     INNER JOIN carts c
         ON ci.cart_id = c.id
-    WHERE
-        ci.id = ?
-    AND
-        c.customer_id = ?
+    WHERE c.customer_id = ?
 ");
 
 $success = $stmt->execute([
-    $cartItemId,
     $currentUser["id"]
 ]);
 
 jsonResponse(
     $success,
     $success
-        ? "Item removed successfully."
-        : "Unable to remove item."
+        ? "Cart cleared successfully."
+        : "Unable to clear cart."
 );

@@ -48,16 +48,16 @@
         <div class="filter-row">
           <select id="filterRole" onchange="filterUsers()">
             <option value="">All Roles</option>
-            <option value="Customer">Customer</option>
-            <option value="Pharmacist">Pharmacist</option>
-            <option value="Vendor">Vendor</option>
-            <option value="Admin">Admin</option>
+            <option value="customer">customer</option>
+            <option value="pharmacist">pharmacist</option>
+            <!-- <option value="vendor">vendor</option> -->
+            <option value="admin">admin</option>
           </select>
           <select id="filterStatus" onchange="filterUsers()">
             <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Suspended">Suspended</option>
-            <option value="Pending">Pending</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="pending">Pending</option>
           </select>
           <input type="text" id="searchUser" placeholder="Search name or email…" oninput="filterUsers()"/>
           <button class="btn btn-primary" onclick="openAddUser()"><i class="fa-solid fa-plus"></i> Add User</button>
@@ -117,18 +117,18 @@
         <div class="form-group">
           <label class="form-label">Role</label>
           <select class="form-control" id="fRole">
-            <option>Customer</option>
-            <option>Pharmacist</option>
-            <option>Vendor</option>
-            <option>Admin</option>
+            <option>customer</option>
+            <option>pharmacist</option>
+            <!-- <option>vendor</option> -->
+            <option>admin</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Status</label>
           <select class="form-control" id="fStatus">
-            <option>Active</option>
-            <option>Pending</option>
-            <option>Suspended</option>
+            <option>active</option>
+            <option>pending</option>
+            <option>suspended</option>
           </select>
         </div>
       </div>
@@ -164,23 +164,108 @@
 renderAdminLayout({ activePage: 'user-management', pageTitle: 'User Management' });
 
 /* ── MOCK DATA — replace with fetch('api/admin/users.php') ── */
-const USERS = [
-  { id:1,  fn:'Kofi',     ln:'Mensah',    email:'kofi@gmail.com',       phone:'+233 20 111 2233', role:'Customer',    status:'Active',    joined:'Jan 10, 2023', last:'2 hrs ago',    initials:'KM', color:'av-blue' },
-  { id:2,  fn:'Abena',    ln:'Owusu',     email:'abena@northstar.gh',   phone:'+233 24 555 6677', role:'Pharmacist',  status:'Active',    joined:'Mar 05, 2023', last:'Yesterday',    initials:'AO', color:'av-green' },
-  { id:3,  fn:'Kwame',    ln:'Asante',    email:'kwame@elite.gh',       phone:'+233 27 888 9900', role:'Vendor',      status:'Active',    joined:'Apr 18, 2023', last:'3 days ago',   initials:'KA', color:'av-amber' },
-  { id:4,  fn:'Ama',      ln:'Boateng',   email:'ama@goldcoast.gh',     phone:'+233 26 444 3322', role:'Customer',    status:'Suspended', joined:'May 22, 2023', last:'1 week ago',   initials:'AB', color:'av-red' },
-  { id:5,  fn:'Yaw',      ln:'Darko',     email:'yaw@safeafrica.gh',    phone:'+233 20 777 8811', role:'Customer',    status:'Active',    joined:'Jun 01, 2023', last:'Just now',     initials:'YD', color:'av-teal' },
-  { id:6,  fn:'Akosua',   ln:'Frimpong',  email:'akosua@pharmalink.gh', phone:'+233 23 222 3344', role:'Pharmacist',  status:'Pending',   joined:'Jul 14, 2023', last:'5 days ago',   initials:'AF', color:'av-purple' },
-  { id:7,  fn:'Nana',     ln:'Agyei',     email:'nana@meds.gh',         phone:'+233 26 999 0011', role:'Admin',       status:'Active',    joined:'Aug 30, 2023', last:'30 mins ago',  initials:'NA', color:'av-blue' },
-];
+let USERS = [];
 /* TODO: const USERS = await fetch('api/admin/users.php').then(r=>r.json()); */
 
 let filtered=[...USERS], currentPage=1, editingId=null, suspendingId=null;
 const PER_PAGE=5;
 
-const roleBadge = r => ({ Customer:'badge-blue', Pharmacist:'badge-green', Vendor:'badge-amber', Admin:'badge-red' }[r]||'badge-gray');
-const statusBadge = s => ({ Active:'badge-green', Suspended:'badge-red', Pending:'badge-amber' }[s]||'badge-gray');
+const roleBadge = role => ({
 
+    customer: "badge-blue",
+
+    pharmacist: "badge-green",
+
+    admin: "badge-red"
+
+}[role] || "badge-gray");
+const statusBadge = status => ({
+
+    active: "badge-green",
+
+    blocked: "badge-red",
+
+    pending: "badge-amber"
+
+}[status] || "badge-gray");
+
+
+async function loadUsers() {
+
+    try {
+
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
+
+        const response = await fetch(
+            "/pharmacy/backend/api/admin/users.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+
+            showToast(result.message, "error");
+
+            return;
+
+        }
+
+        USERS = result.data.map(user => ({
+
+            id: user.id,
+
+            fn: user.full_name.split(" ")[0],
+
+            ln: user.full_name.split(" ").slice(1).join(" "),
+
+            email: user.email,
+
+            phone: user.phone,
+
+            role: user.role,
+
+            status: user.status,
+
+            joined: new Date(user.created_at).toLocaleDateString(),
+
+            last: "-",
+
+            initials:
+                user.full_name
+                    .split(" ")
+                    .map(x => x[0])
+                    .join("")
+                    .substring(0,2)
+                    .toUpperCase(),
+
+            color: "av-blue"
+
+        }));
+
+        filtered = [...USERS];
+
+        updateStats();
+
+        renderTable();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        showToast("Unable to load users","error");
+
+    }
+
+}
 function renderTable() {
   const start=(currentPage-1)*PER_PAGE;
   const page=filtered.slice(start,start+PER_PAGE);
@@ -195,8 +280,8 @@ function renderTable() {
           </div>
         </div>
       </td>
-      <td><span class="badge ${roleBadge(u.role)}">${u.role}</span></td>
-      <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
+      <td><span class="badge ${roleBadge(u.role)}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></td>
+      <td><span class="badge ${statusBadge(u.status)}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></td>
       <td style="font-size:0.78rem;">${u.joined}</td>
       <td style="font-size:0.78rem;color:var(--text-muted);">${u.last}</td>
       <td>
@@ -213,10 +298,19 @@ function renderTable() {
 }
 
 function updateStats() {
-  document.getElementById('sTotal').textContent      = USERS.length;
-  document.getElementById('sCustomers').textContent  = USERS.filter(u=>u.role==='Customer').length;
-  document.getElementById('sPharmacists').textContent= USERS.filter(u=>u.role==='Pharmacist').length;
-  document.getElementById('sSuspended').textContent  = USERS.filter(u=>u.status==='Suspended').length;
+
+    document.getElementById("sTotal").textContent =
+        USERS.length;
+
+    document.getElementById("sCustomers").textContent =
+        USERS.filter(u => u.role === "customer").length;
+
+    document.getElementById("sPharmacists").textContent =
+        USERS.filter(u => u.role === "pharmacist").length;
+
+    document.getElementById("sSuspended").textContent =
+        USERS.filter(u => u.status === "blocked").length;
+
 }
 
 function filterUsers() {
@@ -290,7 +384,7 @@ function confirmSuspend(){
 
 function closeModal(id='userModal'){document.getElementById(id).classList.remove('open');}
 
-updateStats(); renderTable();
+loadUsers();
 </script>
 </body>
 </html>

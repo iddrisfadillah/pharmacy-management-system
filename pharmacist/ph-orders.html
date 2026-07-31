@@ -44,25 +44,25 @@
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-amber"><i class="fa-solid fa-hourglass-half"></i></div><span class="stat-badge sb-amber">Pending</span></div>
         <div class="stat-label">Pending Orders</div>
-        <div class="stat-value" style="color:var(--amber);">14</div>
+        <div class="stat-value" id="statPending" style="color:var(--amber);">0</div>
         <div class="stat-sub">Awaiting processing</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-green"><i class="fa-solid fa-circle-check"></i></div><span class="stat-badge sb-green">Today</span></div>
         <div class="stat-label">Dispensed Today</div>
-        <div class="stat-value" style="color:var(--green);">38</div>
+        <div class="stat-value" id="statDispensed" style="color:var(--green);">0</div>
         <div class="stat-sub">Since midnight</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-red"><i class="fa-solid fa-shield-halved"></i></div><span class="stat-badge sb-red">Issues</span></div>
         <div class="stat-label">Insurance Issues</div>
-        <div class="stat-value" style="color:var(--red);">3</div>
+        <div class="stat-value" id="statIssues" style="color:var(--red);">0</div>
         <div class="stat-sub">Needs resolution</div>
       </div>
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon si-blue"><i class="fa-solid fa-truck"></i></div><span class="stat-badge sb-blue">Live</span></div>
         <div class="stat-label">In Transit</div>
-        <div class="stat-value">9</div>
+        <div class="stat-value" id="statTransit">0</div>
         <div class="stat-sub">Out for delivery</div>
       </div>
     </div>
@@ -70,7 +70,7 @@
     <!-- TABS -->
     <div class="order-tabs">
       <button class="order-tab active" onclick="switchTab(this,'all')"><i class="fa-solid fa-list"></i> All Orders</button>
-      <button class="order-tab" onclick="switchTab(this,'pending')"><i class="fa-solid fa-clock"></i> Pending <span class="nav-badge" style="background:var(--amber-light);color:var(--amber);">14</span></button>
+      <button class="order-tab" onclick="switchTab(this,'pending')"><i class="fa-solid fa-clock"></i> Pending <span class="nav-badge" id="tabPendingBadge" style="background:var(--amber-light);color:var(--amber);">0</span></button>
       <button class="order-tab" onclick="switchTab(this,'ready')"><i class="fa-solid fa-check"></i> Ready to Fill</button>
       <button class="order-tab" onclick="switchTab(this,'insurance')"><i class="fa-solid fa-shield-halved"></i> Insurance Issues</button>
       <button class="order-tab" onclick="switchTab(this,'dispensed')"><i class="fa-solid fa-circle-check"></i> Dispensed</button>
@@ -144,25 +144,86 @@
 <script>
 renderPharmacistLayout({ activePage:'orders', pageTitle:'Order Management' });
 
-const ALL_ORDERS = [
-  { id:'#ORD-00110', patient:'Robert J. Wilson',    med:'Atorvastatin 20mg', qty:90,  status:'In Verification', insurance:'NHIS',    placed:'2 hrs ago',   step:1 },
-  { id:'#ORD-00116', patient:'Elena Rodriguez',     med:'Ventolin HFA',      qty:1,   status:'Ready to Fill',   insurance:'None',    placed:'5 hrs ago',   step:2 },
-  { id:'#ORD-00115', patient:'Marcus Thorne',       med:'Gabapentin 300mg',  qty:90,  status:'Insurance Issue', insurance:'Private', placed:'Yesterday',   step:1 },
-  { id:'#ORD-00112', patient:'Sarah Jenkins',       med:'Levothyroxine 50',  qty:30,  status:'Ready to Fill',   insurance:'None',    placed:'Yesterday',   step:2 },
-  { id:'#ORD-00108', patient:'James Owusu',         med:'Metformin 500mg',   qty:60,  status:'Dispensed',       insurance:'NHIS',    placed:'2 days ago',  step:4 },
-  { id:'#ORD-00104', patient:'Abena Frimpong',      med:'Lisinopril 10mg',   qty:30,  status:'In Transit',      insurance:'None',    placed:'2 days ago',  step:3 },
-  { id:'#ORD-00101', patient:'Kwame Asante',        med:'Amoxicillin 500mg', qty:21,  status:'Dispensed',       insurance:'NHIS',    placed:'3 days ago',  step:4 },
-  { id:'#ORD-00099', patient:'Yaw Darko',           med:'Omeprazole 20mg',   qty:30,  status:'In Verification', insurance:'None',    placed:'3 days ago',  step:1 },
-  { id:'#ORD-00097', patient:'Akosua Mensah',       med:'Cetirizine 10mg',   qty:14,  status:'Ready to Fill',   insurance:'None',    placed:'4 days ago',  step:2 },
-  { id:'#ORD-00094', patient:'Nana Boateng',        med:'Gabapentin 300mg',  qty:60,  status:'Insurance Issue', insurance:'Private', placed:'4 days ago',  step:1 },
-];
+let ALL_ORDERS = [];
 
 const STEPS = ['Received','Verification','Ready','Dispensed / Transit'];
-const statusClass = { 'In Verification':'badge-purple','Ready to Fill':'badge-green','Insurance Issue':'badge-red','Dispensed':'badge-gray','In Transit':'badge-blue' };
+const statusClass = {
+    Pending: "badge-amber",
+    Processing: "badge-blue",
+    Completed: "badge-green",
+    Cancelled: "badge-red"
+};
 const insClass = { 'NHIS':'badge-green','Private':'badge-blue','None':'badge-gray' };
 
-let activeTab='all', filtered=[...ALL_ORDERS], page=1, selectedId=null;
+let activeTab='all', filtered=[], page=1, selectedId=null;
 const PER=6;
+
+// ===== DYNAMIC STATS FUNCTION =====
+function updateStats() {
+    const todayStr = new Date().toDateString();
+
+    const pendingCount = ALL_ORDERS.filter(o => o.status === 'Pending' || o.status === 'In Verification' || o.status === 'Processing').length;
+    
+    const dispensedTodayCount = ALL_ORDERS.filter(o => {
+        const isDispensed = o.status === 'Completed' || o.status === 'Dispensed';
+        const isToday = new Date(o.placed).toDateString() === todayStr;
+        return isDispensed && isToday;
+    }).length;
+
+    const issuesCount = ALL_ORDERS.filter(o => o.status === 'Insurance Issue' || o.insurance === 'Issue').length;
+    const transitCount = ALL_ORDERS.filter(o => o.status === 'In Transit').length;
+
+    document.getElementById('statPending').textContent = pendingCount;
+    document.getElementById('statDispensed').textContent = dispensedTodayCount;
+    document.getElementById('statIssues').textContent = issuesCount;
+    document.getElementById('statTransit').textContent = transitCount;
+    
+    const tabPendingBadge = document.getElementById('tabPendingBadge');
+    if (tabPendingBadge) tabPendingBadge.textContent = pendingCount;
+}
+
+// ===== LOAD ORDERS FUNCTION =====
+async function loadOrders() {
+    try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+        const response = await fetch(
+            "/pharmacy/backend/api/pharmacist/orders.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message, "warn");
+            return;
+        }
+
+        ALL_ORDERS = result.data.map(order => ({
+            dbId: order.id,
+            id: order.order_number,
+            patient: order.customer_name,
+            med: order.medicine_name,
+            qty: order.quantity,
+            status: order.order_status,
+            insurance: "None",
+            placed: new Date(order.created_at).toLocaleString(),
+            step: order.order_status === "Completed" ? 4 : 
+                  order.order_status === "Processing" ? 2 : 1
+        }));
+
+        filtered = [...ALL_ORDERS];
+        renderOrders();
+        updateStats();
+    } catch (error) {
+        console.error(error);
+        showToast("Unable to load orders", "error");
+    }
+}
 
 function renderOrders(){
   const start=(page-1)*PER;
@@ -179,7 +240,7 @@ function renderOrders(){
       <td>
         <div style="display:flex;gap:5px;">
           <button class="btn btn-outline btn-sm" onclick="openOrder('${o.id}')"><i class="fa-solid fa-eye"></i></button>
-          ${o.status==='Ready to Fill'?`<button class="btn btn-success btn-sm" onclick="quickDispense('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}
+          ${o.status!=='Completed'?`<button class="btn btn-success btn-sm" onclick="quickDispense('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}
         </div>
       </td>
     </tr>
@@ -191,7 +252,13 @@ function switchTab(btn,tab){
   document.querySelectorAll('.order-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   activeTab=tab;
-  const tabMap={ all:ALL_ORDERS, pending:ALL_ORDERS.filter(o=>o.status==='In Verification'), ready:ALL_ORDERS.filter(o=>o.status==='Ready to Fill'), insurance:ALL_ORDERS.filter(o=>o.status==='Insurance Issue'), dispensed:ALL_ORDERS.filter(o=>o.status==='Dispensed'||o.status==='In Transit') };
+  const tabMap={ 
+    all:ALL_ORDERS, 
+    pending:ALL_ORDERS.filter(o=>o.status==='Pending'||o.status==='In Verification'||o.status==='Processing'), 
+    ready:ALL_ORDERS.filter(o=>o.status==='Ready to Fill'), 
+    insurance:ALL_ORDERS.filter(o=>o.status==='Insurance Issue'), 
+    dispensed:ALL_ORDERS.filter(o=>o.status==='Completed'||o.status==='Dispensed'||o.status==='In Transit') 
+  };
   filtered=tabMap[tab]||ALL_ORDERS;
   const titles={ all:'All Orders', pending:'Pending Orders', ready:'Ready to Fill', insurance:'Insurance Issues', dispensed:'Dispensed & In Transit' };
   document.getElementById('tableTitle').textContent=titles[tab];
@@ -200,7 +267,10 @@ function switchTab(btn,tab){
 
 function filterOrders(){
   const q=document.getElementById('searchOrder').value.toLowerCase();
-  const base=activeTab==='all'?ALL_ORDERS:ALL_ORDERS.filter(o=>{ const map={pending:'In Verification',ready:'Ready to Fill',insurance:'Insurance Issue'}; return o.status===(map[activeTab]||''); });
+  const base=activeTab==='all'?ALL_ORDERS:ALL_ORDERS.filter(o=>{ 
+    const map={pending:'Pending',ready:'Ready to Fill',insurance:'Insurance Issue'}; 
+    return o.status===(map[activeTab]||''); 
+  });
   filtered=q?base.filter(o=>o.id.toLowerCase().includes(q)||o.patient.toLowerCase().includes(q)||o.med.toLowerCase().includes(q)):base;
   page=1; renderOrders();
 }
@@ -227,23 +297,62 @@ function openOrder(id){
   openModal('orderModal');
 }
 
-function dispenseFromModal(){
+async function dispenseFromModal(){
   const o=ALL_ORDERS.find(x=>x.id===selectedId); if(!o) return;
-  o.status='Dispensed'; o.step=4;
-  closeModal('orderModal'); filtered=[...ALL_ORDERS]; renderOrders();
-  showToast(`Order ${selectedId} dispensed`);
+  closeModal('orderModal');
+  await updateOrderStatus(o.id, 'Completed');
 }
 
-function quickDispense(id){
+async function quickDispense(id){
   const o=ALL_ORDERS.find(x=>x.id===id); if(!o) return;
-  o.status='Dispensed'; o.step=4;
-  filtered=filtered.filter(x=>x.id!==id); renderOrders();
-  showToast(`Order ${id} dispensed`);
+  await updateOrderStatus(o.id, 'Completed');
 }
 
 function handleGlobalSearch(q){ document.getElementById('searchOrder').value=q; filterOrders(); }
 
-renderOrders();
+async function updateOrderStatus(orderNumber, status) {
+    try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const order = ALL_ORDERS.find(o => o.id === orderNumber);
+
+        if (!order) {
+            showToast("Order not found", "warn");
+            return;
+        }
+
+        const response = await fetch(
+            "/pharmacy/backend/api/pharmacist/update-order-status.php",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    id: order.dbId,
+                    status: status
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message, "warn");
+            return;
+        }
+
+        showToast(result.message);
+        await loadOrders();
+    }
+    catch (error) {
+        console.error(error);
+        showToast("Unable to update order", "error");
+    }
+}
+
+// Load orders on start
+loadOrders();
 </script>
 </body>
 </html>
