@@ -131,25 +131,6 @@
       z-index: 90;
     }
 
-    .topbar-tabs {
-      display: flex;
-      gap: 4px;
-    }
-
-    .tab-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      border: none;
-      cursor: pointer;
-      background: transparent;
-      color: var(--text-muted);
-      transition: background 0.15s, color 0.15s;
-    }
-    .tab-btn.active { background: var(--primary); color: #fff; }
-    .tab-btn:hover:not(.active) { background: var(--primary-light); color: var(--primary); }
-
     .topbar-right {
       display: flex;
       align-items: center;
@@ -213,6 +194,19 @@
     .user-info .name { font-size: 0.82rem; font-weight: 600; }
     .user-info .role { font-size: 0.72rem; color: var(--text-muted); }
 
+    .page-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .page-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .breadcrumb {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
     /* ── CONTENT ── */
     .content {
       padding: 24px;
@@ -268,7 +262,6 @@
       margin-bottom: 10px;
     }
 
-    /* Mini bar chart */
     .mini-bars {
       display: flex;
       align-items: flex-end;
@@ -286,7 +279,6 @@
     .mini-bar.green { background: var(--accent-green); }
     .mini-bar.amber { background: var(--accent-amber); }
 
-    /* system health progress */
     .health-bar-wrap {
       height: 6px;
       background: var(--border);
@@ -354,14 +346,11 @@
       font-size: 0.75rem;
       color: #fff;
       margin-right: 8px;
+      background: var(--primary);
     }
-    .av-blue { background: var(--primary); }
-    .av-green { background: var(--accent-green); }
-    .av-amber { background: var(--accent-amber); }
 
     .vendor-name-cell { display: flex; align-items: center; }
 
-    /* Status badges */
     .status-badge {
       display: inline-block;
       padding: 3px 8px;
@@ -369,11 +358,10 @@
       font-size: 0.7rem;
       font-weight: 600;
     }
-    .status-verified { background: #dcfce7; color: var(--accent-green); }
+    .status-active, .status-verified { background: #dcfce7; color: var(--accent-green); }
     .status-pending { background: #fef9c3; color: #854d0e; }
-    .status-action { background: #fee2e2; color: var(--accent-red); }
+    .status-blocked, .status-action { background: #fee2e2; color: var(--accent-red); }
 
-    /* Action buttons */
     .btn-approve {
       background: var(--primary);
       color: #fff;
@@ -486,7 +474,6 @@
     }
     .btn-audit:hover { background: var(--bg); }
 
-    /* Loading skeleton */
     .skeleton {
       background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
       background-size: 200% 100%;
@@ -495,7 +482,6 @@
     }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    /* Loading state */
     .loading-row td { padding: 16px 20px; }
     .sk-line { height: 12px; margin-bottom: 4px; }
     .sk-short { width: 60%; }
@@ -520,19 +506,6 @@
     }
     .toast.show { display: flex; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .stat-grid { grid-template-columns: repeat(2, 1fr); }
-      .content { flex-direction: column; }
-      .content-side { width: 100%; }
-    }
-    @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
-      .main { margin-left: 0; }
-      .stat-grid { grid-template-columns: 1fr 1fr; }
-      .infra-grid { grid-template-columns: 1fr; }
-    }
 
     /* Dropdown */
     .dropdown { position: relative; }
@@ -561,134 +534,29 @@
     .dropdown-menu a.danger { color: var(--accent-red); }
     .dropdown-menu hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
 
-    /* Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-      z-index: 500;
-      align-items: center;
-      justify-content: center;
+    @media (max-width: 1200px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .content { flex-direction: column; }
+      .content-side { width: 100%; }
     }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 28px;
-      width: 440px;
-      max-width: 95vw;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
     }
-    .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-    .modal p { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 20px; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .btn-cancel {
-      padding: 8px 18px;
-      border-radius: 7px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-size: 0.83rem;
-      cursor: pointer;
-    }
-    .btn-confirm {
-      padding: 8px 18px;
-      border-radius: 7px;
-      border: none;
-      background: var(--accent-green);
-      color: #fff;
-      font-size: 0.83rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-confirm:hover { background: #15803d; }
   </style>
 </head>
 <body>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-brand">
-    <h2>PharmaAdmin</h2>
-    <span>Platform Owner</span>
-  </div>
-
-  <nav class="sidebar-nav">
-    <a href="admin.html" class="nav-item active">
-      <i class="fa-solid fa-gauge-high"></i> Dashboard
-    </a>
-    <a href="vendor_app.html" class="nav-item" id="nav-vendor-approvals">
-      <i class="fa-solid fa-shop"></i> Vendor Approvals
-      <span id="badge-pending" style="margin-left:auto;background:#fee2e2;color:var(--accent-red);font-size:0.65rem;padding:2px 6px;border-radius:20px;font-weight:700;">0</span>
-    </a>
-    <a href="user_management.html" class="nav-item">
-      <i class="fa-solid fa-users"></i> User Management
-    </a>
-    <a href="market_place_sales.html" class="nav-item">
-      <i class="fa-solid fa-store"></i> Marketplace Sales
-    </a>
-    <a href="audit_logs.html" class="nav-item">
-      <i class="fa-solid fa-scroll"></i> Audit Logs
-    </a>
-    <a href="settings.html" class="nav-item">
-      <i class="fa-solid fa-gear"></i> Settings
-    </a>
-  </nav>
-
-  <div class="sidebar-footer">
-    <button class="btn-generate" onclick="generateReport()">
-      <i class="fa-solid fa-file-chart-column"></i> Generate Report
-    </button>
-    <a href="#" class="nav-item" style="padding:8px 4px;">
-      <i class="fa-solid fa-circle-question"></i> Support
-    </a>
-    <!-- FIXED: Using onclick with event to prevent default behavior -->
-    <a href="javascript:void(0)" class="nav-item" style="padding:8px 4px; color:var(--accent-red);" onclick="event.preventDefault(); logout();">
-      <i class="fa-solid fa-right-from-bracket"></i> Logout
-    </a>
-  </div>
-</aside>
+<aside class="sidebar" id="sidebar"></aside>
 
 <!-- MAIN -->
 <div class="main">
-
   <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-tabs">
-      <button class="tab-btn active" onclick="switchTab(this, 'marketplace')">Pharmacy Marketplace Admin</button>
-      <button class="tab-btn" onclick="switchTab(this, 'analytics')">Global Analytics</button>
-      <button class="tab-btn" onclick="switchTab(this, 'health')">System Health</button>
-    </div>
-    <div class="topbar-right">
-      <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search systems…" id="globalSearch" oninput="handleSearch(this.value)"/>
-      </div>
-      <button class="notif-btn" onclick="showToast('3 new notifications')">
-        <i class="fa-solid fa-bell"></i>
-        <span class="notif-dot"></span>
-      </button>
-      <div class="dropdown">
-        <div class="user-badge" onclick="toggleDropdown()">
-          <div class="user-avatar" id="adminInitial">A</div>
-          <div class="user-info">
-            <div class="name" id="adminName">Admin User</div>
-            <div class="role">Platform Owner</div>
-          </div>
-          <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-muted);margin-left:4px;"></i>
-        </div>
-        <div class="dropdown-menu" id="userDropdown">
-          <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
-          <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
-          <hr/>
-          <!-- FIXED: Same fix for dropdown logout -->
-          <a href="javascript:void(0)" class="danger" onclick="event.preventDefault(); logout();">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </a>
-        </div>
-      </div>
-    </div>
-  </header>
+  <header class="topbar" id="topbar"></header>
+
   <!-- CONTENT -->
   <div class="content">
 
@@ -697,7 +565,6 @@
 
       <!-- STAT CARDS -->
       <div class="stat-grid" id="statGrid">
-        <!-- Filled by JS / will come from PHP -->
         <div class="stat-card">
           <div class="stat-label">
             Total GMV
@@ -755,14 +622,6 @@
             </tr>
           </thead>
           <tbody id="vendorTableBody">
-            <!-- skeleton rows -->
-            <tr class="loading-row">
-              <td><div class="skeleton sk-line sk-long"></div></td>
-              <td><div class="skeleton sk-line sk-short"></div></td>
-              <td><div class="skeleton sk-line sk-short"></div></td>
-              <td><div class="skeleton sk-line sk-short"></div></td>
-              <td><div class="skeleton sk-line sk-short"></div></td>
-            </tr>
             <tr class="loading-row">
               <td><div class="skeleton sk-line sk-long"></div></td>
               <td><div class="skeleton sk-line sk-short"></div></td>
@@ -819,24 +678,13 @@
 
     <!-- RIGHT / SIDE COLUMN -->
     <div class="content-side">
-
-      <!-- ACTIVITY LOG -->
       <div class="card" style="flex:1;">
         <div class="card-header">
           <h3><i class="fa-solid fa-wave-square" style="color:var(--primary);margin-right:6px;"></i>System Activity Log</h3>
           <a href="#">View All</a>
         </div>
         <div class="activity-list" id="activityLog">
-          <!-- skeleton -->
           <div style="padding:12px 20px;border-bottom:1px solid var(--border);">
-            <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
-            <div class="skeleton sk-line sk-short" style="height:10px;"></div>
-          </div>
-          <div style="padding:12px 20px;border-bottom:1px solid var(--border);">
-            <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
-            <div class="skeleton sk-line sk-short" style="height:10px;"></div>
-          </div>
-          <div style="padding:12px 20px;">
             <div class="skeleton sk-line sk-long" style="height:12px;margin-bottom:6px;"></div>
             <div class="skeleton sk-line sk-short" style="height:10px;"></div>
           </div>
@@ -845,19 +693,6 @@
           <i class="fa-solid fa-download"></i> Download Audit Trail
         </button>
       </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- APPROVE MODAL -->
-<div class="modal-overlay" id="approveModal">
-  <div class="modal">
-    <h3>Approve Vendor</h3>
-    <p id="approveModalText">Are you sure you want to approve this vendor? They will gain access to the marketplace immediately.</p>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-confirm" onclick="confirmApprove()"><i class="fa-solid fa-check"></i> Yes, Approve</button>
     </div>
   </div>
 </div>
@@ -867,458 +702,160 @@
   <i class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
   <span id="toastMsg"></span>
 </div>
+
 <script src="../assets/js/auth.js"></script>
-<script src="../assets/js/logout.js"></script>
+<script src="admin-layout.js"></script>
 
 <script>
 checkAuth("admin");
-</script>
-<script>
-/*
- * ═══════════════════════════════════════════════════════════
- *  DATA LAYER — replace these mock functions with real PHP
- *  API calls when your backend is ready.
- *
- *  Each function currently simulates what your PHP endpoint
- *  would return as JSON. Just swap `mockFetch` with
- *  `fetch('api/dashboard-stats.php')` etc.
- * ═══════════════════════════════════════════════════════════
- */
+
+// Initialize Layout
+renderAdminLayout({ activePage: 'dashboard', pageTitle: 'Dashboard' });
 
 async function loadDashboard() {
-
-    try {
-
-        const token =
-            localStorage.getItem("token") ||
-            sessionStorage.getItem("token");
-
-        const response = await fetch(
-            "/pharmacy/backend/api/admin/dashboard.php",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-
-        const result = await response.json();
-
-        if (!result.success) {
-            showToast(result.message, "warn");
-            return;
-        }
-
-        const d = result.data;
-
-        // Dashboard Cards
-        document.getElementById("totalGMV").textContent =
-            "GH₵ " + Number(d.revenue).toFixed(2);
-
-        document.getElementById("activePharmacies").textContent =
-            d.active_pharmacies;
-
-        // Customers + Pharmacists
-        document.getElementById("newSignups").textContent =
-            d.customers + d.pharmacists;
-
-        // System Health
-        document.getElementById("systemHealth").textContent = "100%";
-        document.getElementById("healthBar").style.width = "100%";
-        document.getElementById("healthStatus").textContent = "Optimal";
-        document.getElementById("healthStatusText").textContent =
-            "System operating normally";
-
-        // Badges
-        document.getElementById("gmvChange").textContent =
-            d.orders + " Orders";
-
-        document.getElementById("pharmacyChange").textContent =
-            d.pending + " Pending";
-
-        document.getElementById("signupChange").textContent =
-            d.customers + " Customers";
-
-    } catch (error) {
-
-        console.error(error);
-
-        showToast("Unable to load dashboard", "error");
-
-    }
-
-}
-document.addEventListener("DOMContentLoaded", function () {
-    loadDashboard();
-});
-function simulateDelay(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-// ── MINI BARS ────────────────────────────────────────────
-function renderBars(containerId, data, colorClass = '') {
-  const max = Math.max(...data);
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = data.map(v =>
-    `<div class="mini-bar ${colorClass}" style="height:${Math.round((v/max)*100)}%;" title="${v}"></div>`
-  ).join('');
-}
-
-// ── LOAD STATS ───────────────────────────────────────────
-async function loadStats() {
-  await simulateDelay(600); // remove when using real API
-
-  const s = MOCK.stats;
-  // TODO: replace with → const s = await fetchStats();
-
-  document.getElementById('totalGMV').textContent = s.totalGMV;
-  document.getElementById('gmvChange').textContent = s.gmvChange;
-  document.getElementById('gmvChange').className = 'stat-badge ' + (s.gmvChange.startsWith('+') ? 'badge-green' : 'badge-red');
-
-  document.getElementById('activePharmacies').textContent = s.activePharmacies;
-  document.getElementById('pharmacyChange').textContent = s.pharmacyChange;
-
-  document.getElementById('newSignups').textContent = s.newSignups;
-  document.getElementById('signupChange').textContent = s.signupChange;
-  document.getElementById('signupChange').className = 'stat-badge ' + (s.signupChange.startsWith('+') ? 'badge-green' : 'badge-red');
-
-  document.getElementById('systemHealth').textContent = s.systemHealth;
-  document.getElementById('healthBar').style.width = s.healthValue + '%';
-  document.getElementById('healthStatusText').textContent = s.healthValue >= 99 ? 'All systems operational' : 'Degraded';
-
-  renderBars('gmvBars', s.gmvTrend);
-  renderBars('pharmacyBars', s.pharmacyTrend);
-  renderBars('signupBars', s.signupTrend, 'amber');
-}
-
-// ── LOAD VENDOR QUEUE ────────────────────────────────────
-async function loadVendors() {
-
-    try {
-
-        const token =
-            localStorage.getItem("token") ||
-            sessionStorage.getItem("token");
-
-        const response = await fetch(
-            "/pharmacy/backend/api/admin/pharmacies.php",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
-
-        const result = await response.json();
-
-        if (!result.success) {
-            showToast(result.message, "error");
-            return;
-        }
-
-        const vendors = result.data;
-
-        const pendingCount =
-            vendors.filter(v => v.status === "pending").length;
-
-        document.getElementById("badge-pending").textContent = pendingCount;
-
-        const tbody = document.getElementById("vendorTableBody");
-
-        tbody.innerHTML = vendors.map(v => {
-
-            const initials = v.pharmacy_name
-                .split(" ")
-                .map(x => x[0])
-                .join("")
-                .substring(0,2)
-                .toUpperCase();
-
-            let badgeClass = "status-active";
-
-            if(v.status === "pending")
-                badgeClass = "status-pending";
-
-            if(v.status === "suspended")
-                badgeClass = "status-blocked";
-
-            return `
-            <tr>
-
-                <td>
-
-                    <div class="vendor-name-cell">
-
-                        <div class="vendor-avatar">
-                            ${initials}
-                        </div>
-
-                        ${v.pharmacy_name}
-
-                    </div>
-
-                </td>
-
-                <td>${v.pharmacy_address}</td>
-
-                <td>
-
-                    <span class="status-badge ${badgeClass}">
-                        ${v.status}
-                    </span>
-
-                </td>
-
-                <td>
-                    ${new Date(v.created_at).toLocaleDateString()}
-                </td>
-
-                <td>
-
-                    <div class="action-cell">
-
-                        ${
-                            v.status === "pending"
-
-                            ?
-
-                            `<button
-                                class="btn-approve"
-                                onclick="approvePharmacy(${v.id})">
-                                Approve
-                            </button>`
-
-                            :
-
-                            `<button
-                                class="btn-view"
-                                onclick="viewVendor(${v.id})">
-                                View
-                            </button>`
-                        }
-
-                        <button
-                            class="more-btn"
-                            onclick="suspendPharmacy(${v.id})">
-
-                            <i class="fa-solid fa-ban"></i>
-
-                        </button>
-
-                        <button
-                            class="more-btn"
-                            onclick="deletePharmacy(${v.id})">
-
-                            <i class="fa-solid fa-trash"></i>
-
-                        </button>
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-            `;
-
-        }).join("");
-
-    }
-
-    catch(error){
-
-        console.error(error);
-
-        showToast("Unable to load pharmacies","error");
-
-    }
-
-}
-// Approve vendor
-async function approvePharmacy(id){
-
-    if(!confirm("Approve this pharmacy?")) return;
-
-    const token =
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("token");
-
-    const response = await fetch(
-        "/pharmacy/backend/api/admin/approve-pharmacy.php",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                Authorization:`Bearer ${token}`
-            },
-            body:JSON.stringify({
-                id:id
-            })
-        }
-    );
+  try {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const response = await fetch("/pharmacy/backend/api/admin/dashboard.php", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
     const result = await response.json();
+    if (!result.success) {
+      showToast(result.message);
+      return;
+    }
 
-    showToast(result.message);
+    const d = result.data;
+    document.getElementById("totalGMV").textContent = "GH₵ " + Number(d.revenue || 0).toFixed(2);
+    document.getElementById("activePharmacies").textContent = d.active_pharmacies || 0;
+    document.getElementById("newSignups").textContent = (d.customers || 0) + (d.pharmacists || 0);
 
-    loadVendors();
-    loadDashboard();
+    document.getElementById("systemHealth").textContent = "100%";
+    document.getElementById("healthBar").style.width = "100%";
+    document.getElementById("healthStatus").textContent = "Optimal";
+    document.getElementById("healthStatusText").textContent = "System operating normally";
 
-}
-// suspend  
-async function suspendPharmacy(id){
+    document.getElementById("gmvChange").textContent = (d.orders || 0) + " Orders";
+    document.getElementById("pharmacyChange").textContent = (d.pending || 0) + " Pending";
+    document.getElementById("signupChange").textContent = (d.customers || 0) + " Customers";
 
-    if(!confirm("Suspend this pharmacy?")) return;
-
-    const token =
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("token");
-
-    const response = await fetch(
-        "/pharmacy/backend/api/admin/suspend-pharmacy.php",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                Authorization:`Bearer ${token}`
-            },
-            body:JSON.stringify({
-                id:id
-            })
-        }
-    );
-
-    const result = await response.json();
-
-    showToast(result.message);
-
-    loadVendors();
-    loadDashboard();
-
-}
-
-// delete pharmacy
-async function deletePharmacy(id){
-
-    if(!confirm("Delete this pharmacy permanently?")) return;
-
-    const token =
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("token");
-
-    const response = await fetch(
-        "/pharmacy/backend/api/admin/delete-pharmacy.php",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                Authorization:`Bearer ${token}`
-            },
-            body:JSON.stringify({
-                id:id
-            })
-        }
-    );
-
-    const result = await response.json();
-
-    showToast(result.message);
-
-    loadVendors();
-    loadDashboard();
-
-}
-
-// ── LOAD INFRA ───────────────────────────────────────────
-async function loadInfra() {
-  await simulateDelay(700);
-
-  const i = MOCK.infra;
-  // TODO: replace with → const i = await fetchInfraStatus();
-
-  document.getElementById('apiLatency').textContent = i.apiLatency;
-  document.getElementById('apiStatus').textContent = i.apiStatus;
-  document.getElementById('dbStatus').textContent = i.dbStatus;
-  document.getElementById('dbUptime').textContent = i.dbUptime;
-  document.getElementById('cdnCache').textContent = i.cdnCache;
-  document.getElementById('cdnStatus').textContent = i.cdnStatus;
-  document.getElementById('lastChecked').textContent = 'Last checked: ' + new Date().toLocaleTimeString();
-}
-
-// ── LOAD ACTIVITY LOG ────────────────────────────────────
-async function loadActivity() {
-  await simulateDelay(1000);
-
-  const logs = MOCK.activity;
-  // TODO: replace with → const logs = await fetchActivityLog();
-
-  const container = document.getElementById('activityLog');
-  container.innerHTML = logs.map(l => `
-    <div class="activity-item">
-      <div class="activity-icon ${l.iconClass}"><i class="fa-solid ${l.icon}"></i></div>
-      <div class="activity-body">
-        <div class="activity-title">${l.title}</div>
-        <div class="activity-desc">${l.desc}</div>
-        <div class="activity-time">${l.time}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── APPROVE MODAL ────────────────────────────────────────
-let pendingApproveId = null;
-
-function openApproveModal(vendorId, vendorName) {
-  pendingApproveId = vendorId;
-  document.getElementById('approveModalText').textContent =
-    `Are you sure you want to approve "${vendorName}"? They will gain access to the marketplace immediately.`;
-  document.getElementById('approveModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('approveModal').classList.remove('open');
-  pendingApproveId = null;
-}
-
-function confirmApprove() {
-  if (!pendingApproveId) return;
-  // TODO: replace with → fetch('api/admin/approve-vendor.php', { method:'POST', body: JSON.stringify({id: pendingApproveId}) })
-  const vendor = MOCK.vendors.find(v => v.id === pendingApproveId);
-  if (vendor) {
-    vendor.status = 'Approved';
-    vendor.statusClass = 'status-verified';
-    vendor.action = 'view';
+  } catch (error) {
+    console.error(error);
+    showToast("Unable to load dashboard");
   }
-  closeModal();
+}
+
+async function loadVendors() {
+  try {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const response = await fetch("/pharmacy/backend/api/admin/pharmacies.php", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      showToast(result.message);
+      return;
+    }
+
+    const vendors = result.data;
+    const pendingCount = vendors.filter(v => v.status === "pending").length;
+
+    const badgePending = document.getElementById("badge-pending");
+    if (badgePending) {
+      badgePending.textContent = pendingCount;
+      badgePending.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+    }
+
+    const tbody = document.getElementById("vendorTableBody");
+    tbody.innerHTML = vendors.map(v => {
+      const initials = v.pharmacy_name
+        .split(" ")
+        .map(x => x[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
+
+      let badgeClass = "status-active";
+      if (v.status === "pending") badgeClass = "status-pending";
+      if (v.status === "suspended") badgeClass = "status-blocked";
+
+      return `
+        <tr>
+          <td>
+            <div class="vendor-name-cell">
+              <div class="vendor-avatar">${initials}</div>
+              ${v.pharmacy_name}
+            </div>
+          </td>
+          <td>${v.pharmacy_address}</td>
+          <td><span class="status-badge ${badgeClass}">${v.status}</span></td>
+          <td>${new Date(v.created_at).toLocaleDateString()}</td>
+          <td>
+            <div class="action-cell">
+              ${v.status === "pending"
+                ? `<button class="btn-approve" onclick="approvePharmacy(${v.id})">Approve</button>`
+                : `<button class="btn-view" onclick="viewVendor(${v.id})">View</button>`}
+              <button class="more-btn" onclick="suspendPharmacy(${v.id})"><i class="fa-solid fa-ban"></i></button>
+              <button class="more-btn" onclick="deletePharmacy(${v.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error(error);
+    showToast("Unable to load pharmacies");
+  }
+}
+
+async function approvePharmacy(id) {
+  if (!confirm("Approve this pharmacy?")) return;
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const response = await fetch("/pharmacy/backend/api/admin/approve-pharmacy.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id })
+  });
+  const result = await response.json();
+  showToast(result.message);
   loadVendors();
-  showToast('Vendor approved successfully');
+  loadDashboard();
+}
+
+async function suspendPharmacy(id) {
+  if (!confirm("Suspend this pharmacy?")) return;
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const response = await fetch("/pharmacy/backend/api/admin/suspend-pharmacy.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id })
+  });
+  const result = await response.json();
+  showToast(result.message);
+  loadVendors();
+  loadDashboard();
+}
+
+async function deletePharmacy(id) {
+  if (!confirm("Delete this pharmacy permanently?")) return;
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  const response = await fetch("/pharmacy/backend/api/admin/delete-pharmacy.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id })
+  });
+  const result = await response.json();
+  showToast(result.message);
+  loadVendors();
+  loadDashboard();
 }
 
 function viewVendor(id) {
   showToast('Opening vendor #' + id + ' details…');
-  // TODO: redirect to vendor detail page → window.location = 'vendor-detail.php?id=' + id;
 }
 
-// ── TAB SWITCH ───────────────────────────────────────────
-function switchTab(btn, tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  showToast('Switched to: ' + btn.textContent.trim());
-  // TODO: load different data per tab
-}
-
-// ── DROPDOWN ─────────────────────────────────────────────
-function toggleDropdown() {
-  document.getElementById('userDropdown').classList.toggle('open');
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('.dropdown')) {
-    document.getElementById('userDropdown')?.classList.remove('open');
-  }
-});
-
-// ── TOAST ────────────────────────────────────────────────
 let toastTimer;
 function showToast(msg) {
   clearTimeout(toastTimer);
@@ -1328,47 +865,18 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ── GENERATE REPORT ──────────────────────────────────────
 function generateReport() {
   showToast('Generating report… (will download as PDF)');
-  // TODO: window.location = 'api/admin/generate-report.php';
 }
 
-// ── AUDIT TRAIL ──────────────────────────────────────────
 function downloadAuditTrail() {
   showToast('Downloading audit trail…');
-  // TODO: window.location = 'api/admin/audit-trail.php';
 }
 
-// ── SEARCH ───────────────────────────────────────────────
-function handleSearch(val) {
-  if (!val) return;
-  // TODO: fetch('api/admin/search.php?q=' + encodeURIComponent(val))
-}
-
-// ── LOAD ADMIN INFO ──────────────────────────────────────
-function loadAdminInfo() {
-  // TODO: fetch('api/auth/me.php').then(r => r.json()).then(data => { ... })
-  const name = "Admin User";
-  document.getElementById('adminName').textContent = name;
-  document.getElementById('adminInitial').textContent = name.charAt(0).toUpperCase();
-}
-
-// ── INIT ─────────────────────────────────────────────────
-(function init() {
-  loadAdminInfo();
-  loadStats();
+document.addEventListener("DOMContentLoaded", function () {
+  loadDashboard();
   loadVendors();
-  loadInfra();
-  loadActivity();
-})();
+});
 </script>
-<script src="../assets/js/auth.js"></script>
-
-<script>
-checkAuth("admin");
-</script>
-
-
 </body>
 </html>

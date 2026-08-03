@@ -72,20 +72,41 @@
           <div class="avatar-upload">
             <div class="avatar-large" id="profileInitial">A</div>
             <div>
-              <div class="upload-btn" onclick="showToast('Photo upload coming with backend')"><i class="fa-solid fa-camera"></i> Change Photo</div>
+              <input 
+                type="file" 
+                id="avatarInput" 
+                accept="image/png, image/jpeg" 
+                style="display: none;" 
+                onchange="handleAvatarChange(event)"
+              />
+              <label for="avatarInput" class="upload-btn">
+                <i class="fa-solid fa-camera"></i> Change Photo
+              </label>
               <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">JPG or PNG, max 2MB</div>
             </div>
           </div>
-
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="pFirstName" value="Admin"/></div>
-            <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="pLastName" value="User"/></div>
-            <div class="form-group"><label class="form-label">Email Address</label><input class="form-control" id="pEmail" value="admin@pharmaadmin.gh" type="email"/></div>
-            <div class="form-group"><label class="form-label">Phone Number</label><input class="form-control" id="pPhone" value="+233 20 000 0001"/></div>
+          
+          <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-control" id="pFirstName">
           </div>
-          <div class="form-group"><label class="form-label">Role / Title</label><input class="form-control" value="Platform Owner" disabled/></div>
 
-          <button class="btn btn-primary" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Save Changes</button>
+          <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" id="pLastName">
+          </div>
+
+          <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input class="form-control" id="pEmail" type="email">
+          </div>
+
+          <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input class="form-control" id="pPhone">
+          </div>
+
+          <button class="btn btn-primary" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Save Profile</button>
         </div>
 
         <!-- PLATFORM -->
@@ -286,20 +307,198 @@ function switchTab(id, btn) {
   document.getElementById('panel-'+id).classList.add('active');
 }
 
+/* ── HELPER: UPDATE TOPBAR UI DIRECTLY ── */
+function updateTopbarUI(fullName) {
+  if (!fullName) return;
+  
+  // Save updated name to cache for layout scripts
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  user.full_name = fullName;
+  localStorage.setItem("user", JSON.stringify(user));
+
+  // Find topbar user display elements dynamically
+  const topbar = document.getElementById('topbar');
+  if (topbar) {
+    // Search for text nodes or specific name containers inside topbar
+    const nameEls = topbar.querySelectorAll('.user-name, .profile-name, span, div');
+    nameEls.forEach(el => {
+      if (el.children.length === 0 && (el.textContent.trim() === 'Admin User' || el.dataset.userDisplay)) {
+        el.textContent = fullName;
+        el.dataset.userDisplay = "true";
+      }
+    });
+
+    // Update avatar initial if present
+    const avatarEl = topbar.querySelector('.avatar, .user-avatar, #userAvatar');
+    if (avatarEl && !avatarEl.style.backgroundImage) {
+      avatarEl.textContent = fullName.charAt(0).toUpperCase();
+    }
+  }
+
+  // Update profile tab initial circle
+  const profileInitial = document.getElementById("profileInitial");
+  if (profileInitial && !profileInitial.style.backgroundImage) {
+    profileInitial.textContent = fullName.charAt(0).toUpperCase();
+  }
+}
+
+/* ── LOAD PROFILE ── */
+async function loadProfile() {
+    try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+        const res = await fetch("../backend/api/admin/profile.php", {
+            headers: { Authorization: "Bearer " + token }
+        });
+
+        const result = await res.json();
+
+        if (!result.success || !result.data) return;
+
+        const user = result.data;
+        const names = user.full_name ? user.full_name.split(" ") : ["", ""];
+
+        document.getElementById("pFirstName").value = names[0] || "";
+        document.getElementById("pLastName").value = names.slice(1).join(" ") || "";
+        document.getElementById("pEmail").value = user.email || "";
+        document.getElementById("pPhone").value = user.phone ?? "";
+
+        const avatar = document.getElementById("profileInitial");
+
+if(user.avatar){
+
+    avatar.style.backgroundImage =
+        `url('../uploads/avatars/${user.avatar}')`;
+
+    avatar.style.backgroundSize = "cover";
+    avatar.style.backgroundPosition = "center";
+    avatar.textContent = "";
+
+}else{
+
+    avatar.style.backgroundImage = "";
+
+    avatar.textContent =
+        user.full_name
+            .split(" ")
+            .map(n=>n[0])
+            .join("")
+            .substring(0,2)
+            .toUpperCase();
+}
+
+        // Instantly update the topbar UI with the loaded name
+        updateTopbarUI(user.full_name);
+
+    } catch(err) {
+        console.error("Error loading profile:", err);
+    }
+}
+
+function showToast(message, type = "success") {
+    let toast = document.getElementById("toast");
+    if(!toast){
+        toast = document.createElement("div");
+        toast.id = "toast";
+        document.body.appendChild(toast);
+    }
+    const msgEl = document.getElementById("toastMsg") || toast;
+    msgEl.innerText = message;
+    toast.className = "toast " + type;
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 3000);
+}
+
 /* ── PROFILE SAVE ── */
-function saveProfile(){
-  const fn=document.getElementById('pFirstName').value;
-  const ln=document.getElementById('pLastName').value;
-  if(!fn||!ln){showToast('Name fields are required','warn');return;}
-  document.getElementById('profileInitial').textContent=(fn[0]+ln[0]).toUpperCase();
-  /* TODO: fetch('api/admin/save-profile.php',{method:'POST',body:JSON.stringify({fn,ln,...})}) */
-  showToast('Profile updated successfully');
+async function saveProfile() {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    const firstName = document.getElementById("pFirstName").value.trim();
+    const lastName = document.getElementById("pLastName").value.trim();
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    const data = {
+        first_name: firstName,
+        last_name: lastName,
+        email: document.getElementById("pEmail").value,
+        phone: document.getElementById("pPhone").value
+    };
+
+    try {
+        const res = await fetch("../backend/api/admin/update-profile.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        showToast(result.message || "Profile updated successfully!");
+
+        // Update top bar name and avatar initial immediately
+        updateTopbarUI(fullName);
+
+        // Reload data from backend to ensure state sync
+        loadProfile();
+
+    } catch (err) {
+        console.error("Error saving profile:", err);
+        showToast("Error updating profile", "warn");
+    }
+}
+
+async function handleAvatarChange(event){
+
+    const file = event.target.files[0];
+
+    if(!file) return;
+
+    const formData = new FormData();
+
+    formData.append("avatar",file);
+
+    const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+    const res = await fetch(
+        "../backend/api/admin/upload-avatar.php",
+        {
+            method:"POST",
+            headers:{
+                Authorization:"Bearer " + token
+            },
+            body:formData
+        }
+    );
+
+    const result = await res.json();
+
+    if(result.success){
+
+        showToast(result.message);
+
+        loadProfile();
+
+    }else{
+
+        showToast(result.message,"error");
+    }
+
 }
 
 /* ── ZONES ── */
 const ZONES = ['Greater Accra','Ashanti','Western','Eastern','Central'];
 function renderZones(){
-  document.getElementById('zoneList').innerHTML=ZONES.map((z,i)=>`
+  const list = document.getElementById('zoneList');
+  if (!list) return;
+  list.innerHTML = ZONES.map((z,i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
       <span style="font-size:0.83rem;">${z}</span>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -314,7 +513,6 @@ function addZone(){
   if(z){ZONES.push(z);renderZones();}
 }
 function removeZone(i){ZONES.splice(i,1);renderZones();}
-renderZones();
 
 /* ── ROLES TABLE ── */
 const PERMISSIONS = [
@@ -331,7 +529,9 @@ const PERMISSIONS = [
 ];
 
 function renderRoles(){
-  document.getElementById('rolesBody').innerHTML=PERMISSIONS.map((p,i)=>`
+  const body = document.getElementById('rolesBody');
+  if (!body) return;
+  body.innerHTML = PERMISSIONS.map((p,i)=>`
     <tr>
       <td style="font-size:0.82rem;">${p.label}</td>
       ${['admin','pharmacist','vendor','customer'].map(r=>`
@@ -348,10 +548,11 @@ function renderRoles(){
 
 function togglePerm(i,role,val){
   PERMISSIONS[i][role]=val;
-  /* TODO: fetch('api/admin/update-permissions.php',{method:'POST',body:JSON.stringify(PERMISSIONS)}) */
 }
 
+renderZones();
 renderRoles();
+loadProfile();
 </script>
 </body>
 </html>

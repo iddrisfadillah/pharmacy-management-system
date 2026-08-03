@@ -1,3 +1,9 @@
+/* ═══════════════════════════════════════════════════════
+   PHARMAADMIN — SHARED STYLES
+   Import this in every admin page with:
+   <link rel="stylesheet" href="admin-shared.css"/>
+═══════════════════════════════════════════════════════ */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -62,8 +68,12 @@ body {
   padding: 10px 16px; border-radius: 8px;
   font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;
   transition: background 0.2s;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; justify-content: center;
+  font-family: inherit;
 }
 .btn-generate:hover { background: #155ba0; }
+.btn-generate-active { background: #155ba0; box-shadow: 0 0 0 3px rgba(26,111,196,0.3); }
 
 /* ── MAIN ── */
 .main { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }

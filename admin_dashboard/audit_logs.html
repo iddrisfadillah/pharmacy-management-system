@@ -120,21 +120,8 @@
 renderAdminLayout({ activePage: 'audit-logs', pageTitle: 'Audit Logs' });
 
 /* ── MOCK DATA — replace with fetch('api/admin/audit-logs.php') ── */
-const LOGS = [
-  { id:1,  icon:'fa-right-to-bracket', severity:'info',     category:'Auth',    event:'Admin Login',                 detail:'Admin User logged in from IP 197.255.62.10',                      user:'Admin User',  time:'Today, 5:41 PM' },
-  { id:2,  icon:'fa-shop',             severity:'success',  category:'Vendor',  event:'Vendor Approved',             detail:'City Health Pharma was approved by Admin User',                   user:'Admin User',  time:'Today, 5:30 PM' },
-  { id:3,  icon:'fa-triangle-exclamation', severity:'critical', category:'Auth', event:'Multiple Failed Logins',     detail:'5 failed login attempts from IP 192.168.1.42 — account locked',   user:'Unknown',     time:'Today, 4:15 PM' },
-  { id:4,  icon:'fa-tag',              severity:'info',     category:'System',  event:'Price Rule Updated',          detail:'Admin adjusted Tier 1 Insulin tax rates from 5% to 7.5%',         user:'Admin User',  time:'Today, 3:00 PM' },
-  { id:5,  icon:'fa-heart-pulse',      severity:'success',  category:'System',  event:'Health Check Passed',         detail:'Automated integrity scan completed — 0 errors detected',           user:'System',      time:'Today, 12:00 PM' },
-  { id:6,  icon:'fa-user-plus',        severity:'info',     category:'User',    event:'New User Registered',         detail:'Nana Agyei (nana@meds.gh) created a customer account',             user:'System',      time:'Today, 11:30 AM' },
-  { id:7,  icon:'fa-ban',              severity:'warning',  category:'User',    event:'User Suspended',              detail:'Ama Boateng account suspended due to policy violation',            user:'Admin User',  time:'Today, 10:45 AM' },
-  { id:8,  icon:'fa-credit-card',      severity:'warning',  category:'Payment', event:'Payment Failure',             detail:'Order ORD-2404 payment declined — card ending in 4242',           user:'Ama Boateng', time:'Today, 10:30 AM' },
-  { id:9,  icon:'fa-bag-shopping',     severity:'success',  category:'Order',   event:'Order Delivered',             detail:'Order ORD-2401 marked as delivered by City Health Pharma',        user:'System',      time:'Yesterday, 6:00 PM' },
-  { id:10, icon:'fa-file-invoice',     severity:'info',     category:'Order',   event:'Refund Issued',               detail:'Order ORD-2406 refunded GH₵ 190.00 to Akosua Frimpong',          user:'Admin User',  time:'Yesterday, 3:20 PM' },
-  { id:11, icon:'fa-right-from-bracket', severity:'info',   category:'Auth',    event:'Admin Logout',                detail:'Admin User logged out from session',                               user:'Admin User',  time:'Yesterday, 1:00 PM' },
-  { id:12, icon:'fa-database',         severity:'success',  category:'System',  event:'Database Backup Completed',   detail:'Automated daily backup completed — 2.4GB stored in cloud',         user:'System',      time:'Yesterday, 2:00 AM' },
-];
-/* TODO: const LOGS = await fetch('api/admin/audit-logs.php').then(r=>r.json()); */
+
+let LOGS = [];
 
 let filtered=[...LOGS], currentPage=1;
 const PER_PAGE=8;
@@ -167,13 +154,93 @@ function renderLogs(){
   document.getElementById('pageInfo').textContent=`Showing ${Math.min(start+PER_PAGE,filtered.length)} of ${filtered.length} events`;
 }
 
-function updateStats(){
-  document.getElementById('sToday').textContent    = LOGS.filter(l=>l.time.startsWith('Today')).length;
-  document.getElementById('sCritical').textContent = LOGS.filter(l=>l.severity==='critical').length;
-  document.getElementById('sSecurity').textContent = LOGS.filter(l=>l.category==='Auth').length;
-  document.getElementById('sData').textContent     = LOGS.filter(l=>['Order','Vendor','User'].includes(l.category)).length;
+async function loadAuditLogs() {
+
+    try {
+
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
+
+        const response = await fetch(
+            "/pharmacy/backend/api/admin/audit-logs.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+
+            showToast(result.message, "error");
+
+            return;
+
+        }
+
+        LOGS = result.data.map(log => ({
+
+            icon: log.icon,
+
+            severity: log.severity,
+
+            category: log.category,
+
+            event: log.event,
+
+            detail: log.detail,
+
+            user: log.user,
+
+            time: new Date(log.created_at)
+                .toLocaleString()
+
+        }));
+
+        filtered = [...LOGS];
+
+        updateStats();
+
+        renderLogs();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        showToast(
+            "Unable to load audit logs",
+            "error"
+        );
+
+    }
+
 }
 
+
+function updateStats(){
+
+    document.getElementById("sToday").textContent =
+        LOGS.length;
+
+    document.getElementById("sCritical").textContent =
+        LOGS.filter(l => l.severity === "critical").length;
+
+    document.getElementById("sSecurity").textContent =
+        LOGS.filter(l => l.category === "Auth").length;
+
+    document.getElementById("sData").textContent =
+        LOGS.filter(l =>
+            l.category === "Order" ||
+            l.category === "Vendor" ||
+            l.category === "User"
+        ).length;
+
+}
 function applyFilters(){
   const sev=document.getElementById('filterSeverity').value;
   const cat=document.getElementById('filterCategory').value;
@@ -200,7 +267,7 @@ function downloadAudit(){
   /* TODO: window.location='api/admin/download-audit.php'; */
 }
 
-updateStats(); renderLogs();
+loadAuditLogs();
 </script>
 </body>
 </html>

@@ -147,23 +147,11 @@ const MONTHLY = {
 };
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-const TOP_VENDORS = [
-  { name:'City Health Pharma', revenue:'GH₵ 82,400', orders:312, pct:85 },
-  { name:'GoldCoast Health',   revenue:'GH₵ 61,200', orders:247, pct:63 },
-  { name:'North Star Meds',    revenue:'GH₵ 44,800', orders:189, pct:46 },
-  { name:'PharmaLink Ghana',   revenue:'GH₵ 28,600', orders:118, pct:30 },
-  { name:'Elite Pharma',       revenue:'GH₵ 15,200', orders: 64, pct:16 },
-];
+let TOP_VENDORS = [];
 
-const ORDERS = [
-  { id:'ORD-2401', customer:'Kofi Mensah',    vendor:'City Health Pharma', items:3, amount:'GH₵ 240.00', status:'Delivered',  date:'Nov 01, 2024', email:'kofi@gmail.com' },
-  { id:'ORD-2402', customer:'Abena Owusu',    vendor:'North Star Meds',    items:1, amount:'GH₵  85.50', status:'Processing', date:'Nov 02, 2024', email:'abena@gh.com' },
-  { id:'ORD-2403', customer:'Kwame Asante',   vendor:'GoldCoast Health',   items:5, amount:'GH₵ 520.00', status:'Shipped',    date:'Nov 02, 2024', email:'kwame@gh.com' },
-  { id:'ORD-2404', customer:'Ama Boateng',    vendor:'Elite Pharma',       items:2, amount:'GH₵ 138.00', status:'Cancelled',  date:'Nov 03, 2024', email:'ama@gh.com' },
-  { id:'ORD-2405', customer:'Yaw Darko',      vendor:'PharmaLink Ghana',   items:4, amount:'GH₵ 312.00', status:'Delivered',  date:'Nov 04, 2024', email:'yaw@gh.com' },
-  { id:'ORD-2406', customer:'Akosua Frimpong',vendor:'City Health Pharma', items:2, amount:'GH₵ 190.00', status:'Refunded',   date:'Nov 05, 2024', email:'akosua@gh.com' },
-  { id:'ORD-2407', customer:'Nana Agyei',     vendor:'North Star Meds',    items:6, amount:'GH₵ 650.00', status:'Processing', date:'Nov 06, 2024', email:'nana@gh.com' },
-];
+let ORDERS = [];
+
+
 
 let filtered=[...ORDERS], currentPage=1;
 const PER_PAGE=5;
@@ -180,30 +168,120 @@ function renderChart(year) {
   document.getElementById('chartLabels').innerHTML = MONTHS.map(m=>`<div class="chart-label">${m}</div>`).join('');
 }
 
-function renderTopVendors(){
-  document.getElementById('topVendors').innerHTML = TOP_VENDORS.map((v,i)=>`
-    <div style="padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <div style="width:20px;text-align:center;font-size:0.78rem;font-weight:700;color:var(--text-muted);">${i+1}</div>
-      <div style="flex:1;">
-        <div style="font-size:0.82rem;font-weight:600;">${v.name}</div>
-        <div style="font-size:0.7rem;color:var(--text-muted);">${v.orders} orders</div>
-        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:4px;">
-          <div style="height:100%;width:${v.pct}%;background:var(--primary);border-radius:2px;"></div>
-        </div>
-      </div>
-      <div style="font-size:0.82rem;font-weight:700;color:var(--accent-green);">${v.revenue}</div>
-    </div>
-  `).join('');
+// function renderTopVendors(){
+//   document.getElementById('topVendors').innerHTML = TOP_VENDORS.map((v,i)=>`
+//     <div style="padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+//       <div style="width:20px;text-align:center;font-size:0.78rem;font-weight:700;color:var(--text-muted);">${i+1}</div>
+//       <div style="flex:1;">
+//         <div style="font-size:0.82rem;font-weight:600;">${v.name}</div>
+//         <div style="font-size:0.7rem;color:var(--text-muted);">${v.orders} orders</div>
+//         <div style="height:4px;background:var(--border);border-radius:2px;margin-top:4px;">
+//           <div style="height:100%;width:${v.pct}%;background:var(--primary);border-radius:2px;"></div>
+//         </div>
+//       </div>
+//       <div style="font-size:0.82rem;font-weight:700;color:var(--accent-green);">${v.revenue}</div>
+//     </div>
+//   `).join('');
+// }
+async function loadMarketplaceData() {
+
+    try {
+
+        const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token");
+
+        const response = await fetch(
+            "/pharmacy/backend/api/admin/marketplace-sales.php",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!result.success) {
+
+            showToast(result.message, "error");
+
+            return;
+
+        }
+
+        const data = result.data;
+
+        /* ---------- Stats ---------- */
+
+        document.getElementById("sRevenue").textContent =
+            "GH₵ " + Number(data.revenue).toLocaleString();
+
+        document.getElementById("sOrders").textContent =
+            data.orders;
+
+        document.getElementById("sRevenueSub").textContent =
+            data.completed + " completed orders";
+
+        document.getElementById("sOrdersSub").textContent =
+            data.pending + " pending orders";
+
+        document.getElementById("sAOV").textContent =
+            data.orders > 0
+                ? "GH₵ " +
+                  (data.revenue / data.orders).toFixed(2)
+                : "GH₵ 0.00";
+
+        document.getElementById("sCommission").textContent =
+            "GH₵ " +
+            (data.revenue * 0.05).toFixed(2);
+
+        /* ---------- Recent Orders ---------- */
+
+        ORDERS = data.recent_sales.map(order => ({
+
+            id: order.order_number,
+
+            customer: order.customer_name,
+
+            vendor: order.pharmacy_name,
+
+            items: "-",
+
+            amount:
+                "GH₵ " +
+                Number(order.total_amount).toFixed(2),
+
+            status: order.order_status,
+
+            date: new Date(
+                order.created_at
+            ).toLocaleDateString(),
+
+            email: "-"
+
+        }));
+
+        filtered = [...ORDERS];
+
+        renderTable();
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        showToast(
+            "Unable to load marketplace data",
+            "error"
+        );
+
+    }
+
 }
 
-function updateStats(){
-  document.getElementById('sRevenue').textContent   = 'GH₵ 232,200';
-  document.getElementById('sRevenueSub').textContent= '+18.4% vs last month';
-  document.getElementById('sOrders').textContent    = ORDERS.length.toString();
-  document.getElementById('sOrdersSub').textContent = '7 this week';
-  document.getElementById('sAOV').textContent       = 'GH₵ 305.00';
-  document.getElementById('sCommission').textContent= 'GH₵ 11,610';
-}
+
 
 function renderTable(){
   const start=(currentPage-1)*PER_PAGE;
@@ -254,8 +332,9 @@ function openOrder(id){
 }
 
 function closeModal(){document.getElementById('orderModal').classList.remove('open');}
+renderChart(2024);
 
-updateStats(); renderChart(2024); renderTopVendors(); renderTable();
+loadMarketplaceData();
 </script>
 </body>
 </html>

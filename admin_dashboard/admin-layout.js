@@ -22,13 +22,12 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
     </div>
     <nav class="sidebar-nav">${navItems}</nav>
     <div class="sidebar-footer">
-      <button class="btn-generate" onclick="generateReport()">
+      <a href="report.html" class="btn-generate ${activePage === 'generate-report' ? 'btn-generate-active' : ''}">
         <i class="fa-solid fa-file-chart-column"></i> Generate Report
-      </button>
+      </a>
       <a href="#" class="nav-item" style="padding:8px 4px;">
         <i class="fa-solid fa-circle-question"></i> Support
       </a>
-      <!-- Exact full path to login.html -->
       <a href="/pharmacy/login/sign_in/login.html" class="nav-item" style="padding:8px 4px;color:var(--accent-red);" onclick="handleAdminLogout(event)">
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </a>
@@ -59,10 +58,9 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
           <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;color:var(--text-muted);margin-left:4px;"></i>
         </div>
         <div class="dropdown-menu" id="userDropdown">
-          <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
+          <a href="settings.html"><i class="fa-solid fa-user"></i> Profile</a>
           <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
           <hr/>
-          <!-- Exact full path to login.html -->
           <a href="/pharmacy/login/sign_in/login.html" class="danger" onclick="handleAdminLogout(event)">
             <i class="fa-solid fa-right-from-bracket"></i> Logout
           </a>
@@ -71,16 +69,87 @@ function renderAdminLayout({ activePage = 'dashboard', pageTitle = 'Dashboard' }
     </div>
   `;
 
-  // Dropdown close on outside click
   document.addEventListener('click', e => {
     if (!e.target.closest('.dropdown')) {
       document.getElementById('userDropdown')?.classList.remove('open');
     }
   });
+
+  syncAdminUserDisplay();
+}
+
+/* ── DYNAMIC USER PROFILE & AVATAR SYNC ── */
+async function syncAdminUserDisplay() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('../backend/api/admin/profile.php', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const result = await res.json();
+    if (result.success && result.data) {
+      localStorage.setItem('user', JSON.stringify(result.data));
+      applyAdminUserData(result.data);
+    }
+  } catch (err) {
+    console.error('Failed to sync admin profile:', err);
+    const cachedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (cachedUser.full_name) applyAdminUserData(cachedUser);
+  }
+}
+
+function applyAdminUserData(user) {
+  const nameEl    = document.getElementById('adminName');
+  const initialEl = document.getElementById('adminInitial');
+
+  const fullName = user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Admin User';
+  let photo = user.avatar || user.avatar_url || user.profile_pic || user.photo;
+
+  if (nameEl) nameEl.textContent = fullName;
+
+  if (initialEl) {
+    if (photo) {
+      let imgSrc = photo;
+      if (!photo.startsWith('http') && !photo.startsWith('/')) {
+        imgSrc = `../uploads/avatars/${photo}`;
+      }
+      const initialChar = fullName.charAt(0).toUpperCase();
+      initialEl.innerHTML = `<img src="${imgSrc}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.onerror=null; this.parentElement.innerHTML='${initialChar}';">`;
+    } else {
+      initialEl.textContent = fullName.charAt(0).toUpperCase();
+    }
+  }
+}
+
+function toggleDropdown() {
+  const menu = document.getElementById('userDropdown');
+  if (menu) menu.classList.toggle('open');
 }
 
 function handleAdminLogout(event) {
   localStorage.removeItem('user');
   localStorage.removeItem('token');
   sessionStorage.clear();
+}
+
+/* ── SHARED TOAST ── */
+let _adminToastTimer;
+function showToast(msg, type = 'success') {
+  clearTimeout(_adminToastTimer);
+  const t    = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  if (!t) return;
+  document.getElementById('toastMsg').textContent = msg;
+  if (icon) {
+    icon.style.color = type === 'error' ? '#f87171'
+                     : type === 'warn'  ? '#fbbf24'
+                     : '#4ade80';
+  }
+  t.classList.add('show');
+  _adminToastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function generateReport() {
+  window.location.href = 'report.html';
 }

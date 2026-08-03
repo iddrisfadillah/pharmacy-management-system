@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generate Report – PharmaAdmin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="admin-shared.css"/>
+  <style>
+    /* ── PAGE-SPECIFIC STYLES ── */
+    .report-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .report-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .report-card-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-card-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .report-card-header p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .report-body {
+      padding: 28px 32px;
+    }
+
+    /* FORM ELEMENTS */
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+      background: #fff;
+      transition: border 0.15s, box-shadow 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* DATE ROW */
+    .date-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .date-input-wrap {
+      position: relative;
+    }
+
+    .date-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .form-control.has-icon {
+      padding-left: 36px;
+    }
+
+    /* EXPORT FORMAT */
+    .format-options {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .radio-option input[type="radio"] {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* DATA VISUALIZATIONS CHECKBOX */
+    .viz-checkbox-wrap {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: #fff;
+    }
+
+    .viz-checkbox-wrap:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .viz-checkbox-wrap.checked {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .viz-checkbox-wrap input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .viz-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .viz-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .viz-sub .pdf-only {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ACTION BUTTONS */
+    .report-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-generate-report {
+      flex: 1;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: 13px 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-generate-report:hover { background: #155ba0; }
+    .btn-generate-report:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .btn-cancel-report {
+      background: #fff;
+      color: var(--text-main);
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 13px 28px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-cancel-report:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+
+    /* INFO CARDS */
+    .info-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .info-card {
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .info-card-blue {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+
+    .info-card-amber {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+    }
+
+    .info-card-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .info-card-blue  .info-card-icon { color: var(--primary); }
+    .info-card-amber .info-card-icon { color: var(--accent-amber); }
+
+    .info-card-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .info-card-blue  .info-card-title { color: var(--primary); }
+    .info-card-amber .info-card-title { color: var(--accent-amber); }
+
+    .info-card-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* PROGRESS OVERLAY */
+    .progress-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 600;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-overlay.show {
+      display: flex;
+    }
+
+    .progress-box {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      text-align: center;
+      width: 340px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+
+    .progress-spinner {
+      width: 52px;
+      height: 52px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .progress-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .progress-bar-wrap {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* FOOTER */
+    .report-page-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .report-page-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 8px;
+    }
+
+    .report-page-footer a:hover { color: var(--primary); }
+
+    @media (max-width: 600px) {
+      .date-row    { grid-template-columns: 1fr; }
+      .info-cards  { grid-template-columns: 1fr; }
+      .report-body { padding: 20px; }
+      .report-card-header { padding: 20px 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<div class="main">
+  <header class="topbar" id="topbar"></header>
+
+  <div class="content">
+    <div class="report-wrap">
+
+      <div class="report-card">
+        <div class="report-card-header">
+          <h2><i class="fa-solid fa-file-chart-column" style="color:var(--primary);margin-right:8px;"></i>Generate System Report</h2>
+          <p>Configure your parameters to compile and download high-precision administrative reports.</p>
+        </div>
+
+        <div class="report-body">
+
+          <!-- REPORT TYPE -->
+          <div class="form-group">
+            <label class="form-label">Report Type</label>
+            <div class="select-wrap">
+              <select class="form-control" id="reportType" onchange="handleReportTypeChange()">
+                <option value="sales">Marketplace Sales</option>
+                <option value="pharmacies">Vendor Activity</option>
+                <option value="users">User Signups</option>
+                <option value="orders">Orders</option>
+                <option value="audit">Audit Log Export</option>
+                <!-- <option value="revenue_summary">Revenue Summary</option> -->
+                <option value="inventory">Inventory Status</option>
+                <!-- <option value="system_health">System Health</option> -->
+              </select>
+            </div>
+          </div>
+
+          <!-- DATE RANGE -->
+          <div class="form-group">
+            <label class="form-label">Date Range</label>
+            <div class="date-row">
+              <div>
+                <label class="form-label" style="font-weight:400;color:var(--text-muted);font-size:0.75rem;margin-bottom:5px;">From</label>
+                <div class="date-input-wrap">
+                  <i class="fa-regular fa-calendar date-icon"></i>
+                  <input class="form-control has-icon" type="date" id="dateFrom"/>
+                </div>
+              </div>
+              <div>
+                <label class="form-label" style="font-weight:400;color:var(--text-muted);font-size:0.75rem;margin-bottom:5px;">To</label>
+                <div class="date-input-wrap">
+                  <i class="fa-regular fa-calendar date-icon"></i>
+                  <input class="form-control has-icon" type="date" id="dateTo"/>
+                </div>
+              </div>
+            </div>
+            <!-- Quick date presets -->
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+              <button class="preset-btn" onclick="setPreset(7)">Last 7 days</button>
+              <button class="preset-btn" onclick="setPreset(30)">Last 30 days</button>
+              <button class="preset-btn" onclick="setPreset(90)">Last 90 days</button>
+              <button class="preset-btn" onclick="setPresetThisYear()">This year</button>
+            </div>
+          </div>
+
+          <!-- EXPORT FORMAT -->
+          <div class="form-group">
+            <label class="form-label">Export Format</label>
+            <div class="format-options">
+              <label class="radio-option">
+                <input type="radio" name="exportFormat" value="pdf" id="fmtPDF" checked onchange="handleFormatChange()"/>
+                <i class="fa-solid fa-file-pdf" style="color:#dc2626;"></i>
+                Portable Document (PDF)
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="exportFormat" value="csv" id="fmtCSV" onchange="handleFormatChange()"/>
+                <i class="fa-solid fa-file-csv" style="color:var(--accent-green,#16a34a);"></i>
+                Comma Separated Values (CSV)
+              </label>
+            </div>
+          </div>
+
+          <!-- DATA VISUALIZATIONS -->
+          <div class="form-group">
+            <div class="viz-checkbox-wrap" id="vizWrap" onclick="toggleViz()">
+              <input type="checkbox" id="includeViz" onclick="event.stopPropagation(); toggleViz()"/>
+              <div>
+                <div class="viz-label">Include Data Visualizations</div>
+                <div class="viz-sub">
+                  Include charts, graphs, and summary tables.
+                  <span class="pdf-only" id="pdfOnlyNote">Available for PDF only.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="report-actions">
+            <button class="btn-generate-report" id="btnGenerate" onclick="generateReport()">
+              <i class="fa-solid fa-download"></i> Generate Report
+            </button>
+            <button class="btn-cancel-report" onclick="cancelReport()">Cancel</button>
+          </div>
+
+        </div><!-- end report-body -->
+      </div><!-- end report-card -->
+
+      <!-- INFO CARDS -->
+      <div class="info-cards">
+        <div class="info-card info-card-blue">
+          <i class="fa-solid fa-shield-halved info-card-icon"></i>
+          <div>
+            <div class="info-card-title">HIPAA Compliance</div>
+            <div class="info-card-desc">All generated reports are encrypted and strictly logged for audit purposes. Ensure secure storage after download.</div>
+          </div>
+        </div>
+        <div class="info-card info-card-amber">
+          <i class="fa-solid fa-bolt info-card-icon"></i>
+          <div>
+            <div class="info-card-title">Real-time Data</div>
+            <div class="info-card-desc">Reports reflect system state up to the last 5 minutes. High-volume logs may take up to 60 seconds to process.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE FOOTER -->
+      <div class="report-page-footer">
+        © 2024 PharmaAdmin Administration. All rights reserved. HIPAA Compliant &amp; SOC2 Certified.
+        <br/>
+        <a href="settings.html">Security Policy</a>
+        <a href="#">Privacy Terms</a>
+        <a href="#">Support Documents</a>
+      </div>
+
+    </div><!-- end report-wrap -->
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<!-- PROGRESS OVERLAY -->
+<div class="progress-overlay" id="progressOverlay">
+  <div class="progress-box">
+    <div class="progress-spinner"></div>
+    <div class="progress-title" id="progressTitle">Compiling Report…</div>
+    <div class="progress-sub"  id="progressSub">Fetching data from the system. Please wait.</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i id="toastIcon" class="fa-solid fa-circle-check" style="color:#4ade80;"></i>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="admin-layout.js"></script>
+<script>
+/* ── INIT LAYOUT ── */
+renderAdminLayout({ activePage: 'generate-report', pageTitle: 'Generate Report' });
+
+/* ── SET DEFAULT DATES (last 30 days) ── */
+(function setDefaultDates() {
+  const today = new Date();
+  const from  = new Date();
+  from.setDate(today.getDate() - 30);
+  document.getElementById('dateTo').value   = today.toISOString().split('T')[0];
+  document.getElementById('dateFrom').value = from.toISOString().split('T')[0];
+})();
+
+/* ── PRESET BUTTONS ── */
+function setPreset(days) {
+  const today = new Date();
+  const from  = new Date();
+  from.setDate(today.getDate() - days);
+  document.getElementById('dateTo').value   = today.toISOString().split('T')[0];
+  document.getElementById('dateFrom').value = from.toISOString().split('T')[0];
+  highlightPreset(days);
+}
+
+function setPresetThisYear() {
+  const today = new Date();
+  document.getElementById('dateFrom').value = `${today.getFullYear()}-01-01`;
+  document.getElementById('dateTo').value   = today.toISOString().split('T')[0];
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function highlightPreset(days) {
+  const map = { 7:0, 30:1, 90:2 };
+  document.querySelectorAll('.preset-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === map[days]);
+  });
+}
+
+/* ── FORMAT CHANGE ── */
+function handleFormatChange() {
+  const isCSV = document.getElementById('fmtCSV').checked;
+  const vizCheck = document.getElementById('includeViz');
+  const pdfNote  = document.getElementById('pdfOnlyNote');
+  const vizWrap  = document.getElementById('vizWrap');
+
+  if (isCSV) {
+    vizCheck.checked = false;
+    vizCheck.disabled = true;
+    vizWrap.style.opacity = '0.5';
+    vizWrap.style.cursor = 'not-allowed';
+    pdfNote.textContent = 'Not available for CSV exports.';
+  } else {
+    vizCheck.disabled = false;
+    vizWrap.style.opacity = '1';
+    vizWrap.style.cursor = 'pointer';
+    pdfNote.textContent = 'Available for PDF only.';
+  }
+}
+
+/* ── VIZ TOGGLE ── */
+function toggleViz() {
+  const cb   = document.getElementById('includeViz');
+  const wrap = document.getElementById('vizWrap');
+  if (cb.disabled) return;
+  cb.checked = !cb.checked;
+  wrap.classList.toggle('checked', cb.checked);
+}
+
+/* ── REPORT TYPE CHANGE ── */
+function handleReportTypeChange() {
+  /* Could be used to show/hide extra options per report type in future */
+}
+
+/* ── GENERATE REPORT ── */
+async function generateReport() {
+    const type = document.getElementById("reportType").value;
+    const dateFrom = document.getElementById("dateFrom").value;
+    const dateTo = document.getElementById("dateTo").value;
+    const format =
+        document.querySelector('input[name="exportFormat"]:checked').value;
+    const includeViz = document.getElementById("includeViz")?.checked;
+
+    /* ── VALIDATION ── */
+    if (!dateFrom || !dateTo) {
+      showToast('Please select a date range.', 'warn'); return;
+    }
+    if (new Date(dateFrom) > new Date(dateTo)) {
+      showToast('"From" date cannot be after "To" date.', 'warn'); return;
+    }
+
+    /* ── SHOW PROGRESS ── */
+    showProgress();
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    try {
+      /*
+       * REAL API BACKEND CALL
+       */
+      const response = await fetch(
+          `../backend/api/admin/export-report.php?type=${type}&from=${dateFrom}&to=${dateTo}&format=${format}`,
+          {
+              headers: {
+                  Authorization: "Bearer " + token
+              }
+          }
+      );
+
+      if (!response.ok) {
+          throw new Error("Failed to generate report.");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${type}-report.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast("Report generated successfully!");
+
+      /* ── DEMO SIMULATION (uncomment if testing without backend) ── */
+      /*
+      await simulateProgress();
+      showToast(`Report generated successfully! Downloading ${format.toUpperCase()}…`);
+      */
+
+    } catch (err) {
+      console.error('Report generation failed:', err);
+      showToast('Failed to generate report. Please try again.', 'error');
+    } finally {
+      hideProgress();
+    }
+}
+
+/* ── CANCEL ── */
+function cancelReport() {
+  window.location.href = 'admin.html';
+}
+
+/* ── PROGRESS HELPERS ── */
+function showProgress() {
+  document.getElementById('progressOverlay').classList.add('show');
+  document.getElementById('btnGenerate').disabled = true;
+  animateProgress();
+}
+
+function hideProgress() {
+  document.getElementById('progressOverlay').classList.remove('show');
+  document.getElementById('btnGenerate').disabled = false;
+  document.getElementById('progressBar').style.width = '0%';
+}
+
+function animateProgress() {
+  const bar      = document.getElementById('progressBar');
+  const title    = document.getElementById('progressTitle');
+  const sub      = document.getElementById('progressSub');
+  const steps    = [
+    { pct: 20, title:'Authenticating request…',     sub:'Verifying admin credentials and permissions.' },
+    { pct: 45, title:'Fetching data…',              sub:'Querying database for the selected date range.' },
+    { pct: 70, title:'Compiling report…',           sub:'Aggregating records and building report structure.' },
+    { pct: 88, title:'Generating file…',            sub:'Rendering your PDF / CSV with all requested data.' },
+    { pct: 100, title:'Almost done…',               sub:'Finalising encryption and preparing download.' },
+  ];
+  let i = 0;
+  const tick = setInterval(() => {
+    if (i >= steps.length) { clearInterval(tick); return; }
+    bar.style.width   = steps[i].pct + '%';
+    title.textContent = steps[i].title;
+    sub.textContent   = steps[i].sub;
+    i++;
+  }, 600);
+}
+
+function simulateProgress() {
+  return new Promise(resolve => setTimeout(resolve, 3200));
+}
+
+/* ── TOAST ── */
+let _t;
+function showToast(msg, type = 'success') {
+  clearTimeout(_t);
+  const t    = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  icon.style.color = type === 'warn'  ? '#fbbf24'
+                   : type === 'error' ? '#f87171'
+                   : '#4ade80';
+  t.classList.add('show');
+  _t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+
+<style>
+  /* ── PRESET BUTTONS (scoped here so they don't pollute shared CSS) ── */
+  .preset-btn {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover  { border-color: var(--primary); color: var(--primary); }
+  .preset-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+</style>
+</body>
+</html>
