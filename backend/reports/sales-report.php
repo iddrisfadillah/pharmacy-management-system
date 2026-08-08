@@ -2,11 +2,13 @@
 
 require_once __DIR__ . "/../config/database.php";
 require_once __DIR__ . "/../lib/ReportPDF.php";
+require_once __DIR__ . "/../lib/ReportExporter.php";
 
 $db = (new Database())->connect();
 
 $from = $_GET["from"] ?? "";
 $to = $_GET["to"] ?? "";
+$format = strtolower($_GET["format"] ?? "pdf");
 
 $where = "WHERE 1=1";
 $params = [];
@@ -41,9 +43,56 @@ ORDER BY o.created_at DESC
 $stmt = $db->prepare($sql);
 $stmt->execute($params);
 
+
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+
+/*
+|--------------------------------------------------------------------------
+| CSV EXPORT
+|--------------------------------------------------------------------------
+*/
+
+if ($format === "csv") {
+
+    $csvHeaders = [
+        "Order Number",
+        "Customer",
+        "Pharmacy",
+        "Amount",
+        "Payment Method",
+        "Payment Status",
+        "Order Status",
+        "Date"
+    ];
+
+    $csvRows = [];
+
+    foreach ($orders as $order) {
+
+        $csvRows[] = [
+            $order["order_number"],
+            $order["customer_name"],
+            $order["pharmacy_name"] ?? "-",
+            $order["total_amount"],
+            $order["payment_method"],
+            $order["payment_status"],
+            $order["order_status"],
+            $order["created_at"]
+        ];
+
+    }
+
+    ReportExporter::csv(
+        "sales-report.csv",
+        $csvHeaders,
+        $csvRows
+    );
+}
+
 $totalRevenue = 0;
+
+
 
 foreach ($orders as $order) {
     $totalRevenue += (float)$order["total_amount"];
@@ -51,36 +100,48 @@ foreach ($orders as $order) {
 
 $pdf = new ReportPDF();
 
-$pdf = new ReportPDF();
-
-$pdf->AliasNbPages();
-
-$pdf->reportTitle = "Marketplace Sales Report";
-
-$pdf->AddPage();
-
-$pdf->reportInfo(
-    $from ?: "Beginning",
-    $to ?: date("Y-m-d"),
-    "System Administrator"
-);
+$pdf->createReport([
+    "title" => "Marketplace Sales Report",
+    "generatedBy" => "System Administrator",
+    "from" => $from ?: "Beginning",
+    "to" => $to ?: date("Y-m-d")
+]);
 
 
 
 // Replace manual summary with sectionTitle and summaryItem
-$pdf->sectionTitle("Report Summary");
+$completed = 0;
+$pending = 0;
+$cancelled = 0;
 
-$pdf->summaryItem("Total Orders", count($orders));
+foreach ($orders as $order) {
 
-$pdf->summaryItem(
-    "Total Revenue",
-    " GH₵ " . number_format($totalRevenue, 2)
-);
+    switch (strtolower($order["order_status"])) {
+
+        case "completed":
+            $completed++;
+            break;
+
+        case "pending":
+            $pending++;
+            break;
+
+        case "cancelled":
+            $cancelled++;
+            break;
+    }
+}
+
+$pdf->addStatistics([
+    "Total Orders" => count($orders),
+    "Total Revenue" => $totalRevenue,
+    "Completed Orders" => $completed,
+    "Pending Orders" => $pending,
+    "Cancelled Orders" => $cancelled
+]);
 
 // Replace table header with sectionTitle and tableHeader
-$pdf->Ln(5);
 
-$pdf->sectionTitle("Order Details");
 
 $headers = [
     "Order",
@@ -98,21 +159,27 @@ $widths = [
     30
 ];
 
-$pdf->tableHeader($headers, $widths);
+$rows = [];
 
-// Replace the loop with tableRow
 foreach ($orders as $order) {
-    $pdf->tableRow(
-        [
-            $order["order_number"],
-            $order["customer_name"],
-            $order["pharmacy_name"] ?? "-",
-            " GH₵ " . number_format($order["total_amount"], 2),
-            $order["order_status"]
-        ],
-        $widths
-    );
+
+    $rows[] = [
+
+        $order["order_number"],
+
+        $order["customer_name"],
+
+        $order["pharmacy_name"] ?? "-",
+
+        $pdf->money($order["total_amount"]),
+
+        $order["order_status"]
+
+    ];
 }
 
-$pdf->Output("D", "sales-report.pdf");
+$pdf->addTable($headers, $rows, $widths);
+
+
+$pdf->download("sales-report.pdf");
 exit;

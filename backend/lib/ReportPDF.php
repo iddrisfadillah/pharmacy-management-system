@@ -6,6 +6,14 @@ class ReportPDF extends FPDF
 {
     public $reportTitle = "";
 
+    private $rowFill = false;
+
+public $generatedBy = "";
+
+public $dateFrom = "";
+
+public $dateTo = "";
+
     function Header()
     {
         // Logo (optional)
@@ -56,6 +64,26 @@ class ReportPDF extends FPDF
         );
     }
 
+public function createReport($config)
+{
+    $this->reportTitle = $config["title"] ?? "";
+
+    $this->generatedBy = $config["generatedBy"] ?? "";
+
+    $this->dateFrom = $config["from"] ?? "";
+
+    $this->dateTo = $config["to"] ?? "";
+
+    $this->AliasNbPages();
+
+    $this->AddPage();
+
+    $this->reportInfo(
+        $this->dateFrom,
+        $this->dateTo,
+        $this->generatedBy
+    );
+}
     function reportInfo($from,$to,$user)
     {
         $this->SetFont('Arial','',10);
@@ -108,20 +136,39 @@ public function tableHeader($headers,$widths)
 }
 public function tableRow($data,$widths)
 {
+    $this->checkPageBreak();
+
+    if($this->rowFill){
+        $this->SetFillColor(248,249,250);
+    }else{
+        $this->SetFillColor(255,255,255);
+    }
+
     $this->SetFont('Arial','',8);
 
     foreach($data as $i=>$value){
+
+        $align = "L";
+
+        if(is_numeric(str_replace(["GHS"," ",","],"",$value))){
+            $align = "R";
+        }
 
         $this->Cell(
             $widths[$i],
             8,
             $value,
-            1
+            1,
+            0,
+            $align,
+            true
         );
 
     }
 
     $this->Ln();
+
+    $this->rowFill = !$this->rowFill;
 }
 public function summaryItem($label,$value)
 {
@@ -134,6 +181,56 @@ public function summaryItem($label,$value)
     $this->Cell(45,8,$value,1);
 
     $this->Ln();
+}
+public function download($filename)
+{
+    $this->Output("D",$filename);
+}
+
+public function addTable($headers,$rows,$widths)
+{
+    $this->sectionTitle("Report Details");
+
+    $this->tableHeader($headers,$widths);
+
+    foreach($rows as $row){
+
+        $this->tableRow($row,$widths);
+
+    }
+}
+public function addStatistics($stats)
+{
+    $this->sectionTitle("Report Summary");
+
+    foreach($stats as $label=>$value){
+
+        if(is_numeric($value)){
+
+            if(stripos($label,"revenue") !== false){
+
+                $value = $this->money($value);
+
+            }
+
+        }
+
+        $this->summaryItem($label,$value);
+
+    }
+
+    $this->Ln(4);
+}
+public function checkPageBreak($height = 8)
+{
+    if($this->GetY() + $height > 270){
+        $this->AddPage();
+    }
+}
+
+public function money($amount)
+{
+    return "GHS " . number_format((float)$amount,2);
 }
 
 }

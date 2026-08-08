@@ -18,7 +18,7 @@ switch ($type) {
         break;
 
     case "pharmacies":
-        require_once __DIR__ . "/../../reports/pharmacy-report.php";
+        require_once __DIR__ . "/../../reports/vendor-report.php";
         break;
 
     case "inventory":
